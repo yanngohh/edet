@@ -1,0 +1,5 @@
+if ! git diff --cached --quiet; then
+  echo "Error: Pushing is not allowed when there are staged changes."
+  echo "Please commit or stash your changes before pushing."
+  exit 1
+fi

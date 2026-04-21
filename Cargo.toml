@@ -1,0 +1,28 @@
+[profile.dev]
+opt-level = "z"
+
+[profile.release]
+opt-level = "z"
+
+[workspace]
+members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*", "tests/sweettest"]
+resolver = "2"
+
+[workspace.dependencies]
+hdi = "=0.7.0"
+hdk = "=0.6.0"
+serde = "1.0"
+holochain_serialized_bytes = "=0.0.56"
+
+[workspace.dependencies.support]
+path = "dnas/edet/zomes/coordinator/support"
+
+[workspace.dependencies.support_integrity]
+path = "dnas/edet/zomes/integrity/support"
+
+[workspace.dependencies.transaction]
+path = "dnas/edet/zomes/coordinator/transaction"
+
+[workspace.dependencies.transaction_integrity]
+path = "dnas/edet/zomes/integrity/transaction"
+

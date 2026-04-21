@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Favicon: uses the edet icon from the app assets -->
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Content Security Policy: restricts sources to same-origin.
+         'wasm-unsafe-eval' is required by @holochain/client which instantiates
+         WebAssembly modules internally; without it the conductor connection fails
+         with a "Refused to compile or instantiate WebAssembly module" error.
+         Adjust connect-src if additional API endpoints are needed. -->
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' ws://localhost:* wss://localhost:*; img-src 'self' data:;" />
+    <title>edet</title>
+
+    <link rel="stylesheet" href="smui.css" id="smui-theme" />
+    <link rel="stylesheet" href="global.css" />
+    
+    <script>
+      (function() {
+        const savedTheme = localStorage.getItem('edet-theme') || 'system';
+        const darkState = savedTheme === 'dark' || (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        const themeLink = document.getElementById('smui-theme');
+        if (darkState) {
+          themeLink.href = 'smui-dark.css';
+          document.documentElement.classList.add('dark-theme');
+        } else {
+          themeLink.href = 'smui.css';
+          document.documentElement.classList.remove('dark-theme');
+        }
+      })();
+    </script>
+    
+    <!-- Material Icons are bundled locally via the material-design-icons npm package
+         (imported in App.svelte). The CDN link has been removed to support offline /
+         air-gapped Holochain deployments and to avoid the duplicate network request. -->
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+

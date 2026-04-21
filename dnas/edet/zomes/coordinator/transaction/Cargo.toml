@@ -1,0 +1,17 @@
+[package]
+name = "transaction"
+version = "0.2.1"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "transaction"
+
+[features]
+test-epoch = ["transaction_integrity/test-epoch"]
+
+[dependencies]
+hdk = { workspace = true }
+serde = { workspace = true }
+holochain_serialized_bytes = { workspace = true }
+transaction_integrity = { workspace = true }

@@ -1,0 +1,65 @@
+[profile.default]
+# Each sweettest spins up Holochain conductors and runs async WASM — they are
+# memory- and I/O-bound, not CPU-bound. Running too many in parallel causes
+# HeadMoved source-chain race conditions in Holochain, timing failures, and OOM
+# pressure. 2 concurrent tests avoids HeadMoved races reliably.
+test-threads = 2
+
+# Kill any test that runs for more than 180 s (3 × the longest expected test).
+slow-timeout = { period = "120s", terminate-after = 1 }
+
+# Automatic retry for timing-sensitive tests.
+retries = 0
+
+# ─── CI profile ─────────────────────────────────────────────────────────────
+[profile.ci]
+inherits-from = "default"
+# CI machines are typically slower; be more conservative.
+test-threads = 2
+slow-timeout = { period = "240s", terminate-after = 1 }
+retries = 0
+fail-fast = false
+
+# ─── Per-test overrides ─────────────────────────────────────────────────────
+
+# Epoch tests sleep through multiple 1-second epochs and do DHT propagation
+# rounds; they can legitimately take 60-90 s.
+[[profile.default.overrides]]
+filter = 'test(epoch_tests::)'
+slow-timeout = { period = "180s", terminate-after = 1 }
+
+# Multi-conductor tests negotiate two separate Holochain conductors and wait
+# for cross-conductor gossip — similarly long.
+[[profile.default.overrides]]
+filter = 'test(multi_conductor_tests::)'
+slow-timeout = { period = "240s", terminate-after = 1 }
+
+# Security theorem tests set up larger graphs and run power iteration.
+[[profile.default.overrides]]
+filter = 'test(security_theorem_tests::)'
+slow-timeout = { period = "150s", terminate-after = 1 }
+
+# Flash-loan / circular tests involve multiple transactions and cascade chains.
+[[profile.default.overrides]]
+filter = 'test(flash_loan_circular_tests::)'
+slow-timeout = { period = "180s", terminate-after = 1 }
+
+# query / getting transaction status from simulation requires completing the transaction
+[[profile.default.overrides]]
+filter = 'test(query_tests::)'
+slow-timeout = { period = "180s", terminate-after = 1 }
+
+
+# The three previously-failing tests that are most timing sensitive:
+# give them an extra retry on top of the global one.
+[[profile.default.overrides]]
+filter = '''test(cascade_tests::test_cascade_beneficiary_drain)
+         or test(eigentrust_tests::test_trust_values_bounded)
+         or test(support_drain_tests::test_repro_drain_failure_scenario)'''
+
+# ─── CI-specific overrides ───────────────────────────────────────────────────
+
+[[profile.ci.overrides]]
+filter = 'test(multi_conductor_tests::)'
+slow-timeout = { period = "300s", terminate-after = 1 }
+retries = 1

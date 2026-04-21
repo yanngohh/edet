@@ -1,0 +1,33 @@
+# editors
+/.idea
+/.vscode
+
+# system files
+.DS_Store
+
+# build
+/dist/
+/target/
+/edet/
+
+# npm 
+/**/node_modules
+
+# generated and compiled files
+*.happ
+*.webhapp
+*.zip
+*.dna
+
+# temporary files
+.hc*
+.running
+.hc
+
+# swap files
+**/*.swp
+
+# simulation results
+sim/results
+**/__pycache__
+output.log

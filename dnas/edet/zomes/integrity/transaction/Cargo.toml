@@ -1,0 +1,21 @@
+[package]
+name = "transaction_integrity"
+version = "0.2.1"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "transaction_integrity"
+
+[features]
+## Compile-time epoch acceleration for sweettest integration tests.
+## When enabled: EPOCH_DURATION_SECS=1, MIN_MATURITY=3, RECENT_WINDOW_K=3.
+## This allows tests to sleep a few seconds and observe contract expiration,
+## trust collapse, vouch slashing, and other epoch-dependent behaviors
+## that would otherwise require 50+ real days.
+test-epoch = []
+
+[dependencies]
+hdi = { workspace = true }
+serde = { workspace = true }
+holochain_serialized_bytes = { workspace = true }

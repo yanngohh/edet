@@ -1,0 +1,33 @@
+{
+  "name": "edet-dev",
+  "private": true,
+  "workspaces": [
+    "ui",
+    "tests"
+  ],
+  "scripts": {
+    "debug": "WASM_LOG=${WASM_LOG:-[wasm_trace]=debug} RUST_LOG=${RUST_LOG:-holochain=warn} LAIR_KEYSTORE_DISABLE_MLOCK=1 AGENTS=${AGENTS:-3} BOOTSTRAP_PORT=$(get-port) SIGNAL_PORT=$(get-port) npm run network",
+    "start": "AGENTS=${AGENTS:-3} BOOTSTRAP_PORT=$(get-port) SIGNAL_PORT=$(get-port) npm run network",
+    "network": "hc sandbox clean && npm run build:happ && UI_PORT=$(get-port) concurrently \"npm run start --workspace ui\" \"npm run launch:happ\" \"hc playground\"",
+    "build:test-zomes": "RUSTFLAGS='--cfg getrandom_backend=\"custom\"' cargo build --release --target wasm32-unknown-unknown --workspace --exclude sweettest --features test-epoch",
+    "build:test-dna": "npm run build:test-zomes && hc dna pack dnas/edet/workdir --output dnas/edet/workdir/edet-test.dna",
+    "test": "npm run build:test-dna && LAIR_KEYSTORE_DISABLE_MLOCK=1 cargo nextest run -p sweettest",
+    "test:ci": "npm run build:test-dna && LAIR_KEYSTORE_DISABLE_MLOCK=1 cargo nextest run -p sweettest --profile ci",
+    "launch:happ": "hc-spin -n $AGENTS --ui-port $UI_PORT workdir/edet.happ",
+    "package": "npm run build:happ && npm run package --workspace ui && hc web-app pack workdir --recursive",
+    "build:happ": "npm run build:zomes && hc app pack workdir --recursive",
+    "build:zomes": "RUSTFLAGS='--cfg getrandom_backend=\"custom\"' cargo build --release --target wasm32-unknown-unknown --workspace --exclude sweettest",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@holochain/hc-spin": "0.600.2-rc.0",
+    "concurrently": "^6.5.1",
+    "get-port-cli": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "hcScaffold": {
+    "template": "svelte"
+  }
+}
