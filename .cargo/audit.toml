@@ -1,0 +1,14 @@
+# Configuration for cargo-audit
+
+[advisories]
+ignore = [
+    "RUSTSEC-2021-0139", # ansi_term: unmaintained
+    "RUSTSEC-2025-0121", # gcc: unmaintained
+    "RUSTSEC-2024-0387", # opentelemetry_api: merged into opentelemetry crate
+    "RUSTSEC-2024-0436", # paste: unmaintained
+    "RUSTSEC-2024-0370", # proc-macro-error: unmaintained
+    "RUSTSEC-2025-0124", # rand_os: unmaintained
+    "RUSTSEC-2025-0134", # rustls-pemfile: unmaintained
+    "RUSTSEC-2026-0009", # time: Denial of Service via Stack Exhaustion (blocked from upgrade by Holochain SDK pinning)
+    "RUSTSEC-2026-0097", # rand: unsound with custom logger (newly reported, deep dependency)
+]

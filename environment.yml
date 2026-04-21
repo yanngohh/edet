@@ -1,0 +1,14 @@
+name: edet-sim
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - numpy
+  - scipy
+  - matplotlib
+  - rich
+  - tqdm
+  - pip
+  - pip:
+    - cupy-cuda12x  # Change to cupy-cuda11x if using CUDA 11

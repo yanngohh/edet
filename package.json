@@ -1,0 +1,43 @@
+{
+  "name": "edet-dev",
+  "private": true,
+  "license": "AGPL-3.0",
+  "workspaces": [
+    "ui",
+    "tests"
+  ],
+  "scripts": {
+    "debug": "WASM_LOG=${WASM_LOG:-[wasm_trace]=debug} RUST_LOG=${RUST_LOG:-holochain=warn} LAIR_KEYSTORE_DISABLE_MLOCK=1 AGENTS=${AGENTS:-3} BOOTSTRAP_PORT=$(get-port) SIGNAL_PORT=$(get-port) npm run network",
+    "start": "AGENTS=${AGENTS:-3} BOOTSTRAP_PORT=$(get-port) SIGNAL_PORT=$(get-port) npm run network",
+    "network": "hc sandbox clean && npm run build:happ && UI_PORT=$(get-port) concurrently \"npm run start --workspace ui\" \"npm run launch:happ\" \"hc playground\"",
+    "build:test-zomes": "RUSTFLAGS='--cfg getrandom_backend=\"custom\"' cargo build --release --target wasm32-unknown-unknown --workspace --exclude sweettest --features test-epoch",
+    "build:test-dna": "npm run build:test-zomes && hc dna pack dnas/edet/workdir --output dnas/edet/workdir/edet-test.dna",
+    "test": "npm run build:test-dna && LAIR_KEYSTORE_DISABLE_MLOCK=1 cargo nextest run -p sweettest",
+    "test:ci": "npm run build:test-dna && LAIR_KEYSTORE_DISABLE_MLOCK=1 cargo nextest run -p sweettest --profile ci",
+    "launch:happ": "hc-spin -n $AGENTS --ui-port $UI_PORT workdir/edet.happ",
+    "package": "npm run build:happ && npm run package --workspace ui && hc web-app pack workdir --recursive",
+    "build:happ": "npm run build:zomes && hc app pack workdir --recursive",
+    "build:zomes": "RUSTFLAGS='--cfg getrandom_backend=\"custom\"' cargo build --release --target wasm32-unknown-unknown --workspace --exclude sweettest",
+    "tauri": "tauri",
+    "tauri:dev": "npm run build:happ && tauri dev",
+    "tauri:build": "tauri build",
+    "android:dev": "scripts/tauri-android-dev.sh",
+    "android:build": "scripts/tauri-android-build.sh",
+    "patch:android": "scripts/patch-buildtask.sh",
+    "sync-signer": "node -e \"const {execSync}=require('child_process'),path=require('path'),fs=require('fs');const meta=JSON.parse(execSync('cargo metadata --format-version 1',{cwd:'src-tauri',maxBuffer:64*1024*1024}).toString());const pkg=meta.packages.find(p=>p.name==='tauri-plugin-holochain');if(!pkg)throw new Error('tauri-plugin-holochain not found in cargo metadata');const src=path.join(path.dirname(pkg.manifest_path),'zome-call-signer.js');const dst=path.join('src-tauri','zome-call-signer.js');fs.copyFileSync(src,dst);console.log('Copied',src,'->',dst);\"",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@holochain/hc-spin": "0.700.0-dev.1",
+    "@tauri-apps/cli": "^2.1.0",
+    "concurrently": "^6.5.1",
+    "get-port-cli": "^3.0.0",
+    "husky": "^9.1.7"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "hcScaffold": {
+    "template": "svelte"
+  }
+}
