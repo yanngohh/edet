@@ -1,0 +1,27 @@
+---
+manifest_version: "0"
+name: edet
+integrity:
+  network_seed: ~
+  properties: ~
+  zomes:
+    - name: transaction_integrity
+      hash: ~
+      path: "../../../target/wasm32-unknown-unknown/release/transaction_integrity.wasm"
+      dependencies: ~
+    - name: support_integrity
+      hash: ~
+      path: "../../../target/wasm32-unknown-unknown/release/support_integrity.wasm"
+      dependencies: ~
+coordinator:
+  zomes:
+    - name: transaction
+      hash: ~
+      path: "../../../target/wasm32-unknown-unknown/release/transaction.wasm"
+      dependencies:
+        - name: transaction_integrity
+    - name: support
+      hash: ~
+      path: "../../../target/wasm32-unknown-unknown/release/support.wasm"
+      dependencies:
+        - name: support_integrity

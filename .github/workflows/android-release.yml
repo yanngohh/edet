@@ -1,0 +1,245 @@
+name: Android Release
+
+# Builds a signed APK and AAB whenever a version tag (e.g. v0.2.1) is pushed.
+# Can also be triggered manually via the GitHub Actions UI.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   ANDROID_KEYSTORE_BASE64    base64-encoded .jks keystore file
+#   ANDROID_KEY_ALIAS          key alias inside the keystore
+#   ANDROID_KEYSTORE_PASSWORD  keystore password
+#   ANDROID_KEY_PASSWORD       key password (usually same as keystore password)
+#
+# Generates:
+#   - edet-<tag>-release.apk  (universal APK for direct install / sideloading)
+#   - edet-<tag>-release.aab  (Android App Bundle for Google Play)
+#   - GitHub Release with both files attached
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag (e.g. v0.2.1) — used only for artifact names"
+        required: false
+        default: "manual"
+
+jobs:
+  build-android:
+    name: Build signed Android APK + AAB
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    env:
+      # Resolved once here so every step can reference ${{ env.RELEASE_TAG }}
+      RELEASE_TAG: ${{ github.ref_name || inputs.tag_name }}
+
+    steps:
+      # ── Source ──────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Nix ─────────────────────────────────────────────────────────────────
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.23.2/install
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            extra-substituters = https://holochain-ci.cachix.org https://darksoil-studio.cachix.org
+            extra-trusted-public-keys = holochain-ci.cachix.org-1:5IUSkZc0aoRS53rfkvH9Kid40NpyjwCMCzwRTXy+QN8= darksoil-studio.cachix.org-1:UEi+aujy44s41XL/pscLw37KEVpTEIn8N/kn7jO8rkc=
+
+      - name: Configure Cachix (holochain-ci)
+        uses: cachix/cachix-action@v15
+        with:
+          name: holochain-ci
+
+      - name: Configure Cachix (darksoil-studio)
+        uses: cachix/cachix-action@v15
+        with:
+          name: darksoil-studio
+
+      # ── Caches ──────────────────────────────────────────────────────────────
+      - name: Cache Cargo registry and build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-android-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-android-
+            ${{ runner.os }}-cargo-
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('src-tauri/gen/android/**/*.gradle*', 'src-tauri/gen/android/**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # ── Keystore ─────────────────────────────────────────────────────────────
+      - name: Decode Android keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > /tmp/edet-release.jks
+          # Sanity-check: keytool should list at least one entry
+          keytool -list \
+            -keystore /tmp/edet-release.jks \
+            -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
+            -noprompt | grep -q "Keystore type"
+
+      # ── Tauri Android project init ───────────────────────────────────────────
+      # The generated android/ directory is .gitignored and must be recreated.
+      # --skip-targets-install: the androidDev Nix shell already has all four
+      # Rust cross-compile targets baked in (aarch64, armv7, x86_64, i686).
+      - name: Install npm dependencies
+        run: nix develop .#androidDev --impure --command bash -c "npm ci"
+
+      - name: Verify Android SDK environment
+        run: |
+          nix develop .#androidDev --impure --command bash -c '
+            echo "ANDROID_HOME=$ANDROID_HOME"
+            echo "JAVA_HOME=$JAVA_HOME"
+            echo "NDK_HOME=$NDK_HOME"
+            echo "GRADLE_OPTS=$GRADLE_OPTS"
+            echo "--- SDK platforms ---"
+            ls "$ANDROID_HOME/platforms/" 2>/dev/null || echo "ERROR: No platforms directory"
+            echo "--- Node ---"
+            node --version
+            echo "--- Tauri CLI ---"
+            npx tauri --version
+          '
+
+      - name: Initialize Tauri Android project
+        run: |
+          nix develop .#androidDev --impure --command bash -c \
+            "npx tauri android init --skip-targets-install"
+
+      # ── Patches ─────────────────────────────────────────────────────────────
+      # 1. i686 skip — wasmer-vm 6.1.0 does not support i686; patch BuildTask.kt
+      # 2. signing   — write build.gradle.kts with signingConfigs reading from env vars
+      - name: Apply i686 skip patch
+        run: bash scripts/patch-buildtask.sh
+
+      - name: Apply Android signing patch
+        run: bash scripts/patch-signing.sh
+        env:
+          ANDROID_STORE_FILE: /tmp/edet-release.jks
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      # ── Holochain hApp bundle ────────────────────────────────────────────────
+      # Must be built before the Rust compile step because conductor.rs uses
+      # include_bytes! to embed the .happ at compile time.
+      - name: Build Holochain hApp bundle
+        run: |
+          nix develop .#androidDev --impure --command bash -c "npm run build:happ"
+
+      # ── APK build ────────────────────────────────────────────────────────────
+      - name: Build signed release APK
+        run: |
+          nix develop .#androidDev --impure --command bash -c \
+            "npx tauri android build --apk"
+        env:
+          ANDROID_STORE_FILE: /tmp/edet-release.jks
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      # Re-apply patches: tauri android build may regenerate BuildTask.kt
+      - name: Re-apply patches after APK build
+        run: bash scripts/patch-buildtask.sh && bash scripts/patch-signing.sh
+        env:
+          ANDROID_STORE_FILE: /tmp/edet-release.jks
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      # ── AAB build ────────────────────────────────────────────────────────────
+      - name: Build signed release AAB
+        run: |
+          nix develop .#androidDev --impure --command bash -c \
+            "npx tauri android build"
+        env:
+          ANDROID_STORE_FILE: /tmp/edet-release.jks
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      # ── Rename artifacts to include version tag ───────────────────────────────
+      - name: Rename artifacts
+        run: |
+          TAG="${{ env.RELEASE_TAG }}"
+          APK_SRC="src-tauri/gen/android/app/build/outputs/apk/universal/release"
+          AAB_SRC="src-tauri/gen/android/app/build/outputs/bundle/universalRelease"
+
+          # APK
+          APK_FILE=$(find "$APK_SRC" -name "*.apk" | head -1)
+          if [[ -n "$APK_FILE" ]]; then
+            cp "$APK_FILE" "edet-${TAG}-release.apk"
+            echo "APK: edet-${TAG}-release.apk"
+          else
+            echo "Warning: No APK found in $APK_SRC"
+            find "src-tauri/gen/android/app/build/outputs" -name "*.apk" || true
+            exit 1
+          fi
+
+          # AAB
+          AAB_FILE=$(find "$AAB_SRC" -name "*.aab" | head -1)
+          if [[ -n "$AAB_FILE" ]]; then
+            cp "$AAB_FILE" "edet-${TAG}-release.aab"
+            echo "AAB: edet-${TAG}-release.aab"
+          else
+            echo "Warning: No AAB found in $AAB_SRC"
+            find "src-tauri/gen/android/app/build/outputs" -name "*.aab" || true
+            exit 1
+          fi
+
+      # ── Upload as workflow artifacts ─────────────────────────────────────────
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: edet-${{ env.RELEASE_TAG }}-release-apk
+          path: edet-${{ env.RELEASE_TAG }}-release.apk
+          if-no-files-found: error
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: edet-${{ env.RELEASE_TAG }}-release-aab
+          path: edet-${{ env.RELEASE_TAG }}-release.aab
+          if-no-files-found: error
+
+      # ── Create GitHub Release ────────────────────────────────────────────────
+      # Only runs when triggered by a tag push (not on workflow_dispatch).
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "edet ${{ env.RELEASE_TAG }}"
+          tag_name: ${{ env.RELEASE_TAG }}
+          generate_release_notes: true
+          files: |
+            edet-${{ env.RELEASE_TAG }}-release.apk
+            edet-${{ env.RELEASE_TAG }}-release.aab
+          body: |
+            ## Android Release ${{ env.RELEASE_TAG }}
+
+            | File | Description |
+            |---|---|
+            | `edet-${{ env.RELEASE_TAG }}-release.apk` | Universal APK — sideload on any Android 8+ device |
+            | `edet-${{ env.RELEASE_TAG }}-release.aab` | Android App Bundle — for Google Play submission |
+
+            ### Install (sideload APK)
+            ```
+            adb install edet-${{ env.RELEASE_TAG }}-release.apk
+            ```
+            Or transfer the APK to your device and open it with a file manager
+            (requires "Install unknown apps" enabled for the file manager).

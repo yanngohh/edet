@@ -1,0 +1,117 @@
+[package]
+name = "edet-tauri"
+version = "0.2.1"
+description = "edet desktop shell"
+# edet is licensed under AGPL-3.0. See /LICENSE at the repo root.
+# Kept inline here because `src-tauri` is excluded from the workspace
+# (see ../Cargo.toml) and therefore cannot use `license.workspace = true`.
+license = "AGPL-3.0"
+edition = "2021"
+rust-version = "1.77"
+
+# Tauri v2 wants both library + binary targets; the library exposes the
+# `run()` entry point so desktop and mobile builds can share it.
+[lib]
+name = "edet_tauri_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-shell = "2"
+
+# The embedded Holochain runtime. Provides in-process `holochain` +
+# `lair-keystore` so we do not spawn subprocesses (required for Android,
+# beneficial for deployment simplicity on desktop). Re-exports
+# `holochain_client`, `holochain_types`, `holochain_conductor_api`,
+# `lair_keystore_api`, `AppBundle`, `AgentPubKey`, `NetworkConfig`, etc.
+#
+# `main` branch tracks holochain 0.6.x which matches our DNA's
+# `hdi = 0.7.0` / `hdk = 0.6.0` pin. Upgrade in lockstep with dnas.
+tauri-plugin-holochain = { git = "https://github.com/darksoil-studio/tauri-plugin-holochain", branch = "main" }
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rmp-serde = "1"
+# `process` / `time` features are retained only for the short-lived
+# async patterns in commands.rs; if that ends up unused we can trim
+# them later.
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs", "sync", "io-util", "time"] }
+anyhow = "1"
+thiserror = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+hex = "0.4"
+
+# `url2` matches the plugin's declared dependency; used for bootstrap /
+# signal server URL construction in NetworkConfig.
+url2 = "0.0.6"
+
+# Cross-platform app data directory resolution. Works on Linux, macOS,
+# Windows, and Android (via JNI internally). Replaces the manual
+# `dirs::data_local_dir()` approach that does not produce Android-
+# correct paths.
+app_dirs2 = "2.5"
+
+# `getrandom` provides portable CSPRNG; replaces the direct
+# `/dev/urandom` read in the old `lib.rs::ensure_lair_passphrase`.
+getrandom = "0.2"
+
+# Direct zome-level types we still manipulate in `commands.rs` when
+# translating between `OpaqueRecord` and `Record`. These are re-exported
+# by the plugin via `pub use holochain_types::prelude::*`, so we could
+# drop these in principle; kept for explicit type resolution.
+#
+# Versions relaxed to `0.6` (stable) to match the plugin's declared
+# `^0.6` constraint. Our earlier `=0.6.1-rc.8` pins were a holdover
+# from the subprocess-era when we drove lair + holochain directly; the
+# plugin targets stable 0.6.x and won't resolve with pre-release pins.
+holo_hash = "0.6"
+holochain_zome_types = "0.6"
+# `FullStateDump` is only in `holochain_conductor_api`; the plugin re-
+# exports `NetworkConfig` and `ZomeCallParamsSigned` but not the dump
+# type. Keep this direct dep so `conductor::records_from_full_state_dump`
+# can accept it.
+holochain_conductor_api = "0.6"
+
+# lair-keystore client API. Needed for the crypto_box envelope logic
+# we keep in `src/seed.rs` that implements `LairClient::import_seed`
+# for deterministic mnemonic recovery. The plugin re-exports
+# `lair_keystore_api` but we pin explicitly for type resolution.
+# `0.6` matches the plugin's `^0.6` constraint.
+lair_keystore_api = "0.6"
+
+# sodoken: `LockedArray` for passphrase handling. Also re-exported by
+# the plugin; explicit pin matches lair's own dep.
+sodoken = "0.1"
+
+# NaCl-compatible crypto_box for the X25519 seed encryption envelope
+# expected by lair's `import_seed` wire format.
+crypto_box = { version = "0.9", features = ["std"] }
+
+# Cross-platform camera capture. `input-native` selects v4l2 on Linux,
+# AVFoundation on macOS, and Media Foundation on Windows.
+nokhwa = { version = "0.10", features = ["input-native", "output-threaded"] }
+
+# Image encoding for JPEG preview frames streamed to the UI.
+image = { version = "0.25", default-features = false, features = ["jpeg"] }
+
+# Base64 encoding for IPC-efficient JPEG frame transport.
+base64 = "0.22"
+
+[target.'cfg(target_os = "android")'.dependencies]
+# Required for writing/reading Android content:// URIs (Storage Access
+# Framework) returned by the system file picker on Android.  Rust's
+# std::fs / tokio::fs cannot open content:// URIs — we must go through
+# Android's ContentResolver via JNI.
+jni = { version = "0.21", default-features = false }
+ndk-context = "0.1"
+
+[features]
+# The default Tauri profile. Kept minimal so `cargo check` in CI is fast.
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

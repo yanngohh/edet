@@ -1,0 +1,121 @@
+\contentsline {section}{\numberline {1}Introduction}{6}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Why Debt, Not Credit?}{6}{subsection.1.1}%
+\contentsline {paragraph}{Credit-based baseline.}{6}{section*.2}%
+\contentsline {paragraph}{Debt-based alternative.}{6}{section*.3}%
+\contentsline {paragraph}{Formal comparison.}{7}{section*.4}%
+\contentsline {subsection}{\numberline {1.2}Contributions and Structure}{8}{subsection.1.2}%
+\contentsline {section}{\numberline {2}System Model}{9}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Notation and Parameters}{9}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Network and Transactions}{11}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Observable Behavior: Satisfaction and Failure}{13}{subsection.2.3}%
+\contentsline {section}{\numberline {3}Reputation Model}{14}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Local Trust}{14}{subsection.3.1}%
+\contentsline {paragraph}{Rationale.}{16}{section*.5}%
+\contentsline {subsection}{\numberline {3.2}Pre-Trust Distribution}{18}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}EigenTrust: Global Reputation via Power Iteration}{19}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Subjective Reputation}{23}{subsection.3.4}%
+\contentsline {section}{\numberline {4}Credit Capacity}{23}{section.4}%
+\contentsline {section}{\numberline {5}Transaction Protocol}{26}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Transaction Lifecycle}{26}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Support Escrow (Accelerated Debt Transfer)}{27}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Disadvantage Function}{31}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Bootstrapping New Entrants}{32}{section.6}%
+\contentsline {section}{\numberline {7}Security Analysis}{34}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Sybil Ring Attack}{34}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Gateway Attack}{36}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Slacker Attack}{37}{subsection.7.3}%
+\contentsline {subsection}{\numberline {7.4}Whitewashing (Wallet Disposal)}{37}{subsection.7.4}%
+\contentsline {paragraph}{Simulation Findings.}{40}{section*.6}%
+\contentsline {subsection}{\numberline {7.5}Circular Trading}{41}{subsection.7.5}%
+\contentsline {subsection}{\numberline {7.6}Intermittent (Strategic Oscillation) Attack}{41}{subsection.7.6}%
+\contentsline {paragraph}{Game-Theoretic Implications.}{43}{section*.7}%
+\contentsline {subsection}{\numberline {7.7}Newcomer Exploitation}{43}{subsection.7.7}%
+\contentsline {subsection}{\numberline {7.8}Transaction Spam (Denial of Service)}{45}{subsection.7.8}%
+\contentsline {subsection}{\numberline {7.9}Coordinated Market Manipulation}{45}{subsection.7.9}%
+\contentsline {subsection}{\numberline {7.10}Economic Griefing}{46}{subsection.7.10}%
+\contentsline {paragraph}{Additional defenses.}{47}{section*.8}%
+\contentsline {subsection}{\numberline {7.11}Double-Contracting}{47}{subsection.7.11}%
+\contentsline {subsection}{\numberline {7.12}Eclipse and Routing Attacks}{47}{subsection.7.12}%
+\contentsline {subsection}{\numberline {7.13}Network Partition and Split-Brain Behaviour}{48}{subsection.7.13}%
+\contentsline {paragraph}{Short partitions ($\Delta t < M_{\min }$ epochs).}{49}{section*.9}%
+\contentsline {paragraph}{Long partitions ($\Delta t \geq M_{\min }$ epochs).}{49}{section*.10}%
+\contentsline {paragraph}{Partition-induced trust drift bound.}{49}{section*.11}%
+\contentsline {paragraph}{Gossip reconciliation cost.}{50}{theorem.7.30}%
+\contentsline {section}{\numberline {8}Formal Properties Summary}{51}{section.8}%
+\contentsline {section}{\numberline {9}Implementation}{53}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Wallet DNA}{53}{subsection.9.1}%
+\contentsline {subsubsection}{\numberline {9.1.1}Transaction Zome}{53}{subsubsection.9.1.1}%
+\contentsline {paragraph}{Wallet}{53}{section*.13}%
+\contentsline {paragraph}{Transaction}{54}{section*.14}%
+\contentsline {paragraph}{Reputation Computation}{54}{section*.15}%
+\contentsline {paragraph}{ReputationClaim for First-Contact Transactions}{55}{section*.16}%
+\contentsline {paragraph}{Distributed Epochs}{59}{section*.17}%
+\contentsline {paragraph}{Contract Expiration Enforcement}{61}{section*.18}%
+\contentsline {subsubsection}{\numberline {9.1.2}Support Zome}{61}{subsubsection.9.1.2}%
+\contentsline {subsection}{\numberline {9.2}Wallet User Interface}{61}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}Scalability Architecture}{64}{subsection.9.3}%
+\contentsline {subsubsection}{\numberline {9.3.1}Mitigation 1: Local Trust Caching}{64}{subsubsection.9.3.1}%
+\contentsline {subsubsection}{\numberline {9.3.2}Mitigation 2: Incremental Claim Updates}{65}{subsubsection.9.3.2}%
+\contentsline {subsubsection}{\numberline {9.3.3}Mitigation 3: Contract Archival}{65}{subsubsection.9.3.3}%
+\contentsline {subsubsection}{\numberline {9.3.4}Mitigation 4: Trust Link Batching}{66}{subsubsection.9.3.4}%
+\contentsline {subsubsection}{\numberline {9.3.5}Mitigation 5: Source Chain Checkpoints}{66}{subsubsection.9.3.5}%
+\contentsline {subsubsection}{\numberline {9.3.6}Mitigation 6: Bilateral Volume-Scaled Tolerance}{67}{subsubsection.9.3.6}%
+\contentsline {subsection}{\numberline {9.4}Combined Impact}{67}{subsection.9.4}%
+\contentsline {section}{\numberline {10}Conclusion}{68}{section.10}%
+\contentsline {subsection}{\numberline {10.1}Core Mathematical Discoveries}{68}{subsection.10.1}%
+\contentsline {subsection}{\numberline {10.2}Final Remarks}{69}{subsection.10.2}%
+\contentsline {section}{\numberline {11}Glossary}{69}{section.11}%
+\contentsline {paragraph}{Vouch Transaction}{69}{section*.19}%
+\contentsline {paragraph}{EigenTrust}{69}{section*.20}%
+\contentsline {paragraph}{Pre-trust vector}{69}{section*.21}%
+\contentsline {paragraph}{Credit capacity}{70}{section*.22}%
+\contentsline {paragraph}{Satisfaction counter ($S_{ij}$)}{70}{section*.23}%
+\contentsline {paragraph}{Failure counter ($F_{ij}$)}{70}{section*.24}%
+\contentsline {paragraph}{Debt transfer}{70}{section*.25}%
+\contentsline {paragraph}{Genesis debt}{70}{section*.26}%
+\contentsline {paragraph}{Support cascade}{70}{section*.27}%
+\contentsline {paragraph}{Trial transaction}{70}{section*.28}%
+\contentsline {paragraph}{ReputationClaim}{70}{section*.29}%
+\contentsline {paragraph}{Trust attenuation ($\varphi $)}{70}{section*.30}%
+\contentsline {paragraph}{Whitewashing break-even}{70}{section*.31}%
+\contentsline {paragraph}{Trust cache}{71}{section*.32}%
+\contentsline {paragraph}{Contract archival}{71}{section*.33}%
+\contentsline {paragraph}{Source chain checkpoint}{71}{section*.34}%
+\contentsline {paragraph}{Incremental claim update}{71}{section*.35}%
+\contentsline {paragraph}{Trust link batching}{71}{section*.36}%
+\contentsline {paragraph}{Running debt balance}{71}{section*.37}%
+\contentsline {paragraph}{Epoch-bucketed contract links}{71}{section*.38}%
+\contentsline {paragraph}{Subgraph size bounding}{71}{section*.39}%
+\contentsline {paragraph}{Diff-based trust publishing}{71}{section*.40}%
+\contentsline {paragraph}{Incremental evidence hash}{72}{section*.41}%
+\contentsline {section}{\numberline {A}Related Work}{72}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}Reputation and Trust in Peer-to-Peer Systems}{72}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}Mutual Credit and Community Currency Systems}{72}{subsection.A.2}%
+\contentsline {subsection}{\numberline {A.3}Sybil Resistance}{73}{subsection.A.3}%
+\contentsline {subsection}{\numberline {A.4}Credit Networks and Deployed Systems}{73}{subsection.A.4}%
+\contentsline {paragraph}{Stellar and the Federated Byzantine Agreement Model.}{75}{section*.42}%
+\contentsline {subsection}{\numberline {A.5}Agent-Centric Distributed Systems}{75}{subsection.A.5}%
+\contentsline {section}{\numberline {B}Parameter Selection}{76}{appendix.B}%
+\contentsline {subsection}{\numberline {B.1}Governable parameters}{76}{subsection.B.1}%
+\contentsline {paragraph}{Mixing Factor ($\alpha $)}{77}{section*.43}%
+\contentsline {paragraph}{Convergence Threshold ($\epsilon $) and Max Iterations ($K_{\text {iter}}$)}{78}{section*.44}%
+\contentsline {paragraph}{Base Capacity ($V_{\text {base}}$) and Scaling ($\beta $)}{78}{section*.45}%
+\contentsline {paragraph}{Maturity ($M_{\min }$) and Trial Fraction ($\eta $)}{78}{section*.46}%
+\contentsline {paragraph}{Tolerance ($\tau $) and Sharpness ($\gamma = 4.0$)}{79}{section*.47}%
+\contentsline {paragraph}{Recent Window ($K_w$) and Weight ($w_r$)}{79}{section*.48}%
+\contentsline {paragraph}{Newcomer Tolerance ($\tau _0$) and Volume Maturation ($N_{\text {mat}}$)}{79}{section*.49}%
+\contentsline {paragraph}{Clock Skew Bound ($\Delta _{\text {drift}}$)}{80}{section*.50}%
+\contentsline {paragraph}{Slash Multiplier ($X$)}{80}{section*.51}%
+\contentsline {paragraph}{Acquaintance Cap ($|\mathcal {A}|_{\max }$)}{80}{section*.52}%
+\contentsline {paragraph}{Risk Sigmoid ($K_{\text {risk}}$), Claim Sigmoid ($K_{\text {claim}}$), and Thresholds ($\theta _{\text {accept}}$, $\theta _{\text {reject}}$)}{80}{section*.53}%
+\contentsline {paragraph}{Trust Banking Bound ($\beta _{\text {bank}}$)}{81}{section*.54}%
+\contentsline {paragraph}{Max Epoch Volume ($V_{\text {ep}}$) and Trial Velocity Limit ($L_{\text {trial}}$)}{81}{section*.55}%
+\contentsline {paragraph}{Contagion Witness Factor ($k$)}{81}{section*.56}%
+\contentsline {paragraph}{Witness Discount Factor ($d_w$) and Minimum Witness Threshold ($n_{\min }$)}{82}{section*.57}%
+\contentsline {subsection}{\numberline {B.2}Ungovernable parameters}{82}{subsection.B.2}%
+\contentsline {paragraph}{Peer Discovery and Acquaintance Density}{82}{section*.58}%
+\contentsline {paragraph}{Network Latency and Message Delivery}{82}{section*.59}%
+\contentsline {paragraph}{ReputationClaim Staleness Window}{83}{section*.60}%
+\contentsline {paragraph}{Node Uptime and Churn}{83}{section*.61}%
+\contentsline {paragraph}{Out-of-Band Collusion and Real-World Reputation}{83}{section*.62}%
+\contentsline {section}{\numberline {C}Empirical Verification}{83}{appendix.C}%

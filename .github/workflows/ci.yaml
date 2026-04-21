@@ -1,0 +1,53 @@
+name: "CI"
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v27
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.23.2/install
+
+      - uses: cachix/cachix-action@v15
+        with:
+          name: holochain-ci
+
+      # Cache Rust build artifacts to speed up subsequent runs.
+      - name: Cache Rust build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Check formatting
+        run: |
+          nix develop --command bash -c "cargo fmt --all -- --check"
+
+      - name: Lint (clippy)
+        run: |
+          nix develop --command bash -c "cargo clippy --all-targets --all-features -- -D warnings"
+
+      - name: Security audit
+        run: |
+          nix develop --command bash -c "cargo audit"
+
+      - name: Build production hApp
+        run: |
+          nix develop --command bash -c "npm run build:happ"
+
+      - name: Install and test
+        run: |
+          nix develop --command bash -c "npm install && npm run test:ci"

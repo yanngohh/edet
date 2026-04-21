@@ -1,0 +1,19 @@
+{
+    "$schema": "https://schema.tauri.app/config/2.0.0",
+    "identifier": "default",
+    "description": "Default capability set for edet — filesystem access scoped to the app data dir plus dialog and shell plugins.",
+    "windows": ["main"],
+    "permissions": [
+        "core:default",
+        "dialog:default",
+        "fs:default",
+        "shell:default",
+        {
+            "identifier": "fs:scope",
+            "allow": [
+                { "path": "$APPDATA/edet/**" },
+                { "path": "$APPLOCALDATA/edet/**" }
+            ]
+        }
+    ]
+}
