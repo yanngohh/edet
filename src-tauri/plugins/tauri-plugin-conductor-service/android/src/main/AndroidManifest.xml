@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Foreground service base permission (all API levels).
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!--
+        Per-type permission required on API 34+ (Android 14+).
+        specialUse has no time limit — unlike dataSync (capped at 6h on API 34).
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <!--
+        Runtime notification permission required on API 33+ (Android 13+).
+        The foreground service will still run if denied, but no notification
+        will be shown.
+    -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!--
+        Battery optimization exemption — allows network access during Doze mode.
+        This is required for the P2P node to gossip while the screen is off.
+        Play Store policy: acceptable for apps whose core function requires it.
+    -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+    <!--
+        Wake lock — prevent CPU sleep during gossip / transaction processing.
+    -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!--
+        Package visibility declaration for Android 11+.
+        Required to query whether org.holochain.androidserviceruntime is installed
+        (for the optional shared-conductor detection in Phase 2).
+    -->
+    <queries>
+        <package android:name="org.holochain.androidserviceruntime" />
+    </queries>
+
+    <application>
+        <!--
+            The foreground service that keeps the conductor alive.
+            foregroundServiceType="specialUse" is required on API 34+.
+            The PROPERTY_SPECIAL_USE_FGS_SUBTYPE value is shown in the
+            Play Store review and must describe the use case accurately.
+        -->
+        <service
+            android:name="org.edet.conductor_service.EdetConductorService"
+            android:foregroundServiceType="specialUse"
+            android:exported="false">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Peer-to-peer mutual credit network node that must remain reachable to receive transactions" />
+        </service>
+    </application>
+
+</manifest>

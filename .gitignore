@@ -11,6 +11,7 @@
 /edet/
 /src-tauri/target/
 /src-tauri/gen/
+/.android-sdk/
 
 # npm 
 /**/node_modules
@@ -33,3 +34,8 @@
 sim/results
 **/__pycache__
 output.log
+
+# Tauri plugins build
+src-tauri/plugins/**/target/
+src-tauri/plugins/**/android/.tauri/
+src-tauri/plugins/**/android/build/

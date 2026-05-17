@@ -6,14 +6,6 @@
 
     nixpkgs.follows = "holonix/nixpkgs";
     flake-parts.follows = "holonix/flake-parts";
-
-    # p2p Shipyard (tauri-plugin-holochain). Provides the `androidDev`
-    # devShell that pre-bakes the Android NDK, a patched Go toolchain
-    # (works around holochain/tx5#87 on Android 11+), and Rust cross-
-    # compile targets for all four Android ABIs. The plugin itself is
-    # Source-Available pending darksoil.studio's crowdfunding goal;
-    tauri-plugin-holochain.url = "github:darksoil-studio/tauri-plugin-holochain";
-    tauri-plugin-holochain.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs@{ flake-parts, ... }: flake-parts.lib.mkFlake { inherit inputs; } {
@@ -23,20 +15,39 @@
         pkgs = import inputs.nixpkgs {
           inherit system;
           config.allowUnfree = true;
+          # Allow androidenv to install the SDK
+          config.android_sdk.accept_license = true;
         };
+
+        # Android SDK composition via nixpkgs androidenv.
+        # NDK 26.1.10909125 matches the ABI level edet targets and the
+        # clang version required for Rust cross-compilation to Android.
+        androidSdk = pkgs.androidenv.composeAndroidPackages {
+          cmdLineToolsVersion  = "8.0";
+          platformVersions     = [ "34" ];
+          buildToolsVersions   = [ "34.0.0" ];
+          includeNDK           = true;
+          ndkVersions          = [ "26.1.10909125" ];
+          includeEmulator      = false;
+          includeSources       = false;
+          includeSystemImages  = false;
+        };
+
+        # Convenience: the path where the NDK lands inside the SDK directory.
+        ndkHome = "${androidSdk.androidsdk}/libexec/android-sdk/ndk/26.1.10909125";
+
       in
       {
         formatter = pkgs.nixpkgs-fmt;
 
         devShells = {
-          # Default shell: Holochain SDK + Essential Dev Tools
-          # Python/GPU simulation is now managed via Conda/Mamba/Pixi separately.
+          # ── Default shell ── Holochain SDK + desktop build tools ───────────
+          # Use for day-to-day zome development, unit tests, and desktop builds.
           default = pkgs.mkShell {
             inputsFrom = [ inputs'.holonix.devShells.default ];
 
             packages = with pkgs; [
               nodejs_22
-              husky
               binaryen
               cargo-audit
               cargo-nextest
@@ -44,9 +55,7 @@
               cmake
               openssl
               zlib
-              # System libraries required by the Tauri v2 desktop shell
-              # (`src-tauri/`). Keep in sync with the platform requirements
-              # listed at https://tauri.app/start/prerequisites/#linux.
+              # Tauri v2 desktop WebView dependencies (Linux)
               webkitgtk_4_1
               libsoup_3
               gtk3
@@ -57,22 +66,13 @@
               atk
               librsvg
               libayatana-appindicator
-              # Transitive deps linuxdeploy resolves when producing an
-              # AppImage (ldd walk of our Tauri binary). Missing these
-              # causes the appimage bundle step to fail with "Could not
-              # find dependency: libfribidi.so.0" and similar.
+              # Transitive link deps for AppImage bundling
               fribidi
               harfbuzz
               freetype
               fontconfig
             ];
 
-            # LD_LIBRARY_PATH is set only for libraries that must be
-            # resolvable when the Tauri binary is *run* from the dev
-            # shell (e.g. `cargo run`, `npm run tauri:dev`). Mixing this
-            # with system library paths (e.g. /usr/lib64) breaks glibc
-            # ABI assumptions and has caused segfaults in the Tauri
-            # bundler; we therefore keep it strictly nix-only.
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (with pkgs; [
               webkitgtk_4_1
               libsoup_3
@@ -99,90 +99,181 @@
             '';
           };
 
-          # Android development shell. Based on p2p Shipyard's androidDev
-          # which pre-bakes: Android NDK (26.x), JDK 17, the patched Go
-          # toolchain that bypasses the tx5 Android 11+ netlinkrib bug
-          # (holochain/tx5#87), and Rust cross-compile targets for
-          # `aarch64-linux-android`, `armv7-linux-androideabi`,
-          # `x86_64-linux-android`, `i686-linux-android`.
+          # ── androidDev shell ── Android NDK + Rust cross targets ────────────
+          # Use for Android builds and CI.
           #
-          # We extend it with dev tooling so that pre-commit hooks
-          # (cargo audit, cargo clippy, npm test) work in this shell.
-          # NOTE: we do NOT include holonix here because its Rust
-          # toolchain would shadow the Android-target-enabled one from
-          # p2p Shipyard.
+          # Self-contained using nixpkgs androidenv — no external flake inputs
+          # required beyond holonix.
           #
-          # Use via:   nix develop .#androidDev
-          # Then:      npm run tauri android init -- --skip-targets-install
-          #            npm run tauri android dev
+          # The tx5 Android 11+ networking fix (holochain/tx5#87) is handled
+          # automatically through the wlynxg/anet dependency in pion/webrtc/v4.
+          # No patched Go toolchain is required.
+          #
+          # NOTE: holonix is NOT included here. Its Rust toolchain does not
+          # have Android ABI targets baked in and would shadow the targets
+          # we install below via rustup in shellHook. CI must run
+          # `rustup target add` once before building.
+          #
+          # Use via:  nix develop .#androidDev
+          # Then:     rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
+          #           npm ci
+          #           npm run tauri android init -- --skip-targets-install
+          #           npm run tauri android build --apk
           androidDev = pkgs.mkShell {
-            inputsFrom = [
-              inputs'.tauri-plugin-holochain.devShells.androidDev
-            ];
-
-            # The upstream `androidDev` shell provides only the Android SDK/NDK
-            # and environment variables — it does NOT include a Rust toolchain.
-            # Locally this is fine (system rustup has the targets), but CI needs
-            # a self-contained Nix-provided Rust.
-            #
-            # `androidTauriRust` from the plugin provides Rust with all four
-            # Android ABI targets PLUS wasm32-unknown-unknown (needed for
-            # `build:happ` which compiles zomes to WASM). This replaces the
-            # old comment about "not including holonix to avoid shadowing" —
-            # we now use the plugin's purpose-built Rust package that has
-            # everything in one toolchain.
             packages = with pkgs; [
+              # Android toolchain
+              androidSdk.androidsdk
+              jdk17
+              # Node / build tools
               nodejs_22
-              husky
               cargo-audit
               cargo-nextest
+              # Holochain CLI for happ bundle building
               inputs'.holonix.packages.hc
               inputs'.holonix.packages.lair-keystore
-              inputs'.tauri-plugin-holochain.packages.androidTauriRust
+              # Misc
+              pkg-config
+              openssl
+              zlib
+              # libclang for bindgen (datachannel-sys)
+              llvmPackages.libclang
             ];
 
-            nativeBuildInputs = [
-              inputs'.tauri-plugin-holochain.packages.fixNixCflagsAndroidHook
-            ];
+            ANDROID_NDK_HOME = ndkHome;
+            NDK_HOME = ndkHome;
+            JAVA_HOME = "${pkgs.jdk17}";
 
             shellHook = ''
               export PS1='\[\033[1;34m\][androidDev:\w]\$\[\033[0m\] '
               export LAIR_KEYSTORE_DISABLE_MLOCK=1
+              export LIBCLANG_PATH="${pkgs.llvmPackages.libclang.lib}/lib"
+
+              # Create a local mutable Android SDK directory to satisfy Tauri's 
+              # expectation of cmdline-tools/latest and read-write permissions.
+              export ANDROID_HOME="$PWD/.android-sdk"
+              export ANDROID_SDK_ROOT="$ANDROID_HOME"
+              export ANDROID_NDK_HOME="$NDK_HOME"
+              export ANDROID_NDK_ROOT="$NDK_HOME"
+              export ANDROID_NDK="$NDK_HOME"
+              
+              mkdir -p "$ANDROID_HOME/cmdline-tools"
+              for f in "${androidSdk.androidsdk}/libexec/android-sdk/"*; do
+                  basename_f=$(basename "$f")
+                  if [ "$basename_f" != "cmdline-tools" ] && [ "$basename_f" != "ndk" ] && [ "$basename_f" != "ndk-bundle" ]; then
+                      if [ -d "$f" ]; then
+                          mkdir -p "$ANDROID_HOME/$basename_f"
+                          for subf in "$f"/*; do
+                              if [ -e "$subf" ]; then
+                                  ln -sfn "$subf" "$ANDROID_HOME/$basename_f/$(basename "$subf")"
+                              fi
+                          done
+                      else
+                          ln -sfn "$f" "$ANDROID_HOME/$basename_f"
+                      fi
+                  fi
+              done
+              
+              # Symlink cmdline-tools to 'latest'
+              if [ -d "${androidSdk.androidsdk}/libexec/android-sdk/cmdline-tools" ]; then
+                  # Get the first versioned directory (e.g., 8.0)
+                  version_dir=$(ls -1 "${androidSdk.androidsdk}/libexec/android-sdk/cmdline-tools" | head -n 1)
+                  if [ -n "$version_dir" ]; then
+                      ln -sfn "${androidSdk.androidsdk}/libexec/android-sdk/cmdline-tools/$version_dir" "$ANDROID_HOME/cmdline-tools/latest"
+                  fi
+              fi
+              
+              # Ensure NDK is visible in the SDK path Tauri expects
+              if [ -d "$NDK_HOME" ]; then
+                  mkdir -p "$ANDROID_HOME/ndk"
+                  ln -sfn "$NDK_HOME" "$ANDROID_HOME/ndk/26.1.10909125"
+                  ln -sfn "$NDK_HOME" "$ANDROID_HOME/ndk-bundle"
+              fi
+
+              # wasm32 getrandom must use the custom backend in zome builds
               export CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS='--cfg getrandom_backend="custom"'
+
+              # Rust linkers for Android ABI cross-compilation.
+              # These point to the clang wrappers in the NDK toolchain.
+              LLVM_BIN="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
+              export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="$LLVM_BIN/aarch64-linux-android24-clang"
+              export CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER="$LLVM_BIN/armv7a-linux-androideabi24-clang"
+              export CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER="$LLVM_BIN/x86_64-linux-android24-clang"
+              export CARGO_TARGET_I686_LINUX_ANDROID_LINKER="$LLVM_BIN/i686-linux-android24-clang"
+
+              # Bindgen needs to know the cross-compilation target and sysroot
+              # otherwise it falls back to host headers (and fails with stubs-32.h)
+              SYSROOT="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+              export BINDGEN_EXTRA_CLANG_ARGS_aarch64_linux_android="--sysroot=$SYSROOT --target=aarch64-linux-android24"
+              export BINDGEN_EXTRA_CLANG_ARGS_armv7_linux_androideabi="--sysroot=$SYSROOT --target=armv7a-linux-androideabi24"
+              export BINDGEN_EXTRA_CLANG_ARGS_x86_64_linux_android="--sysroot=$SYSROOT --target=x86_64-linux-android24"
+              export BINDGEN_EXTRA_CLANG_ARGS_i686_linux_android="--sysroot=$SYSROOT --target=i686-linux-android24"
+
+              # Prevent Nix from injecting host C flags into Android cross builds.
+              # Nix sets NIX_CFLAGS_COMPILE and NIX_LDFLAGS for native host builds,
+              # which break Android cross-compilation when passed to the NDK clang.
+              unset NIX_CFLAGS_COMPILE
+              unset NIX_LDFLAGS
+
               ulimit -l unlimited 2>/dev/null || true
             '';
           };
 
-          # Desktop Tauri + Holochain build shell. Needed for *building*
-          # the src-tauri crate now that it statically links the
-          # in-process holochain runtime. Adds libclang (required by
-          # bindgen for datachannel-sys), openssl, cmake and the
-          # WebKit/GTK libs Tauri itself needs.
-          #
-          # `holochainTauriDev` extends the upstream tauri-plugin-holochain
-          # shell with holonix (adds hc, hc-spin, lair-keystore, etc.) so
-          # that `npm run tauri:dev` (which calls hc app pack) works in a
-          # single shell. Use this for all day-to-day Tauri + Holochain work.
-          #
-          # Use via:   nix develop .#holochainTauriDev
-          # Then:      cargo check --manifest-path src-tauri/Cargo.toml
-          #            npm run tauri:dev
+          # ── holochainTauriDev shell ── Desktop Tauri + Holochain ─────────────
+          # Use for desktop `npm run tauri:dev` and `cargo check`.
+          # Extends the default holonix shell with libclang (needed by
+          # datachannel-sys bindgen) and GTK/WebKit deps.
           holochainTauriDev = pkgs.mkShell {
-            inputsFrom = [
-              inputs'.tauri-plugin-holochain.devShells.holochainTauriDev
-              inputs'.holonix.devShells.default
-            ];
+            inputsFrom = [ inputs'.holonix.devShells.default ];
 
             packages = with pkgs; [
               nodejs_22
-              husky
               cargo-audit
               cargo-nextest
+              # libclang for bindgen (datachannel-sys and similar C-binding crates)
+              llvmPackages.libclang
+              cmake
+              pkg-config
+              openssl
+              zlib
+              webkitgtk_4_1
+              libsoup_3
+              gtk3
+              glib
+              cairo
+              pango
+              gdk-pixbuf
+              atk
+              librsvg
+              libayatana-appindicator
+              fribidi
+              harfbuzz
+              freetype
+              fontconfig
             ];
 
+            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (with pkgs; [
+              webkitgtk_4_1
+              libsoup_3
+              gtk3
+              glib
+              cairo
+              pango
+              gdk-pixbuf
+              atk
+              librsvg
+              libayatana-appindicator
+              fribidi
+              harfbuzz
+              freetype
+              fontconfig
+              openssl
+              zlib
+            ]);
+
             shellHook = ''
-              export PS1='\[\033[1;34m\][tauri-plugin-holochain:\w]\$\[\033[0m\] '
+              export PS1='\[\033[1;34m\][tauriDev:\w]\$\[\033[0m\] '
               export LAIR_KEYSTORE_DISABLE_MLOCK=1
+              export LIBCLANG_PATH="${pkgs.llvmPackages.libclang.lib}/lib"
               ulimit -l unlimited 2>/dev/null || true
             '';
           };

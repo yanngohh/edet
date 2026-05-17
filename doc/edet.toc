@@ -40,7 +40,7 @@
 \contentsline {paragraph}{Short partitions ($\Delta t < M_{\min }$ epochs).}{49}{section*.9}%
 \contentsline {paragraph}{Long partitions ($\Delta t \geq M_{\min }$ epochs).}{49}{section*.10}%
 \contentsline {paragraph}{Partition-induced trust drift bound.}{49}{section*.11}%
-\contentsline {paragraph}{Gossip reconciliation cost.}{50}{theorem.7.30}%
+\contentsline {paragraph}{Gossip reconciliation cost.}{50}{section*.12}%
 \contentsline {section}{\numberline {8}Formal Properties Summary}{51}{section.8}%
 \contentsline {section}{\numberline {9}Implementation}{53}{section.9}%
 \contentsline {subsection}{\numberline {9.1}Wallet DNA}{53}{subsection.9.1}%
@@ -88,14 +88,14 @@
 \contentsline {paragraph}{Subgraph size bounding}{71}{section*.39}%
 \contentsline {paragraph}{Diff-based trust publishing}{71}{section*.40}%
 \contentsline {paragraph}{Incremental evidence hash}{72}{section*.41}%
-\contentsline {section}{\numberline {A}Related Work}{72}{appendix.A}%
+\contentsline {section}{\numberline {A}Related Work}{72}{section.A}%
 \contentsline {subsection}{\numberline {A.1}Reputation and Trust in Peer-to-Peer Systems}{72}{subsection.A.1}%
 \contentsline {subsection}{\numberline {A.2}Mutual Credit and Community Currency Systems}{72}{subsection.A.2}%
 \contentsline {subsection}{\numberline {A.3}Sybil Resistance}{73}{subsection.A.3}%
 \contentsline {subsection}{\numberline {A.4}Credit Networks and Deployed Systems}{73}{subsection.A.4}%
 \contentsline {paragraph}{Stellar and the Federated Byzantine Agreement Model.}{75}{section*.42}%
 \contentsline {subsection}{\numberline {A.5}Agent-Centric Distributed Systems}{75}{subsection.A.5}%
-\contentsline {section}{\numberline {B}Parameter Selection}{76}{appendix.B}%
+\contentsline {section}{\numberline {B}Parameter Selection}{76}{section.B}%
 \contentsline {subsection}{\numberline {B.1}Governable parameters}{76}{subsection.B.1}%
 \contentsline {paragraph}{Mixing Factor ($\alpha $)}{77}{section*.43}%
 \contentsline {paragraph}{Convergence Threshold ($\epsilon $) and Max Iterations ($K_{\text {iter}}$)}{78}{section*.44}%
@@ -118,4 +118,4 @@
 \contentsline {paragraph}{ReputationClaim Staleness Window}{83}{section*.60}%
 \contentsline {paragraph}{Node Uptime and Churn}{83}{section*.61}%
 \contentsline {paragraph}{Out-of-Band Collusion and Real-World Reputation}{83}{section*.62}%
-\contentsline {section}{\numberline {C}Empirical Verification}{83}{appendix.C}%
+\contentsline {section}{\numberline {C}Empirical Verification}{83}{section.C}%

@@ -8,6 +8,9 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# Intercept openssl-src perl Configure calls to inject 'no-asm' to bypass NDK assembler mnemonic errors
+export OPENSSL_SRC_PERL="$SCRIPT_DIR/perl-wrapper.sh"
+
 echo "🚀 Starting Tauri Android build..."
 
 # Change to project root
@@ -18,12 +21,12 @@ cd "$PROJECT_ROOT"
 echo "📦 Building hApp bundle..."
 npm run build:happ
 
+# Apply all patches before running Tauri
+echo "🔧 Applying Android patches..."
+"$SCRIPT_DIR/patch-android.sh"
+
 # Run the Tauri command with all passed arguments
 echo "📱 Running tauri android build..."
 npm run -- tauri android build "$@"
-
-# Apply the patch after Tauri has potentially regenerated files
-echo "🔧 Checking and applying i686 skip patch..."
-"$SCRIPT_DIR/patch-buildtask.sh"
 
 echo "✅ Android build completed!"

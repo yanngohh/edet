@@ -1,10 +1,8 @@
 # edet Tauri shell
 
-The desktop wrapper for edet. Uses
-[`tauri-plugin-holochain`](https://github.com/darksoil-studio/tauri-plugin-holochain)
-to embed the Holochain conductor and lair-keystore **in-process** — there
-are no subprocesses to manage. The same binary targets desktop (Linux,
-macOS, Windows) and Android.
+The desktop and Android wrapper for edet. Boots the Holochain conductor and
+lair-keystore **in-process** — no subprocesses, no external runtime manager.
+The same binary targets desktop (Linux, macOS, Windows) and Android.
 
 ## IPC surface
 
@@ -21,27 +19,41 @@ The shell exposes a narrow command surface to the Svelte UI:
 | `export_backup_file` | Native save dialog for a `.edet-backup` file |
 | `import_backup_file` | Native open dialog for a `.edet-backup` file |
 | `get_current_backup` / `save_current_backup` | Atomic disk ops against `$APPDATA/edet/backup.edet-backup` |
+| `get_app_websocket_auth` | Return the app websocket port + auth token for `AppWebsocket.connect()` |
 
 Command names and argument shapes must stay in sync with the TypeScript
 `TauriBridge` contract in `ui/src/common/tauriBridge.ts`.
 
 ## Runtime architecture
 
-`tauri-plugin-holochain::async_init` starts the Holochain runtime
-in-process in a background thread. On boot:
+`plugin::init(config)` spawns `runtime::boot(config)` in the background.
+On boot:
 
 1. `ensure_lair_passphrase` reads or generates a 32-byte random passphrase
    at `$APPDATA/edet/.lair-passphrase` (mode `0600` on Unix).
-2. The plugin initialises lair-keystore and the Holochain conductor using
-   that passphrase — both run as in-process tasks, not subprocesses.
+2. `ConductorBuilder` boots the Holochain conductor and lair-keystore
+   in-process. Both run as async tasks within the Tauri process — no
+   subprocesses are spawned.
 3. The plugin emits `holochain://setup-completed` once the conductor is
    accepting connections.
-4. The plugin injects `window.__HC_LAUNCHER_ENV__ = { APP_INTERFACE_PORT,
-   APP_INTERFACE_TOKEN }` into the WebView. The UI's `AppWebsocket.connect()`
-   call reads these globals automatically — no URL or port is hardcoded in
-   the UI.
-5. On app quit the plugin shuts down the conductor gracefully (disabling
-   apps so peers learn we've left) before the process exits.
+4. The UI calls `get_app_websocket_auth` to retrieve the websocket port
+   and auth token, then opens an `AppWebsocket` directly. No URL or
+   port is hardcoded in the UI.
+5. On app quit the conductor shuts down gracefully (5-second timeout)
+   before the process exits.
+
+Admin operations (list apps, install, enable, dump state, graft records)
+are dispatched via `AdminInterfaceApi::new(conductor).handle_request()` —
+pure in-process function calls with no admin websocket overhead.
+
+### Android Foreground Service
+
+On Android, `tauri-plugin-conductor-service` (in
+`plugins/tauri-plugin-conductor-service/`) starts an Android Foreground
+Service when the plugin loads. The persistent notification keeps the
+process priority high so Android does not kill the conductor when the app
+is backgrounded or swiped from recents. The service uses the
+`specialUse` foreground service type (no time limit).
 
 Data is stored under:
 
@@ -101,23 +113,6 @@ zomes. Run `cargo check`/`build` from inside `src-tauri/` or via
 | `WASM_LOG` | unset | Controls in-WASM log level (e.g. `[wasm_trace]=debug`). |
 | `EDET_HAPP_PATH` | auto-resolved | Override the `.happ` file location. Without this, the conductor resolves it via: Tauri resource dir → `$CWD/workdir/edet.happ`. |
 
-## Version alignment
-
-The Rust deps are pinned to the 0.6.x Holochain line that matches our DNA's
-`hdi = 0.7.0` / `hdk = 0.6.0`. If you bump the DNA you must bump the
-following in lockstep:
-
-| Crate | Version | Notes |
-|---|---|---|
-| `holochain_client` | `=0.8.1-rc.8` | Provides `install_app`, `dump_full_state`, `graft_records` |
-| `holochain_types` | `=0.6.1-rc.8` | |
-| `holochain_conductor_api` | `=0.6.1-rc.8` | |
-| `holochain_zome_types` | `=0.6.1-rc.5` | |
-| `holo_hash` | `=0.6.1-rc.5` | |
-| `lair_keystore_api` | `=0.6.3` | Caller-transparent X25519 `import_seed` |
-| `crypto_box` | `0.9` | NaCl envelope for lair seed import |
-| `sodoken` | `0.1` | `SharedLockedArray` for lair passphrase |
-
 ## Packaging
 
 ```bash
@@ -136,20 +131,15 @@ Produces distribution artefacts under `src-tauri/target/release/bundle/`:
 Linux targets are verified on Fedora 43 inside `nix develop .#holochainTauriDev`.
 macOS and Windows bundles need a native build host.
 
-### AppImage (opt-in)
-
-AppImage bundling is disabled by default because Tauri's bundled
-`linuxdeploy` walks the shared-library graph and needs every transitive
-dependency resolvable from `LD_LIBRARY_PATH` — including glibc-adjacent
-libraries that can cause ABI mismatches in the Nix environment.
-
-```bash
-npx tauri build --bundles appimage
-```
-
 ## Mobile
 
-Android packaging is experimental. See [`../plans/android.md`](../plans/android.md)
-for the full plan and [`../README.md`](../README.md) for setup instructions.
-The `holochainTauriDev` shell does **not** include the Android NDK; use
-`nix develop .#androidDev` for mobile work.
+Android packaging is supported. See [`../README.md`](../README.md) for
+setup instructions. The `holochainTauriDev` shell does **not** include
+the Android NDK; use `nix develop .#androidDev` for mobile work.
+
+### Android Debugging
+
+To stream both Rust and frontend JavaScript console logs in real time, run this command in a separate terminal:
+```bash
+nix develop .#androidDev -c bash -c '$ANDROID_HOME/platform-tools/adb logcat | grep -E "TauriWebConsole|RustStdoutStderr"'
+```

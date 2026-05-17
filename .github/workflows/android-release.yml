@@ -35,6 +35,7 @@ jobs:
     env:
       # Resolved once here so every step can reference ${{ env.RELEASE_TAG }}
       RELEASE_TAG: ${{ github.ref_name || inputs.tag_name }}
+      OPENSSL_SRC_PERL: ${{ github.workspace }}/scripts/perl-wrapper.sh
 
     steps:
       # ── Source ──────────────────────────────────────────────────────────────
@@ -48,18 +49,13 @@ jobs:
           install_url: https://releases.nixos.org/nix/nix-2.23.2/install
           extra_nix_config: |
             experimental-features = nix-command flakes
-            extra-substituters = https://holochain-ci.cachix.org https://darksoil-studio.cachix.org
-            extra-trusted-public-keys = holochain-ci.cachix.org-1:5IUSkZc0aoRS53rfkvH9Kid40NpyjwCMCzwRTXy+QN8= darksoil-studio.cachix.org-1:UEi+aujy44s41XL/pscLw37KEVpTEIn8N/kn7jO8rkc=
+            extra-substituters = https://holochain-ci.cachix.org
+            extra-trusted-public-keys = holochain-ci.cachix.org-1:5IUSkZc0aoRS53rfkvH9Kid40NpyjwCMCzwRTXy+QN8=
 
       - name: Configure Cachix (holochain-ci)
         uses: cachix/cachix-action@v15
         with:
           name: holochain-ci
-
-      - name: Configure Cachix (darksoil-studio)
-        uses: cachix/cachix-action@v15
-        with:
-          name: darksoil-studio
 
       # ── Caches ──────────────────────────────────────────────────────────────
       - name: Cache Cargo registry and build artifacts
@@ -80,9 +76,13 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('src-tauri/gen/android/**/*.gradle*', 'src-tauri/gen/android/**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('package-lock.json', 'Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+
+      - name: Install Rust targets
+        run: |
+          rustup target add wasm32-unknown-unknown aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
 
       # ── Keystore ─────────────────────────────────────────────────────────────
       - name: Decode Android keystore
@@ -124,8 +124,10 @@ jobs:
       # ── Patches ─────────────────────────────────────────────────────────────
       # 1. i686 skip — wasmer-vm 6.1.0 does not support i686; patch BuildTask.kt
       # 2. signing   — write build.gradle.kts with signingConfigs reading from env vars
-      - name: Apply i686 skip patch
-        run: bash scripts/patch-buildtask.sh
+      - name: Apply Android patches
+        run: |
+          chmod +x scripts/patch-android.sh scripts/patch-signing.sh scripts/perl-wrapper.sh
+          bash scripts/patch-android.sh
 
       - name: Apply Android signing patch
         run: bash scripts/patch-signing.sh
@@ -146,7 +148,7 @@ jobs:
       - name: Build signed release APK
         run: |
           nix develop .#androidDev --impure --command bash -c \
-            "npx tauri android build --apk"
+            "export OPENSSL_SRC_PERL=\"${{ env.OPENSSL_SRC_PERL }}\" && npx tauri android build --apk"
         env:
           ANDROID_STORE_FILE: /tmp/edet-release.jks
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -155,7 +157,7 @@ jobs:
 
       # Re-apply patches: tauri android build may regenerate BuildTask.kt
       - name: Re-apply patches after APK build
-        run: bash scripts/patch-buildtask.sh && bash scripts/patch-signing.sh
+        run: bash scripts/patch-android.sh && bash scripts/patch-signing.sh
         env:
           ANDROID_STORE_FILE: /tmp/edet-release.jks
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -166,7 +168,7 @@ jobs:
       - name: Build signed release AAB
         run: |
           nix develop .#androidDev --impure --command bash -c \
-            "npx tauri android build"
+            "export OPENSSL_SRC_PERL=\"${{ env.OPENSSL_SRC_PERL }}\" && npx tauri android build"
         env:
           ANDROID_STORE_FILE: /tmp/edet-release.jks
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}

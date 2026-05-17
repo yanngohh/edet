@@ -5640,7 +5640,7 @@ dependencies = [
 
 [[package]]
 name = "support"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "hdk",
  "serde",
@@ -5649,7 +5649,7 @@ dependencies = [
 
 [[package]]
 name = "support_integrity"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",
@@ -5658,7 +5658,7 @@ dependencies = [
 
 [[package]]
 name = "sweettest"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "futures",
  "holochain",
@@ -6228,7 +6228,7 @@ dependencies = [
 
 [[package]]
 name = "transaction"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "hdk",
  "holochain_serialized_bytes",
@@ -6238,7 +6238,7 @@ dependencies = [
 
 [[package]]
 name = "transaction_integrity"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "hdi",
  "holochain_serialized_bytes",

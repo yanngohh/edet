@@ -23,8 +23,7 @@
     "tauri:build": "tauri build",
     "android:dev": "scripts/tauri-android-dev.sh",
     "android:build": "scripts/tauri-android-build.sh",
-    "patch:android": "scripts/patch-buildtask.sh",
-    "sync-signer": "node -e \"const {execSync}=require('child_process'),path=require('path'),fs=require('fs');const meta=JSON.parse(execSync('cargo metadata --format-version 1',{cwd:'src-tauri',maxBuffer:64*1024*1024}).toString());const pkg=meta.packages.find(p=>p.name==='tauri-plugin-holochain');if(!pkg)throw new Error('tauri-plugin-holochain not found in cargo metadata');const src=path.join(path.dirname(pkg.manifest_path),'zome-call-signer.js');const dst=path.join('src-tauri','zome-call-signer.js');fs.copyFileSync(src,dst);console.log('Copied',src,'->',dst);\"",
+    "patch:android": "scripts/patch-android.sh",
     "prepare": "husky"
   },
   "devDependencies": {

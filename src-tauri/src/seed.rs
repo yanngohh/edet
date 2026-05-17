@@ -1,10 +1,10 @@
 //! Lair seed import for deterministic mnemonic recovery.
 //!
-//! The `tauri-plugin-holochain` runtime owns lair's lifecycle (spawn,
-//! init, passphrase, shutdown). What it does *not* do is plant a
-//! caller-supplied seed under a specific tag — which is what edet's
-//! onboarding wizard needs so the resulting `AgentPubKey` is
-//! deterministic across devices from the same mnemonic.
+//! The conductor runtime owns lair's lifecycle (spawn, init, passphrase,
+//! shutdown). What it does *not* do automatically is plant a caller-supplied
+//! seed under a specific tag — which is what edet's onboarding wizard needs so
+//! the resulting `AgentPubKey` is deterministic across devices from the same
+//! mnemonic.
 //!
 //! This module implements the X25519 crypto_box envelope that
 //! `lair_keystore_api::LairClient::import_seed` expects on the wire, and
@@ -15,18 +15,9 @@
 //! - `new_random_seed(client)` — create a fresh CSPRNG seed under the
 //!   same tag, for users who decline a mnemonic
 //!
-//! Type-layout notes (lair_keystore_api 0.6.3):
-//!   - `X25519PubKey = BinDataSized<32>` is a tuple struct with
-//!     `pub Arc<[u8; 32]>` inside (so `.0` dereferences to the array).
-//!   - `SeedInfo.ed25519_pub_key: Ed25519PubKey = BinDataSized<32>` so
-//!     `.0` also extracts the 32 raw bytes.
-//!
-//! The logic here was extracted verbatim from the pre-plugin
-//! `src-tauri/src/lair.rs::import_ed25519_seed` and given a free
-//! function signature that takes `&LairClient` directly. The only
-//! behavioural change is the caller: the plugin hands us its
-//! `LairClient` via `conductor_handle.keystore().lair_client()`
-//! instead of us wrapping lair in our own subprocess manager.
+//! The device seed (`EDET_DEVICE_SEED_TAG`) used as the crypto_box recipient
+//! is created by `runtime::ensure_device_seed` during `runtime::boot`.
+//! Both tags are in the same in-process lair keystore.
 
 use anyhow::{bail, Context, Result};
 use lair_keystore_api::prelude::{BinDataSized, SeedInfo, LairClient, X25519PubKey};
@@ -36,10 +27,10 @@ use lair_keystore_api::prelude::{BinDataSized, SeedInfo, LairClient, X25519PubKe
 /// without a migration path.
 pub const LAIR_SEED_TAG: &str = "edet-agent-v1";
 
-/// The tag under which tauri-plugin-holochain stores the device seed.
-/// This entry is always present after plugin initialisation and its
-/// X25519 pubkey is the correct `recipient` for `LairClient::import_seed`.
-const DEVICE_SEED_TAG: &str = "DEVICE_SEED";
+/// The tag under which edet stores its device seed in lair.
+/// Created during `runtime::boot` via `ensure_device_seed`.
+/// Its X25519 pubkey is the correct `recipient` for `LairClient::import_seed`.
+use crate::runtime::EDET_DEVICE_SEED_TAG;
 
 /// Import a 32-byte ed25519 seed under `LAIR_SEED_TAG` and return the
 /// resulting public key as a 32-byte ed25519 pubkey. Callers need to
@@ -69,13 +60,13 @@ pub async fn import_ed25519_seed(client: &LairClient, seed: [u8; 32]) -> Result<
     };
     use std::sync::Arc as StdArc;
 
-    // Retrieve the DEVICE_SEED entry to get its X25519 pubkey. This seed
-    // is created by tauri-plugin-holochain at every first launch and is
+    // Retrieve the device seed entry to get its X25519 pubkey. This seed
+    // is created by runtime::ensure_device_seed during boot and is
     // always present when we reach this point.
     let device_entry = client
-        .get_entry(DEVICE_SEED_TAG.into())
+        .get_entry(EDET_DEVICE_SEED_TAG.into())
         .await
-        .context("lair get_entry(DEVICE_SEED) failed — plugin may not have initialised")?;
+        .context("lair get_entry(EDET_DEVICE_SEED) failed — runtime may not have booted")?;
 
     let recipient_x25519: [u8; 32] = match &device_entry {
         lair_keystore_api::prelude::LairEntryInfo::Seed { seed_info, .. }

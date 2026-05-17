@@ -94,8 +94,8 @@
         <h3 class="section-title">
             { $_("myWallet.title", {default: "Wallet Dashboard"})}
         </h3>
-        <div class="flex-row">
-            <span class="flex-1"><WalletDetail walletRecord={wallet}></WalletDetail></span>
+        <div class="flex-row" style="width: 100%;">
+            <div class="flex-1" style="min-width: 0; width: 100%;"><WalletDetail walletRecord={wallet}></WalletDetail></div>
         </div>
     </div>
     <Fab on:click={() => { editing = true } } class="fab-edit">

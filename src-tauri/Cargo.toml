@@ -1,6 +1,6 @@
 [package]
 name = "edet-tauri"
-version = "0.2.1"
+version = "0.2.2"
 description = "edet desktop shell"
 # edet is licensed under AGPL-3.0. See /LICENSE at the repo root.
 # Kept inline here because `src-tauri` is excluded from the workspace
@@ -24,25 +24,45 @@ tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 tauri-plugin-shell = "2"
 
-# The embedded Holochain runtime. Provides in-process `holochain` +
-# `lair-keystore` so we do not spawn subprocesses (required for Android,
-# beneficial for deployment simplicity on desktop). Re-exports
-# `holochain_client`, `holochain_types`, `holochain_conductor_api`,
-# `lair_keystore_api`, `AppBundle`, `AgentPubKey`, `NetworkConfig`, etc.
-#
-# `main` branch tracks holochain 0.6.x which matches our DNA's
-# `hdi = 0.7.0` / `hdk = 0.6.0` pin. Upgrade in lockstep with dnas.
-tauri-plugin-holochain = { git = "https://github.com/darksoil-studio/tauri-plugin-holochain", branch = "main" }
+# The embedded Holochain runtime — direct dependency, no plugin wrapper.
+# Features (verified against holochain 0.6.0 Cargo.toml):
+#   wasmer_sys           — wasm execution via wasmer (native)
+#   datachannel-vendored — libdatachannel-based P2P transport (includes backend-libdatachannel)
+#   schema               — conductor config JSON-schema validation
+#   sqlite-encrypted     — sqlcipher-encrypted conductor databases at rest
+# Note: default features also include `metrics_influxive`; we omit it to
+# keep the binary smaller. Add it back if metrics reporting is needed.
+holochain = { version = "=0.6.0", default-features = false, features = [
+    "wasmer_sys",
+    "datachannel-vendored",
+    "schema",
+    "sqlite-encrypted",
+] }
+holochain_types = "=0.6.0"
+
+# Lair keystore with bundled sqlcipher (matches holochain's sqlite-encrypted).
+lair_keystore = { version = "0.6", features = [
+    "rusqlite-bundled-sqlcipher-vendored-openssl",
+] }
+
+# Local foreground service plugin — no-op on desktop, starts an Android
+# Foreground Service on mobile so the conductor stays alive when backgrounded.
+tauri-plugin-conductor-service = { path = "plugins/tauri-plugin-conductor-service" }
 
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-rmp-serde = "1"
 # `process` / `time` features are retained only for the short-lived
 # async patterns in commands.rs; if that ends up unused we can trim
 # them later.
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs", "sync", "io-util", "time"] }
 anyhow = "1"
 thiserror = "1"
+
+# rustls with aws_lc_rs backend — required on Android where there is no
+# system-wide TLS crypto provider. We call install_default() before the
+# conductor boot so all TLS connections (bootstrap, signal) work correctly.
+rustls = { version = "0.23", default-features = false, features = ["aws-lc-rs"] }
+aws-lc-rs = "1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 hex = "0.4"
