@@ -1,23 +1,15 @@
 //! Post-plugin conductor helpers.
 //!
-//! Since `tauri-plugin-holochain` now owns the conductor lifecycle (and
-//! lair, via in-process spawn), almost everything this module used to
-//! do is gone. What remains is:
+//! The conductor lifecycle is managed by `runtime.rs` (boot/shutdown)
+//! and `plugin.rs` (Tauri integration). What remains here is:
 //!
 //! - `APP_ID` — the installed_app_id edet is always installed under.
-//!   Centralised so `commands.rs` and any other caller use the same
-//!   string.
+//!   Centralised so `commands.rs` and any other caller use the same string.
 //! - `records_from_full_state_dump` — pure transformation from the
-//!   admin websocket's `FullStateDump` into a `Vec<Record>` suitable
-//!   for the backup bundle. The function uses zero I/O so it's
-//!   unchanged from the subprocess-era implementation.
-//! - `resolve_happ_path` — locate the `.happ` file on disk, either
-//!   via the `EDET_HAPP_PATH` env var or as a Tauri bundled resource.
-//!
-//! Everything about subprocess spawning, YAML config generation,
-//! admin/app websocket connection, passphrase stdin piping, etc. has
-//! been deleted. See git history for the old `ConductorHandle`
-//! implementation.
+//!   admin API's `FullStateDump` into a `Vec<Record>` suitable for the
+//!   backup bundle. The function uses zero I/O.
+//! - `resolve_happ_bytes` — locate or embed the `.happ` bytes, either
+//!   at compile time (Android `include_bytes!`) or from disk (desktop).
 
 use std::path::PathBuf;
 

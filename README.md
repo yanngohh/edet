@@ -55,8 +55,8 @@ sim/                          # Python simulation + theorem verification
   main.py                     # Run a full N-agent simulation
   verify_theory.py            # Verify all 13 security theorems
   config.py                   # Protocol parameters (aligned with constants.rs)
-src-tauri/                    # Tauri v2 shell (embeds conductor + lair via
-                              # tauri-plugin-holochain for desktop + Android)
+src-tauri/                    # Tauri v2 shell (self-hosted in-process conductor
+                              # + lair-keystore for desktop + Android)
 tests/sweettest/              # Rust integration tests (134 tests)
 ui/                           # Svelte frontend
   src/edet/onboarding/        # First-run wizard + mnemonic + backup export
@@ -132,11 +132,9 @@ Output is written to `workdir/edet.webhapp`.
 
 ### Desktop application (Tauri v2)
 
-The desktop shell embeds the Holochain conductor and lair-keystore
-**in-process** via
-[`tauri-plugin-holochain`](https://github.com/darksoil-studio/tauri-plugin-holochain)
-(p2p Shipyard), so there are no subprocesses to manage and the same
-binary can target Android.
+The desktop shell boots the Holochain conductor and lair-keystore
+**in-process** — no subprocesses, no external runtime manager. The same
+binary targets desktop (Linux, macOS, Windows) and Android.
 
 Building `src-tauri/` needs additional native libraries (libclang,
 WebKit/GTK, cmake for datachannel, etc.) that are **not** in the default
@@ -170,22 +168,13 @@ npm run tauri:build
 > Tauri libraries. Only switch to `holochainTauriDev` when compiling the
 > Tauri crate.
 
-#### Keeping `zome-call-signer.js` in sync
+#### `zome-call-signer.js`
 
-`src-tauri/zome-call-signer.js` is copied verbatim from the
-`tauri-plugin-holochain` source. It sets `window.__HC_ZOME_CALL_SIGNER__`
-in the WebView so that `AppWebsocket` routes zome-call signing through lair
-via the plugin's `sign_zome_call` Tauri command.
-
-When you upgrade `tauri-plugin-holochain` in `src-tauri/Cargo.toml`, re-sync
-the file:
-
-```bash
-npm run sync-signer
-```
-
-This uses `cargo metadata` to locate the plugin in the cargo git checkout and
-copies the script automatically, regardless of the checkout hash.
+`src-tauri/zome-call-signer.js` is bundled in-tree. It sets
+`window.__HC_ZOME_CALL_SIGNER__` in the WebView so that `AppWebsocket`
+routes zome-call signing through lair via the `sign_zome_call` Tauri
+command (registered under the `holochain` plugin namespace in
+`src-tauri/src/signer.rs`). No external sync is needed.
 
 #### Wipe stale conductor data
 
@@ -228,9 +217,8 @@ The Tauri + Holochain integration targets Android.
 - A physical Android device (API 26 / Android 8.0 or newer) or an
   emulator image.
 - The `androidDev` nix shell (see below) — it bundles the Android NDK,
-  JDK 17, all four Rust Android targets, and a patched Go toolchain
-  that works around a `tx5` permission bug on Android 14+. First entry
-  takes ~10 min to fetch; subsequent entries are instant.
+  JDK 17, and all four Rust Android targets. First entry takes ~10 min
+  to fetch; subsequent entries are instant.
 
 ### One-time: scaffold the Android project
 
@@ -338,9 +326,11 @@ testing signing on an untagged build; no GitHub Release is created in that case)
 - **iOS is not supported.** Wasmer cannot JIT-compile on iOS due to
   Apple's restrictions; an interpreter backend is being developed
   upstream.
-- **Background operation is limited.** The conductor stops when the app
-  is backgrounded. p2p Shipyard is working on a foreground-service
-  pattern; until it lands, sync requires the app to be open.
+- **Background operation on Android requires battery optimization exemption.**
+  The app runs a Foreground Service that keeps the conductor alive when
+  backgrounded, but aggressive OEM battery managers (Xiaomi, Huawei,
+  Samsung, OnePlus) may still kill the process unless the user whitelists
+  edet. On first launch the app prompts for battery optimization exemption.
 
 ## Documentation
 
@@ -360,8 +350,7 @@ The formal whitepaper (`doc/edet.pdf`) covers:
 | [hc](https://github.com/holochain/holochain/tree/develop/crates/hc) | Holochain CLI — pack DNAs, manage sandboxes |
 | [cargo nextest](https://nexte.st) | Fast Rust test runner |
 | [tauri](https://tauri.app/) | Cross-platform application bundler |
-| [tauri-plugin-holochain](https://github.com/darksoil-studio/tauri-plugin-holochain) | Embedded in-process Holochain runtime for Tauri (desktop + Android) |
-| [p2p Shipyard](https://darksoil.studio/tauri-plugin-holochain/) | Ship cross-platform p2p apps
+| [holochain](https://github.com/holochain/holochain) | Embedded in-process conductor + lair-keystore |
 | [@holochain/client](https://www.npmjs.com/package/@holochain/client) | UI ↔ conductor WebSocket client |
 | [@holochain-playground/cli](https://www.npmjs.com/package/@holochain-playground/cli) | DHT introspection during development |
 

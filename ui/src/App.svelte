@@ -1,6 +1,6 @@
 <script lang="ts">
     import { _ } from 'svelte-i18n';
-    import {onMount, setContext} from 'svelte';
+    import {onMount, setContext, tick} from 'svelte';
     import { writable } from 'svelte/store';
     import type {AppClient} from '@holochain/client';
     import {AppWebsocket} from '@holochain/client';
@@ -143,7 +143,7 @@
                 if (tauriBridge.isTauri()) {
                     const { port, token } = await tauriBridge.getAppWebsocketAuth();
                     return await AppWebsocket.connect({
-                        url: new URL(`ws://localhost:${port}`),
+                        url: new URL(`ws://127.0.0.1:${port}`),
                         token,
                     });
                 }
@@ -437,6 +437,37 @@
         openDrawer = false;
     }
 
+    // Automatically reset scroll positions whenever the active section changes
+    $: {
+        if (openSection !== undefined && typeof document !== 'undefined') {
+            const resetScroll = () => {
+                const containers = document.querySelectorAll('.mdc-top-app-bar--fixed-adjust');
+                containers.forEach(el => {
+                    el.scrollTop = 0;
+                });
+                
+                const mainContent = document.getElementById('main-content');
+                if (mainContent) mainContent.scrollTop = 0;
+                
+                const content = document.getElementById('content');
+                if (content) content.scrollTop = 0;
+                
+                window.scrollTo(0, 0);
+            };
+
+            // Run reset immediately on state change
+            resetScroll();
+
+            // Run again on next tick and multiple layout updates to handle async component mounts
+            tick().then(() => {
+                resetScroll();
+                setTimeout(resetScroll, 0);
+                setTimeout(resetScroll, 50);
+                setTimeout(resetScroll, 150);
+            });
+        }
+    }
+
 </script>
 
 <ErrorSnackBar />
@@ -473,10 +504,15 @@
 {:else}
     <div class="drawer-frame">
     <Drawer id="app-drawer" open={openDrawer} variant="dismissible" aria-label={$_('app.navigation', {default: 'Navigation'})}>
-        <Header>
-            <Title>{$_('app.name')}</Title>
-            <!-- svelte-ignore missing-declaration -->
-            <Subtitle>{__APP_VERSION__}</Subtitle>
+        <Header class="drawer-header">
+            <div class="drawer-brand-container">
+                <img src="/icon.svg" alt="edet logo" class="drawer-logo" />
+                <div class="drawer-brand-text">
+                    <Title class="drawer-title">{$_('app.name')}</Title>
+                    <!-- svelte-ignore missing-declaration -->
+                    <Subtitle class="drawer-subtitle">{__APP_VERSION__}</Subtitle>
+                </div>
+            </div>
         </Header>
         <Content>
             <List>
@@ -589,6 +625,9 @@
         display: flex;
         flex-direction: column;
         width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+        box-sizing: border-box;
         align-items: center;
         /* Allow programmatic focus for skip-to-content without a visible outline
            (the outline is irrelevant here since main is not interactive itself) */
@@ -730,6 +769,40 @@
         color: #fff;
         font-size: 0.875rem;
         font-weight: 500;
+    }
+
+    :global(.drawer-brand-container) {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 16px;
+    }
+
+    :global(.drawer-logo) {
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+    }
+
+    :global(.drawer-brand-text) {
+        display: flex;
+        flex-direction: column;
+    }
+
+    :global(.drawer-brand-text .mdc-drawer__title) {
+        margin: 0 !important;
+        font-size: 1.3rem !important;
+        font-weight: 700 !important;
+        line-height: 1.2 !important;
+        color: var(--mdc-theme-primary) !important;
+        letter-spacing: 0.25px !important;
+    }
+
+    :global(.drawer-brand-text .mdc-drawer__subtitle) {
+        margin: 0 !important;
+        font-size: 0.85rem !important;
+        opacity: 0.65 !important;
+        line-height: 1.2 !important;
     }
     
 </style>

@@ -589,6 +589,8 @@
         padding: 24px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
         box-sizing: border-box;
     }
 
@@ -656,19 +658,25 @@
 
     .metrics-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
         gap: 16px;
     }
 
-    @media (min-width: 700px) {
+    @media (min-width: 600px) {
+        .metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 850px) {
         .metrics-grid {
             grid-template-columns: repeat(3, 1fr);
         }
     }
 
     .metric-item {
-        background: var(--mdc-theme-background, #fcfcfc);
-        border: 1px solid var(--mdc-theme-text-hint-on-background, rgba(0,0,0,0.05));
+        background: #f8f9fa;
+        border: 1px solid rgba(0, 0, 0, 0.08);
         border-radius: 8px;
         padding: 16px;
         min-height: 90px;
@@ -945,6 +953,20 @@
         text-transform: uppercase;
         color: var(--mdc-theme-text-secondary-on-surface, #888);
         letter-spacing: 0.3px;
+    }
+
+    @media (max-width: 480px) {
+        .wallet-card {
+            padding: 16px !important;
+            border-radius: 8px !important;
+        }
+        .metrics-grid {
+            gap: 12px !important;
+        }
+        .metric-item {
+            padding: 12px !important;
+            min-height: 80px !important;
+        }
     }
 
 </style>

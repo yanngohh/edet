@@ -1,0 +1,29 @@
+[[permission]]
+identifier = "allow-start-service"
+description = "Allows starting the conductor foreground service."
+
+[[permission]]
+identifier = "allow-stop-service"
+description = "Allows stopping the conductor foreground service."
+
+[[permission]]
+identifier = "allow-request-battery-exemption"
+description = "Allows requesting battery optimization exemption."
+
+[[permission]]
+identifier = "allow-is-battery-optimized"
+description = "Allows querying battery optimization status."
+
+[[permission]]
+identifier = "allow-is-shared-conductor-available"
+description = "Allows detecting the android-service-runtime package."
+
+[default]
+description = "Default permissions for the conductor service plugin."
+permissions = [
+    "allow-start-service",
+    "allow-stop-service",
+    "allow-request-battery-exemption",
+    "allow-is-battery-optimized",
+    "allow-is-shared-conductor-available",
+]

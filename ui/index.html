@@ -11,7 +11,7 @@
          with a "Refused to compile or instantiate WebAssembly module" error.
          Adjust connect-src if additional API endpoints are needed. -->
     <meta http-equiv="Content-Security-Policy"
-          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' ipc://localhost ws://localhost:* wss://localhost:*; img-src 'self' data: blob:; media-src 'self' blob: mediastream:;" />
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' ipc://localhost ws://localhost:* wss://localhost:* ws://127.0.0.1:* wss://127.0.0.1:*; img-src 'self' data: blob:; media-src 'self' blob: mediastream:;" />
     <title>edet</title>
 
     <link rel="stylesheet" href="smui.css" id="smui-theme" />

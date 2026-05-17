@@ -19,7 +19,7 @@ export default defineConfig(({ command, mode }) => {
             headers: {
                 // Allow blob: URLs for camera preview frames (QR scanner).
                 'Content-Security-Policy':
-                    "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' ipc://localhost ws://localhost:* wss://localhost:*; img-src 'self' data: blob:; media-src 'self' blob: mediastream:;",
+                    "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' ipc://localhost ws://localhost:* wss://localhost:* ws://127.0.0.1:* wss://127.0.0.1:*; img-src 'self' data: blob:; media-src 'self' blob: mediastream:;",
             },
         },
     };

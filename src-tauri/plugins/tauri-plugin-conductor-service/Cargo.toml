@@ -1,0 +1,19 @@
+[package]
+name = "tauri-plugin-conductor-service"
+version = "0.1.0"
+edition = "2021"
+description = "Keeps the edet conductor alive on Android via a Foreground Service"
+license = "AGPL-3.0"
+# Required by tauri-plugin build infrastructure — must match package.name
+links = "tauri-plugin-conductor-service"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+tauri = "2"
+serde = { version = "1", features = ["derive"] }
+log = "0.4"
+
+[build-dependencies]
+tauri-plugin = { version = "2", features = ["build"] }
