@@ -1,3 +1,15 @@
+/* Tell the ENGINE which scheme the page is in, not just the stylesheet:
+   native-rendered widgets — above all the <select> picker popup, which the
+   Android WebView draws as a system dialog — otherwise stay light while
+   inheriting the dark theme's white text, and become unreadable. Keyed to
+   the same .dark-theme class index.html toggles before first paint. */
+:root {
+	color-scheme: light;
+}
+:root.dark-theme {
+	color-scheme: dark;
+}
+
 html,
 body {
 	position: relative;
@@ -24,6 +36,85 @@ body {
 
 .mdc-icon-button {
 	background-color: transparent !important;
+}
+
+/* The Material theme tokens, DEFINED.
+
+   `smui.css` and `smui-dark.css` only ever READ these — every occurrence in
+   both files is `var(--mdc-theme-primary, #7B1FA2)`, with the palette baked
+   into the fallback — so nothing in the app ever set them. Ninety references
+   across the components had no fallback of their own and were therefore dead:
+   measured in the running app, `--mdc-theme-primary` resolves to the empty
+   string, and `border-left: 4px solid var(--mdc-theme-primary)` computes to
+   `0px none` while the three sides that carry a fallback render normally.
+   That is the transaction card's missing left edge, and it was never an
+   Android property: an invalid `var()` invalidates the whole SHORTHAND at
+   computed-value time, so the width and the style go with the colour.
+
+   Fifty-two of the ninety are the accent: section rules, page-head
+   underlines, titles. The app looked flat because most of its accent was
+   never painted.
+
+   Values come from `src/theme/_smui-theme.scss` and its dark twin, which are
+   the palette SMUI compiles from — one source, not a literal per call site.
+   The two text tokens are pinned to what the components' own fallbacks
+   already render (`#666`, `rgba(0, 0, 0, 0.12)`) so that only the DEAD
+   references change appearance and the ~110 working ones do not move. */
+:root {
+	--mdc-theme-primary: #7b1fa2;
+	--mdc-theme-secondary: #ff5722;
+	--mdc-theme-surface: #fff;
+	--mdc-theme-background: #fff;
+	--mdc-theme-error: #b71c1c;
+	--mdc-theme-on-surface: #000;
+	--mdc-theme-text-secondary-on-surface: #666;
+	--mdc-theme-text-hint-on-background: rgba(0, 0, 0, 0.12);
+}
+:root.dark-theme {
+	--mdc-theme-primary: #ff3e00;
+	--mdc-theme-secondary: #7b1fa2;
+	--mdc-theme-surface: #212121;
+	--mdc-theme-background: #000;
+	--mdc-theme-error: #d32f2f;
+	--mdc-theme-on-surface: #fff;
+	--mdc-theme-text-secondary-on-surface: rgba(255, 255, 255, 0.7);
+	--mdc-theme-text-hint-on-background: rgba(255, 255, 255, 0.12);
+}
+
+/* Three widths, and each answers a different question.
+
+   The app had four prose caps and no page width at all: `.intro` stopped at
+   720px on six screens, 640px on Community and nowhere else, while the cards
+   and the section rules ran to the window edge. One paragraph wrapped two
+   thirds across a screen and the next ran the full width of the monitor.
+
+   Capping the TEXT alone was the wrong fix — it left the paragraph short of
+   the controls beneath it, which reads as a rendering fault. Capping every
+   page at one column was the wrong fix too: a section is a read-only surface
+   of cards and rows, and on a large display it should use the display.
+
+   So:
+
+   `--edet-column` bounds a SECTION. It matches the shell's own cap on `main`
+   so a section fills whatever the window gives it, and a wide monitor lays
+   out more cards per row instead of showing empty ground.
+
+   `--edet-form` bounds an ACTION PAGE. A text field 1,200px wide is not a
+   field, and an action page fully REPLACES its section, so the two are never
+   on screen together and cannot look ragged against each other.
+
+   `--edet-measure` bounds running prose, which now only appears inside a
+   disclosure's expanded detail. A summary line is one line and has no return
+   sweep to lose, so it takes the full column and its control lines up with
+   every other right edge on the page; the paragraph behind it is the only
+   thing that needs a reading width, and it gets one when it is opened. In
+   `rem` — a `var()` substitutes textually, so `ch` would resolve against each
+   element's own font size and a 0.85em notice would compute a narrower column
+   than the description beside it. */
+:root {
+	--edet-column: 1600px;
+	--edet-form: 760px;
+	--edet-measure: 40rem;
 }
 
 .flex-column {
@@ -120,17 +211,37 @@ body {
 	text-align: left;
 }
 
+/* The page draws UNDER the system bars — `index.html` asks for
+   `viewport-fit=cover` — so anything positioned against an edge has to add the
+   inset back. `App.svelte` does this for the drawer, the top bar and the
+   content column; these two were missed, and both sit at the bottom edge,
+   which on a handset is exactly where the navigation bar is.
+
+   A FAB at `bottom: 0` plus a 2em margin therefore sat partly behind the
+   system buttons: reachable on a gesture-nav device, obscured on a
+   three-button one. */
 .mdc-fab {
 	position: fixed;
-	bottom: 0%;
-	right: 0%;
+	bottom: 0;
+	right: 0;
 	margin: 2em;
+	margin-bottom: calc(2em + env(safe-area-inset-bottom, 0px));
+	margin-right: calc(2em + env(safe-area-inset-right, 0px));
 }
 
-.mdc-snackbar,
+/* MDC already places the snackbar (fixed, edge to edge, 8px margin) and
+   already gives the surface `min-width: 100%` below 480px, so the width was
+   never the problem. The HEIGHT was: pinning both the container and the
+   surface at 5em clipped every message taller than two lines — which is most
+   of the refusals this app writes, "you have reached your activity limit"
+   among them. The surface sizes to its label now, and the whole thing clears
+   the navigation bar. */
+.mdc-snackbar {
+	padding-bottom: env(safe-area-inset-bottom, 0px);
+}
 .mdc-snackbar__surface {
-	position: fixed;
-	height: 5em;
+	height: auto;
+	min-height: 48px;
 }
 
 .helper-text {

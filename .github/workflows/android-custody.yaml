@@ -1,0 +1,124 @@
+name: android-custody
+
+# **The only workflow that RUNS Android custody.**
+#
+# The identity vault's device key is wrapped by an AndroidKeyStore AES-GCM key
+# and the wrapped blob is written under `noBackupFilesDir` — the one directory
+# cloud backup and device-to-device transfer both skip, which is what makes a
+# restored phone land as "no key" and reach the recovery-phrase path instead of
+# reading as a corrupt key store. A Keystore key and that directory exist on a
+# device or an emulator and nowhere else, so without this job every claim about
+# that path is reasoning.
+#
+# Separate from `ci` on purpose, and not part of `just ci`. It needs the
+# Android SDK and a KVM-accelerated emulator against a gate list that otherwise
+# runs anywhere, and its failure mode is different: a red here is "custody is
+# unproven on this commit", which is worth knowing on every push and is not a
+# reason to block a ledger change.
+#
+# Two jobs, because they go red for two unrelated reasons.
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+
+jobs:
+  # The module under test is plain Android — it takes a `Context` and no Tauri
+  # types — so it builds and runs without the Rust side, the NDK or the four
+  # Android targets. It runs from `src-tauri/android-custody`, not from the app
+  # project: the app project's `settings.gradle` applies `tauri.settings.gradle`,
+  # which the `tauri` crate's build script writes during an Android build of
+  # the app and nothing else writes, so a checkout that has not cross-built the
+  # app cannot configure the app project at all. That root holds the module and
+  # the one tauri module it compiles against, located through `cargo metadata`
+  # against `src-tauri/Cargo.lock` — which is why a Rust toolchain is here, and
+  # all it is here for.
+  custody:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      # The same Gradle the app project's wrapper pins; the custody root has no
+      # wrapper of its own, so a binary jar stays out of the tree.
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14.3"
+
+      # The emulator needs hardware acceleration or a `connectedAndroidTest`
+      # takes tens of minutes instead of one. GitHub's Linux runners expose
+      # /dev/kvm, but the device node is not writable by the runner user until
+      # this rule is in place.
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # Configuration is the half a missing file breaks, and it is the half
+      # that needs no emulator: a red here is the root, not custody.
+      - name: The custody root configures and the test packages
+        working-directory: src-tauri/android-custody
+        run: gradle --no-daemon :edet-keystore:assembleDebugAndroidTest
+
+      - name: The instrumented custody test
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          disable-animations: true
+          working-directory: src-tauri/android-custody
+          script: gradle --no-daemon :edet-keystore:connectedDebugAndroidTest
+
+  # **The thirteen tracked files under `gen/android` must survive a
+  # regeneration.** `tauri android init` creates what is missing and overwrites
+  # nothing that exists except `BuildTask.kt`; `settings.gradle` and
+  # `app/build.gradle.kts` are ours, and `settings.gradle` is what wires
+  # `:edet-keystore` and `:edet-background` into the app. `MainActivity.kt` is
+  # tracked for the same reason and carries more than a template now: it
+  # re-resumes the WebView that wry's `onPause` stopped, which is the whole of
+  # background mode on Android. A regeneration that dropped any of them would
+  # take custody or that with it and leave every other gate green — so the
+  # assertion is that the working tree is unchanged, and it is count-agnostic
+  # (`git status --porcelain src-tauri/gen`) so a file added later is covered
+  # without anyone remembering to add it here. `init` failing is a failure,
+  # never a pass with nothing checked.
+  regeneration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+      # Caches `~/.cargo/bin` as well, so `tauri-cli` is compiled once.
+      - uses: Swatinem/rust-cache@v2
+
+      - name: tauri-cli
+        run: cargo install tauri-cli --version '^2' --locked
+
+      # The runner image carries the SDK at `$ANDROID_HOME` and its NDKs under
+      # `$ANDROID_HOME/ndk`; `tauri-cli` picks the newest when `NDK_HOME` is
+      # unset, and `--ci` makes anything missing a refusal rather than a prompt.
+      - name: Regenerating the app project leaves our files intact
+        run: |
+          (cd src-tauri && cargo tauri android init --skip-targets-install --ci)
+          if [ -n "$(git status --porcelain src-tauri/gen)" ]; then
+            echo "tauri android init changed a tracked file under src-tauri/gen:" >&2
+            git status --porcelain src-tauri/gen >&2
+            git diff -- src-tauri/gen >&2
+            exit 1
+          fi

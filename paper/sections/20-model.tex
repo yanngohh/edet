@@ -1,0 +1,157 @@
+\section{System model}
+\label{sec:model}
+
+\subsection{Community, and what a boundary is}
+
+A \emph{community} is a region of the stake graph, not an object: nothing in the ledger
+names one. There are accounts, underwriters and stakes, and a community is a set of
+accounts reachable from a set of underwriters. The boundary between two of them is
+\textbf{the absence of a path}.
+
+\textbf{One ledger therefore carries as many communities as it likes.} Two co-operatives
+sharing one total order stay separate for exactly as long as nobody trades across --- no
+stake edge joins them, so no flow crosses --- and join the moment somebody does, with no
+transition and no ceremony. Measured: two co-ops on one chain, each backed by its own
+underwriter at $2500$, draw $2500$ apiece and $5000$ together; one settled trade across,
+and the first underwriter reaches the second co-op.
+
+The boundary that matters is drawn around the \emph{total order}: one replicated ledger,
+one state, one validator set, every quantity in the model computed within it, and
+validators that are institutions the ledger's communities themselves operate. Sharing a
+ledger is \emph{safer} than not sharing one: a cut is taken over whatever set of accounts
+one names, so a coalition spanning two co-operatives on one ledger is measured as one set,
+while nothing measures a coalition spanning two deployments --- the scope caveat
+\S\ref{sec:security}'s guarantees carry.
+
+\subsection{One ledger}
+\label{sec:oneledger}
+
+This design contemplates one ledger. A community does not get its own: one order carries
+as many regions as its members form, so the case that would call for a second --- two
+communities that want to trade --- is the case a shared order already answers.
+
+The rule that holds it is \textbf{nothing outside a ledger's own total order may authorise
+a transition inside it}, and every discharge in the alphabet already obeys it, being
+authorised by the party who loses if it is wrong: settlement and cure by the creditor's
+signature, an arbitral award by a panel both parties named, capped and time-boxed before
+the obligation existed.
+
+What the rule refuses is an order honouring proofs drawn from another's state root. An
+inclusion proof certifies that foreign validators committed a leaf, and for that to be
+worth more than a signature the honouring ledger must check it against a root it
+\emph{knows} to be theirs, which means tracking a foreign validator set through its
+changes; anything weaker is a signature by a party who could have signed an ordinary
+settlement instead. So it is a light client or it is nothing. Measured against a community
+of six underwriters at $2500$: honouring a foreign declared supply yields $6\times10^{9}$
+where a shared order yields exactly zero, honouring a proof as discharge extracts the
+community's entire ceiling on \emph{no} local signatures, and a forged discharge recycles
+to $1000\times$ the attacker's real backing.
+
+Two findings survive the refusal. A genesis file is as free as a key: the design rests on
+identities being free while stakes are not, so a cut drawn over one order's accounts never
+measures a coalition that stood up a second. And a forged discharge is cheaper than a
+default and repeatable, where a defaulter spends their standing once.
+
+A separate deployment is therefore a separate system, with no credit path to it and no
+protocol for one. A member who wants to participate there trades there --- the first trade
+seats an account and grants nothing --- and earns standing there as everybody does.
+
+What bounds one ledger bounds the design, stated as a bound rather than escaped by
+splitting. \S\ref{sec:implementation} measures the binding cost as the per-block re-audit
+rather than the per-acceptance query: $115$\,ms on the epoch-advance block over
+$20{,}000$ accounts with $200$ underwriters --- the most expensive block there is ---
+against $19$\,ms for one acceptance. No term grows with the underwriter count, because an
+obligation's stored hold is a witness the audit verifies rather than a cut it recomputes;
+what remains grows with the graph. Carrying substantially more than that on one order is
+open, and splitting does not answer it: severing a stake graph destroys every edge
+crossing the cut, and two orders becoming one is a founding rather than a migration, so
+nothing rejoins them.
+
+\subsection{Time}
+
+Time advances in \emph{epochs} of $\kConstEpochSecs$ seconds. An epoch number is
+absolute --- the timestamp divided by the constant, identical on every ledger --- and a
+block carries a timestamp from which the ledger derives its target epoch and closes
+epochs one at a time. What runs \emph{per epoch closed} is what a missed epoch would
+have to be replayed for: stake decay, the free-allowance and saturation counters, and
+replay-cache pruning.
+
+What runs \emph{once} at the end of the advance is the sweep: the permissionless cranks
+that default a matured obligation and forfeit the bonds of a member who has exhausted the
+write gate for $\kConstBondForfeitEpochs$ consecutive epochs, followed by bond release.
+Both are comparisons against the epoch the block ends at, so one pass sees exactly what a
+pass per epoch would have seen, and a fresh chain climbing thousands of epochs toward
+wall-clock in one block does not walk the contract book thousands of times. The order of
+the two is load-bearing: releasing bonds before the forfeiture crank looked would hand
+back the encumbrance the sanction exists to take. Running the default crank here, instead
+of leaving it to whoever cares, is what makes \S\ref{sec:recourse}'s substitution
+automatic: no obligation is ever due and uncranked, so a creditor need not notice their
+own loss to be made whole.
+
+Epoch boundaries are the only scheduled events: no continuous process, no timer and no
+off-chain job. Every state change is a transition in the total order or a deterministic
+consequence of advancing the epoch counter.
+
+\subsection{State}
+
+The replicated state is, with every amount in it an integer number of minor units
+(\S\ref{sec:implementation}):
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Accounts.} A set of keys, optional guardian configuration for key
+        recovery, cached outstanding debt, how much of it is currently in default, the
+        two support-cascade declarations of \S\ref{sec:medium}, operation-bond
+        bookkeeping, and two advisory debt-velocity counters that only a client reads.
+        There is no score, no tier, no attestation and no sponsor.
+
+        An account also carries a \emph{status}, which is not an admission ladder and
+        along which nothing is promoted: \textbf{active} is the resting state of every
+        account that exists, and the other two are a governance sanction
+        (\textbf{suspended}, \S\ref{sec:governance}) and a voluntary departure
+        (\textbf{exited}, refused while the member owes anything, is in default, holds an
+        unreleased bond, still has a supply declared, or is the last validator). Neither
+        is consulted by Definition~\ref{def:capacity}, which is what \S\ref{sec:standing}
+        means by an account having no status.
+  \item \textbf{The stake graph.} $\stake(c,d)$ in minor units, \emph{directed}, keyed by
+        the ordered pair creditor-to-debtor (Definition~\ref{def:stake}); held
+        symmetrically it would say that extending credit raises the lender's own limit,
+        which the model does not mean.
+  \item \textbf{Reservations.} $\res(c,d)$, keyed identically, and the committed total per
+        underwriter, together recording the flow held against outstanding insured credit
+        (Definition~\ref{def:reservation}). Both halves are state because both are charged
+        (Remark~\ref{rem:charge-supply}).
+  \item \textbf{Underwriters.} Members who have declared a supply
+        (Definition~\ref{def:underwriter}), with the amount each declared, every unit of
+        which arrived through a ceremony rather than against standing the community
+        itself conferred (\S\ref{sec:governance}). Genesis seeds the first ones;
+        thereafter any member may join or leave the set.
+  \item \textbf{Contracts.} Debtor, creditor, outstanding and original amount, maturity,
+        the epoch of acceptance, status, whether the obligation is insured, \emph{exactly
+        the flow it holds} --- which arcs and how much on each
+        (Remark~\ref{rem:charge-supply}) --- and consented arbitration terms if any.
+  \item \textbf{Governance.} Proposals, governed constants, validator powers.
+  \item \textbf{Chain identity.} Chain id, root salt, replay cache.
+\end{itemize}
+
+There is no reputation structure --- no per-relationship evidence, no decayed counter, no
+reliability estimate, no volume envelope: the stake graph answers directly the question
+all of those approximated.
+
+\subsection{Observables}
+
+A member's client can compute, from public state, its own capacity and who supplies it,
+its outstanding obligations and their maturities, whether a counterparty's proposed
+obligation would be insured, and community-level totals. Precise amounts may be sealed by
+charter policy to the parties and validators, with others seeing bucketed magnitudes
+(\S\ref{sec:implementation}). Capacity is a pure function of committed state, so any
+observer holding the ledger computes the value any validator does: checkable, not
+announced.
+
+\subsection{Notation}
+
+$\uw$ is the set of underwriters and $\supply(u)$ the supply $u$ declared.
+$\stake(c,d)$ is the directed stake of creditor $c$ on debtor $d$ and $\res(c,d)$ the
+reservation against it, with $\free(c,d)=\stake(c,d)-\res(c,d)$. $\Capa(T)$ is the
+capacity of an account set $T$, and $\Capa(x)$ abbreviates $\Capa(\{x\})$. $\partial S$
+is the set of stakes with exactly one endpoint in $S$. $\vbase$ is the reference
+denomination, genesis $\kConstBaseCapacity$.

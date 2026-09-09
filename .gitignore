@@ -1,41 +1,38 @@
-# editors
-/.idea
-/.vscode
+# Rust
+/target
+**/target
+# NOTE: Cargo.lock is tracked deliberately (binary workspace)
 
-# system files
-.DS_Store
+# LaTeX build artifacts (PDF is tracked deliberately)
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.toc
+paper/*.fls
+paper/*.fdb_latexmk
+paper/sections/*.aux
 
-# build
-/dist/
-/target/
-/edet/
-/src-tauri/target/
-/src-tauri/gen/
-/.android-sdk/
+# Editors / local
+.vscode/
+.idea/
+*.swp
 
-# npm 
-/**/node_modules
+# Working documents. A review or plan is a chronology — what was found, when,
+# and in which order it was fixed — and the tree is a snapshot of what the code
+# IS. Git carries the chronology; these stay on disk and out of it.
+/REVIEW-*.md
+/PLAN-*.md
+/REPORT*.md
 
-# generated and compiled files
-*.happ
-*.webhapp
-*.zip
-*.dna
+# Python bytecode
+__pycache__/
+.venv*/
 
-# temporary files
-.hc*
-.running
-.hc
+# Persona-layer output. A queue is a working document, and the tree carries no
+# chronology (`crates/swarm/personas/` holds the prompts, the cards and the
+# schema; nothing it produces belongs here).
+/PERSONA-*.md
 
-# swap files
-**/*.swp
-
-# simulation results
-sim/results
-**/__pycache__
-output.log
-
-# Tauri plugins build
-src-tauri/plugins/**/target/
-src-tauri/plugins/**/android/.tauri/
-src-tauri/plugins/**/android/build/
+# Node caches at the root (a vitest run writes one); the client's own
+# node_modules is ignored under ui/.
+node_modules/

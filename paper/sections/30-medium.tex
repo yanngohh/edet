@@ -1,0 +1,252 @@
+\section{The medium: contracts and clearing}
+\label{sec:medium}
+
+\subsection{The debt contract}
+
+The unit is a debt contract: an obligation of a fixed amount from a debtor to a
+creditor, with a maturity, in the community's denomination, created by mutual signature
+at the point of sale --- the buyer becomes debtor, the seller creditor. It is not a bearer
+instrument: a creditor cannot sell, endorse or assign it, which keeps a stake conferred by
+one creditor from being resold to another.
+
+Nor is it frozen. Four things move, each as somebody's discharge rather than anybody's
+option.
+
+\begin{itemize}[leftmargin=1.4em]
+  \item The \textbf{debtor} moves, by transfer or through the support cascade, under the
+        consent rule below.
+  \item The \textbf{creditor} moves in exactly one circumstance: default on an insured
+        obligation, where the claim subrogates to the underwriters whose supply carried it
+        (\S\ref{sec:substitution}). Nothing is assigned --- the substitution has already
+        made the creditor whole in the same event, and the recovery moves to whoever paid.
+  \item The \textbf{maturity} moves only by \emph{extension}, signed by debtor and creditor
+        both, because deferring a debt is the creditor's concession to make. A claim the
+        cascade routes onto a buyer inherits the earlier of its own date and the sale's, so
+        nothing in the alphabet defers a debt without its creditor; an extension past the
+        insured horizon of the claim's acceptance keeps the debt and drops the insurance
+        (\S\ref{sec:recourse}), on the same two signatures.
+  \item The \textbf{outstanding amount}, the \textbf{status} and \textbf{the flow the
+        obligation holds} move together as it is discharged, cured, defaulted or routed
+        onward, because an insured obligation owes exactly what it holds and the two are
+        one fact (\S\ref{sec:verification}).
+\end{itemize}
+
+A contract also records whether it is \emph{insured}: a fact about what it holds, not a
+label --- it is insured exactly while it holds a reservation
+(Definition~\ref{def:reservation}). Decided at acceptance, it can only fall afterwards:
+when a downward re-denomination rounds its arcs below one minor unit
+(Theorem~\ref{thm:redenominate}), or in the one place a hold is asked for afresh, the
+remainder a sale leaves with its seller, if the arcs cannot carry it. A partial payment
+shrinks the hold by exactly the share paid, on the arcs that held it, and never re-solves
+it. An obligation gains the community's backing only as a \emph{successor} row somebody
+signed for, never by the old one changing tier.
+
+\subsection{Origination}
+
+Acceptance takes both parties' signatures and passes one gate: is the amount within the
+debtor's capacity, at a maturity inside the insured horizon of its acceptance
+(\S\ref{sec:recourse})? If so the obligation is insured: accepting computes an augmenting
+flow of exactly the amount into the debtor and holds it (Definition~\ref{def:reservation}),
+so the standing that justified this obligation cannot simultaneously justify another. If
+not, the creditor may still accept, and the obligation is uninsured: it holds no
+reservation and the recourse machinery of \S\ref{sec:recourse} does not stand behind it.
+The client says which at the point of decision; a creditor is never uninsured by
+accident.
+
+\subsection{What a sale does, in order}
+\label{sec:sale}
+
+A sale is a discharge first and a claim second: it creates a claim only out of what it
+could not discharge, and the order is the substance of the medium.
+
+\begin{enumerate}[leftmargin=1.6em]
+  \item \textbf{Netting.} Whatever the seller already owes the \emph{buyer} extinguishes
+        first, oldest first --- settled, or cured if it had matured. Mutual obligations
+        cancel rather than route, and as an ordinary discharge by the debtor this applies
+        the stake rule of Definition~\ref{def:stake} exactly as any settlement does.
+  \item \textbf{The cascade.} What netting did not absorb clears the seller's own
+        obligations to third parties, and those of the beneficiaries they have listed, by
+        routing them onto the buyer: a debtor swap, which writes no stake in either
+        direction (Remark~\ref{rem:only-settlement}).
+  \item \textbf{The residue.} Only what neither step absorbed becomes a fresh obligation
+        from buyer to seller.
+\end{enumerate}
+
+A member who owes is therefore paid by \emph{ceasing to owe}, and a debt is paid here in
+the usual course by selling to one's creditor: the debt is extinguished and the stake is
+written, so one act discharges the obligation and raises the seller's standing.
+\S\ref{sec:adoption} takes up what follows, which is most of the answer to why anybody
+accepts this medium.
+
+\subsection{The support cascade}
+
+A member may list \emph{beneficiaries}: other members toward whom their own discharge is
+routed. When a supporter delivers value, the discharge waterfills across the beneficiaries
+they have listed, in proportion to declared weights, each edge capped at $\kConstNuDrain$
+times what that pair has staked in one another (Definition~\ref{def:stake}) and the
+recursion bounded at $\kConstMaxCascadeDepth$. The cap is a \emph{stake} and not a settled
+volume, for Remark~\ref{rem:not-volume}'s reason: volume is free to fabricate, so a
+counter of it would let two cooperating accounts open the drain as wide as they pleased.
+It has no floor, so a pair with no settled history drains nothing --- zero is absorbing
+here as everywhere else, and escaped the same way, by trading.
+
+This is how a community carries a member through a bad season without anybody making a
+gift: the supporter's own production discharges the beneficiary's obligations. What the
+supporter gives up is exactly one thing --- the proceeds of their own sale, which would
+otherwise have cleared their own debts or become a fresh claim on the buyer --- and
+nothing else of theirs is touched, then or later. It carries a member without rebuilding
+one: a routed discharge writes no stake in either direction
+(Remark~\ref{rem:only-settlement}), so a member cleared this way ends the bad season no
+better backed than they entered it --- which is the whole content of the beneficiary's
+declaration below, and why it is theirs alone to make.
+
+The cascade records nothing about who contributed what. A co-signer map on each successor
+contract would be written, cleared on subrogation, rescaled at every re-denomination,
+checked and committed to the state root while no transition reads it, and ledger state
+carries what must be enforced; whose production cleared which debt is a question for a
+client and a social layer, not a field every node replicates forever.
+
+\begin{property}[A routed claim is never downgraded]
+\label{prop:no-downgrade}
+Routing an obligation onto the buyer is a \emph{debtor swap}, so it owes the same consent
+rule a transfer does. The affected creditors are discovered inside the transition rather
+than named by it, and a creditor asked to consent to losing their own recourse would
+refuse every time, handing every creditor a veto over their debtor's ordinary sales. The
+rule is therefore enforced as a bound on the amount: \textbf{a claim moves only as far as
+the buyer can carry it insured}, whatever it was before; the part that does not move stays
+with its original debtor, and the budget it did not absorb falls through to the seller as
+ordinary new debt. The claim that moves keeps \textbf{the earlier of its own date and the
+sale's}: a debtor swap owes the maturity rule a transfer does, and a claim re-dated to the
+sale would let two members pass a debt back and forth and push it out of reach for ever,
+insured throughout, so that no default ever fires.
+\end{property}
+
+Both directions of the bound matter. A claim the buyer can insure is \emph{upgraded} if it
+was uninsured before, so no signature is owed for it; a claim the buyer cannot insure does
+not travel at all, which stops a member from shedding an obligation onto a freshly minted
+key --- two signatures and no delivery --- and walking away with their own standing
+restored.
+
+\begin{property}[Beneficiary consent by moderation]
+\label{prop:benef}
+No member's production is ever routed toward a beneficiary they have not listed, and no
+member's obligations are ever cleared by a supporter they have not approved. The two
+declarations sit on opposite members --- listing beneficiaries is the supporter's,
+approving supporters the beneficiary's --- both are required, and either may be withdrawn.
+\end{property}
+
+The two halves answer different questions.
+
+\paragraph{Why the supporter must list.} Without their declaration, approval alone would
+be the attack: naming a wealthy member as one's \emph{supporter} would route their
+production toward one's own creditors unbidden. Production is directed by the member who
+produced it and by nobody else.
+
+\paragraph{Why the beneficiary must approve.} What a drain costs them is the
+\emph{standing the obligation would have conferred}. It cannot cost them money, and it is
+not what keeps strangers out --- the cap above does that, at zero for a pair that has never
+traded whether they approved or not. Routing is a debtor swap the creditor never signs, so
+by Remark~\ref{rem:only-settlement} it writes no edge: the debt is discharged and the
+member is exactly as backed afterwards as before, while honouring the same obligation
+writes that creditor's stake in full. Measured, three loans of $60$ cleared by a supporter
+leave a member at the capacity they started with, where the same three honoured take them
+from $200$ to $380$. Capacity is a ceiling and what a drain moves is the room beneath it:
+the cleared obligation stops reserving what it drew, the release is exact
+(Remark~\ref{rem:charge-supply}), and the member ends with the room they had before they
+borrowed and the backing they had before the drain --- the $200$ above. The freed flow is
+neither awarded to anybody nor lost: the stake edges and the underwriter supply it
+occupied are available again, to the successor this sale creates on the buyer, to the
+member's own next purchase, or to any other account those arcs reach, first-come as all
+capacity is (Remark~\ref{rem:order}).
+
+The beneficiary's declaration is therefore the member choosing \textbf{relief now against
+standing later} --- a trade only they can weigh, and one no cap can bound, since the drain
+cap limits the amount and not the substitution. One smaller thing rides on it: a
+beneficiary's unused share recurses into their own listing, so accepting a supporter
+admits that supporter's production into relationships the beneficiary built for their own
+use.
+
+\subsection{Settlement, transfer, and conservation}
+
+A contract settles when its outstanding amount reaches zero, by delivery or by mutual
+discharge. Settlement releases the reservation the obligation held and applies the stake
+rule of Definition~\ref{def:stake}. A partial payment is at least a
+$\kConstMaxInstallments$th of the original unless it closes the row, so an obligation is
+discharged in at most that many payments and the closing one: a discharge is free, and
+free writes are bounded by what somebody paid for (\S\ref{sec:implementation}).
+
+\begin{remark}[Settlement is the only way the graph grows]
+\label{rem:only-settlement}
+No other transition writes a stake edge. This is what carries
+Assumption~\ref{ass:free-signatures}: every quantity that gates participation --- what a
+member may confer, their operation-bond headroom, the drain cap of the support cascade,
+the floor on proposing --- is read off this graph, so an edge written anywhere but at
+settlement is standing nobody earned.
+\end{remark}
+
+\emph{Transfer} moves the debtor of a claim: the obligation is assumed by another member,
+with their signature, subject to their own capacity gate exactly as at origination. The
+creditor does not change, which is why a claim is not a tradable instrument and a stake
+conferred by one creditor cannot be resold to another.
+
+A transfer is a discharge of the outgoing debtor, so it must be authorised by whoever
+loses if it is wrong --- the creditor, but only when the claim stops being one the
+community stands behind. Hence the consent rule: \textbf{the creditor signs a transfer
+exactly when the successor would be uninsured.} Where the successor can carry it insured,
+the community's recourse follows the claim to its new debtor, and who that debtor is has
+become the community's question rather than the creditor's --- in this model's terms not a
+change to consent to. Which case applies is a fact about the graph, not a choice anybody
+makes.
+
+A transfer also stakes \emph{nothing}: the outgoing debtor did not pay, so
+Definition~\ref{def:stake} does not fire, and the graph grows when the successor settles,
+against the debtor who actually delivered. Otherwise a ring of members passing one
+accepted claim between them would each collect a stake from a creditor who signed once,
+and Remark~\ref{rem:only-settlement} would be false.
+
+\begin{invariant}[Conservation]
+\label{inv:conservation}
+At every height, the sum of outstanding amounts over all active contracts equals the sum
+of cached outstanding debt over all accounts, and no transition creates or destroys
+obligation except origination (which creates exactly one) and discharge (which reduces
+exactly one).
+\end{invariant}
+
+\begin{invariant}[Reservation conservation]
+\label{inv:res-conservation}
+At every height, $\sum \res(a,b)$ equals the total outstanding amount of insured
+contracts. A reservation exists if and only if there is a live insured obligation behind
+it.
+\end{invariant}
+
+Invariant~\ref{inv:res-conservation} is what makes Theorem~\ref{thm:cut} enforced rather
+than argued: if reservations could drift from obligations, the cut would bound a quantity
+nobody was tracking.
+
+\subsection{Default and cure}
+
+An obligation past maturity with a positive outstanding amount is in \emph{default}, and
+the consequences are asymmetric. For an \textbf{insured} obligation the community's
+recourse machinery applies (\S\ref{sec:recourse}): \emph{substitution} always, and
+arbitration if the parties consented to it. For an \textbf{uninsured} one none of it
+applies: the debt stands, the claim stands, and the creditor bears the loss alone
+(Remark~\ref{rem:uninsured-alone}).
+
+\emph{Cure} is late discharge: a defaulted obligation may be settled afterwards, which
+clears the default and applies the stake rule as any settlement does. Default is a state,
+not a verdict; a member who repays late is not permanently marked, and what marks them is
+that their counterparties may stake less next time, which the community decides and the
+protocol does not impose.
+
+\subsection{The capacity gate}
+
+\begin{invariant}[Capacity]
+\label{inv:capacity}
+No transition leaves any account set $S$ holding insured obligations whose total exceeds
+$\Capa(S)$.
+\end{invariant}
+
+This is the only credit limit in the protocol: no per-relationship cap, no per-epoch
+volume ceiling, no channel with its own floor and no separate rule for newcomers, because
+Definition~\ref{def:capacity} already gives a newcomer zero and Corollary~\ref{cor:sybil}
+gives a thousand newcomers zero.

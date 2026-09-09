@@ -1,172 +1,132 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 
 import {
     advance,
     beginOnboarding,
-    cancelOnboarding,
-    choosePath,
-    clearPathChoice,
     completeOnboarding,
-    goToStep,
-    markBackupSaved,
+    leaveActorChoice,
+    markEconomicsSeen,
+    markKeyHeld,
     markLocaleConfigured,
-    markMnemonicConfirmed,
-    markRestoreCompleted,
+    markNetworkChosen,
     markTourSeen,
     onboardingActive,
-    onboardingState,
+    onboardingIsReplay,
     onboardingStep,
-    setMnemonic,
+    replayTour,
+    resumeActorChoice,
 } from '../onboardingStore';
 
-function makeMockDerived() {
-    return {
-        agentSeed: new Uint8Array(32).fill(1),
-        backupKey: new Uint8Array(32).fill(2),
-        fingerprint: new Uint8Array(4).fill(3),
-    };
-}
+const ALL = { needsLocaleSetup: true, needsNetwork: true, needsEconomics: true, needsKey: true, needsTour: true };
 
-describe('onboardingStore', () => {
-    beforeEach(() => {
+beforeEach(() => {
+    completeOnboarding();
+});
+
+describe('first-run sequencing', () => {
+    it('walks options → how it works → network → key → tour → app', () => {
+        beginOnboarding(ALL);
+        // Language first, so every screen after it — above all the explainer,
+        // which is the longest prose in the app — is read in the language the
+        // member CHOSE rather than the one the device reported.
+        expect(get(onboardingStep)).toBe('locale-setup');
+        markLocaleConfigured();
+        advance();
+        expect(get(onboardingStep)).toBe('economics-intro');
+        markEconomicsSeen();
+        advance();
+        // The network BEFORE the key, and this assertion is the point of the
+        // ordering: standing is earned on one ledger and cannot be carried to
+        // another, so a member who makes a key first and picks a network
+        // afterwards has nothing to bring with them.
+        expect(get(onboardingStep)).toBe('network-choice');
+        markNetworkChosen();
+        advance();
+        expect(get(onboardingStep)).toBe('actor-choice');
+        // Making a key finishes that step — it is local, and the trade that
+        // seats the account is waited for in the wallet.
+        markKeyHeld();
+        advance();
+        // The tour comes AFTER, because its first three steps are the wallet
+        // and a key is what puts one on screen.
+        expect(get(onboardingStep)).toBe('tour');
+        markTourSeen();
+        advance();
+        expect(get(onboardingStep)).toBe('complete');
+    });
+
+    it('skips steps whose needs flag is false', () => {
+        beginOnboarding({ ...ALL, needsLocaleSetup: false, needsNetwork: false, needsEconomics: false, needsKey: false });
+        expect(get(onboardingStep)).toBe('tour');
+        markTourSeen();
+        advance();
+        expect(get(onboardingStep)).toBe('complete');
+    });
+
+    it('opens at the first outstanding step rather than always at the top', () => {
+        beginOnboarding({ ...ALL, needsLocaleSetup: false });
+        expect(get(onboardingStep)).toBe('economics-intro');
+    });
+});
+
+describe('replayTour', () => {
+    it('jumps straight to tour and flags the replay', () => {
+        replayTour();
+        expect(get(onboardingStep)).toBe('tour');
+        expect(get(onboardingIsReplay)).toBe(true);
         completeOnboarding();
+        expect(get(onboardingIsReplay)).toBe(false);
     });
+});
 
-    it('begins on `locale-setup` when the user needs everything', () => {
-        beginOnboarding({ needsLocaleSetup: true, needsMnemonic: true, needsTour: true });
-        expect(get(onboardingStep)).toBe('locale-setup');
+describe('identity on demand', () => {
+    it('opens the step alone and returns to the app either way', () => {
+        resumeActorChoice();
+        expect(get(onboardingStep)).toBe('actor-choice');
         expect(get(onboardingActive)).toBe(true);
-    });
-
-    it('jumps to path-choice when locale is already configured', () => {
-        beginOnboarding({ needsLocaleSetup: false, needsMnemonic: true, needsTour: true });
-        expect(get(onboardingStep)).toBe('path-choice');
-    });
-
-    it('skips straight to the tour when only the tour is missing', () => {
-        beginOnboarding({ needsLocaleSetup: false, needsMnemonic: false, needsTour: true });
-        expect(get(onboardingStep)).toBe('tour');
-    });
-
-    it('shortcuts to `complete` when nothing is needed', () => {
-        beginOnboarding({ needsLocaleSetup: false, needsMnemonic: false, needsTour: false });
-        expect(get(onboardingStep)).toBe('complete');
-    });
-
-    it('full create-path: locale → path-choice → mnemonic flow → backup → tour', () => {
-        beginOnboarding({ needsLocaleSetup: true, needsMnemonic: true, needsTour: true });
-        expect(get(onboardingStep)).toBe('locale-setup');
-
-        markLocaleConfigured();
-        advance();
-        expect(get(onboardingStep)).toBe('path-choice');
-
-        choosePath('create');
-        advance();
-        expect(get(onboardingStep)).toBe('mnemonic-generate');
-
-        setMnemonic('abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about', makeMockDerived());
-        advance();
-        expect(get(onboardingStep)).toBe('mnemonic-confirm');
-
-        markMnemonicConfirmed();
-        advance();
-        expect(get(onboardingStep)).toBe('backup-export');
-
-        markBackupSaved();
-        advance();
-        expect(get(onboardingStep)).toBe('tour');
-
-        markTourSeen();
-        advance();
-        expect(get(onboardingStep)).toBe('complete');
-    });
-
-    it('restore-path: locale → path-choice → restore-backup → tour', () => {
-        beginOnboarding({ needsLocaleSetup: true, needsMnemonic: true, needsTour: true });
-
-        markLocaleConfigured();
-        advance();
-        expect(get(onboardingStep)).toBe('path-choice');
-
-        choosePath('restore');
-        advance();
-        expect(get(onboardingStep)).toBe('restore-backup');
-
-        // Successful restore fast-forwards the mnemonic + backup flags.
-        markRestoreCompleted();
-        advance();
-        expect(get(onboardingStep)).toBe('tour');
-
-        markTourSeen();
-        advance();
-        expect(get(onboardingStep)).toBe('complete');
-    });
-
-    it('cancelling out of restore returns to path-choice', () => {
-        beginOnboarding({ needsLocaleSetup: false, needsMnemonic: true, needsTour: true });
-        choosePath('restore');
-        advance();
-        expect(get(onboardingStep)).toBe('restore-backup');
-
-        // User hits "Cancel" — the RestoreBackupStep wrapper clears the
-        // path choice and advances; the wizard falls back to path-choice.
-        clearPathChoice();
-        advance();
-        expect(get(onboardingStep)).toBe('path-choice');
-    });
-
-    it('regenerating the mnemonic resets the confirm gate', () => {
-        beginOnboarding({ needsLocaleSetup: false, needsMnemonic: true, needsTour: false });
-        choosePath('create');
-        setMnemonic('abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about', makeMockDerived());
-        markMnemonicConfirmed();
-        expect(get(onboardingState).mnemonicConfirmed).toBe(true);
-        setMnemonic('abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art', makeMockDerived());
-        expect(get(onboardingState).mnemonicConfirmed).toBe(false);
-    });
-
-    it('goToStep can force a direct transition (used by Settings "Replay tour")', () => {
-        beginOnboarding({ needsLocaleSetup: false, needsMnemonic: false, needsTour: false });
-        goToStep('tour');
-        expect(get(onboardingStep)).toBe('tour');
-    });
-
-    it('cancelOnboarding zeroes the derived keys', () => {
-        beginOnboarding({ needsLocaleSetup: false, needsMnemonic: true, needsTour: false });
-        choosePath('create');
-        const derived = makeMockDerived();
-        setMnemonic('some mnemonic', derived);
-        cancelOnboarding();
+        leaveActorChoice();
         expect(get(onboardingStep)).toBe('idle');
-        expect([...derived.agentSeed].every((b) => b === 0)).toBe(true);
-        expect([...derived.backupKey].every((b) => b === 0)).toBe(true);
-        expect([...derived.fingerprint].every((b) => b === 0)).toBe(true);
-    });
-
-    it('stores the mnemonic only in memory (state.mnemonic, not localStorage)', () => {
-        beginOnboarding({ needsLocaleSetup: false, needsMnemonic: true, needsTour: false });
-        choosePath('create');
-        const mnemonic = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
-        setMnemonic(mnemonic, makeMockDerived());
-        const st = get(onboardingState);
-        expect(st.mnemonic).toBe(mnemonic);
-        if (typeof localStorage !== 'undefined') {
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (!key) continue;
-                const val = localStorage.getItem(key) ?? '';
-                expect(val).not.toContain(mnemonic);
-            }
-        }
-    });
-
-    it('onboardingActive is false when idle and true mid-flow', () => {
         expect(get(onboardingActive)).toBe(false);
-        beginOnboarding({ needsLocaleSetup: true, needsMnemonic: false, needsTour: false });
-        expect(get(onboardingActive)).toBe(true);
+    });
+
+    it('does not walk a returning member back through the wizard', () => {
+        // The bug `isReplay` exists for, one step over: after
+        // `completeOnboarding()` every flag is at its reset value, so a naive
+        // re-entry would advance into locale setup.
         completeOnboarding();
-        expect(get(onboardingActive)).toBe(false);
+        resumeActorChoice();
+        markKeyHeld();
+        advance();
+        expect(get(onboardingStep)).toBe('complete');
+    });
+
+    it('a device that already holds a key is not asked on first run', () => {
+        beginOnboarding({ ...ALL, needsLocaleSetup: false, needsNetwork: false, needsEconomics: false, needsKey: false });
+        expect(get(onboardingStep)).not.toBe('actor-choice');
+    });
+});
+
+describe('a step may not end the wizard', () => {
+    /**
+     * `completeOnboarding()` dismisses the WHOLE wizard. A step that calls it
+     * is fine while it happens to be last and silently truncates the sequence
+     * the moment anything is added after it — which is exactly what happened:
+     * moving the explainer ahead of identity left `EconomicsIntroStep` ending
+     * onboarding on its own Continue, so the key step and the tour never ran
+     * and the first run looked like it had no wizard at all.
+     *
+     * Steps `advance()`. The sequencer decides what is next, and `advance()`
+     * lands on `complete`, which unmounts the overlay — so nothing is lost by
+     * the rule and the ordering lives in exactly one place.
+     */
+    it('no onboarding step component calls completeOnboarding', () => {
+        const dir = join(__dirname, '../../edet/onboarding');
+        const offenders = readdirSync(dir)
+            .filter((f) => f.endsWith('Step.svelte'))
+            .filter((f) => readFileSync(join(dir, f), 'utf8').includes('completeOnboarding'));
+        expect(offenders).toEqual([]);
     });
 });

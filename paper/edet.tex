@@ -1,0 +1,74 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.6cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+% ---- theorem environments (kernel \newtheorem; amsthm unavailable) --------
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{property}[theorem]{Property}
+\newtheorem{invariant}[theorem]{Invariant}
+\newtheorem{remark}[theorem]{Remark}
+\newenvironment{proof}{\par\noindent\emph{Proof.}\ }{\hfill$\square$\par\medskip}
+
+% ---- notation macros ------------------------------------------------------
+\newcommand{\Capa}{\mathrm{Cap}}
+\newcommand{\drawn}{\mathrm{drawn}}
+\newcommand{\uw}{\mathcal{U}}
+\newcommand{\supply}{\mathrm{sup}}
+\newcommand{\stake}{w}
+\newcommand{\res}{r}
+\newcommand{\free}{\mathrm{free}}
+\newcommand{\peak}{\mathrm{peak}}
+\newcommand{\seatres}{s}
+\newcommand{\seats}{\mathrm{seats}}
+\newcommand{\vbase}{V_{\mathrm{base}}}
+\newcommand{\edet}{\emph{edet}}
+
+% ---- genesis-constant macros (generated; see scripts/paper-constants.py) --
+% Every \kConst... macro cited in the sections below is a genesis value read
+% straight out of crates/kernel/src/constants.rs, not retyped by hand: `just
+% paper-constants-check` (part of `just ci`) fails the build the moment this
+% file and the kernel disagree, so the two can no longer silently drift.
+\input{sections/generated-constants}
+
+\title{\edet\ v0.7.0\\[0.4em]
+\large A non-hoardable clearing medium in which credit capacity\\
+is a minimum cut over declared underwriting}
+\author{the \edet\ project}
+\date{v0.7.0 \textperiodcentered\ working draft}
+
+\begin{document}
+\maketitle
+
+\input{sections/00-preamble}
+\tableofcontents
+\clearpage
+
+\input{sections/10-position}
+\input{sections/20-model}
+\input{sections/30-medium}
+\input{sections/40-standing}
+\input{sections/50-stability}
+\input{sections/70-recourse}
+\input{sections/80-governance}
+\input{sections/90-security}
+\input{sections/100-economics}
+\input{sections/110-adoption}
+\input{sections/120-provision}
+\input{sections/130-implementation}
+\input{sections/140-verification}
+\input{sections/150-conclusion}
+
+\end{document}

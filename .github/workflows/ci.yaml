@@ -1,53 +1,90 @@
-name: "CI"
+name: ci
+
+# Determinism assumption (binding on kernel authors, not just a CI note):
+# every transcendental in crates/kernel goes through `libm` (pure-Rust
+# software implementations), never the platform libm — no FMA, no mul_add,
+# no fast-math contraction — so consensus-critical kernel math is
+# bit-identical on every validator regardless of CPU/OS. Every job below runs
+# on ubuntu-latest/x86_64 only: no gate runs the kernel suite on a second
+# architecture and diffs its fixture hashes, so cross-architecture
+# bit-identity is an argument from the construction, not a measurement.
+
+# This workflow runs `just ci` and nothing else, on purpose.
+#
+# A gate list written twice drifts: a fix to "CI" lands in the justfile and a
+# workflow with its own copy goes on running the old list — clippy skipping
+# the feature-gated code, `test` skipping two of its three lines, `src-tauri`
+# never resolved, the engine BUILT but never RUN, which is the hole a failing
+# byzantine test and a broken log format walk through.
+#
+# One list, in the justfile, invoked from here. A gate added there is a gate
+# that runs on push, with no second place to remember.
+
 on:
   push:
-    branches: [ main ]
+    branches: ["*"]
   pull_request:
-    branches: [ main ]
 
 jobs:
-  build-and-test:
+  ci:
     runs-on: ubuntu-latest
+    # `engine-test` and `e2e` start real multi-node clusters over loopback TCP
+    # and are the slowest lines by far (~3 min between them). The cap is
+    # generous enough for a loaded runner and short enough that a consensus
+    # hang fails instead of burning time.
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install nix
-        uses: cachix/install-nix-action@v27
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          install_url: https://releases.nixos.org/nix/nix-2.23.2/install
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
 
-      - uses: cachix/cachix-action@v15
+      # `just sim` cross-pins the kernel against an independent scipy/numpy
+      # reference; `just ui-check`/`ui-test`/`e2e` need the node toolchain.
+      - uses: actions/setup-python@v5
         with:
-          name: holochain-ci
-
-      # Cache Rust build artifacts to speed up subsequent runs.
-      - name: Cache Rust build
-        uses: actions/cache@v4
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
+          node-version: "22"
+      - uses: extractions/setup-just@v3
 
-      - name: Check formatting
-        run: |
-          nix develop --command bash -c "cargo fmt --all -- --check"
+      - name: Simulation dependencies
+        run: pip install -r sim/requirements.txt
 
-      - name: Lint (clippy)
-        run: |
-          nix develop --command bash -c "cargo clippy --all-targets --all-features -- -D warnings"
+      # Every Rust gate in `just ci` runs through `cargo nextest run`, so
+      # without this the list does not fail a test — it fails at "no such
+      # subcommand" before running one. `nix develop` supplies it on the
+      # machine (`pkgs.cargo-nextest` in the default shell); there is no nix
+      # here. The action fetches the release binary; `cargo install` would
+      # compile it from source on every run for the same result.
+      - uses: taiki-e/install-action@nextest
 
-      - name: Security audit
-        run: |
-          nix develop --command bash -c "cargo audit"
+      # `just audit`'s cargo half skips itself with a notice when this is
+      # absent, so installing it here is what makes the Rust advisory check
+      # actually run in CI rather than quietly pass.
+      - name: cargo-audit
+        run: cargo install cargo-audit --locked
 
-      - name: Build production hApp
+      # `just tauri-check` compiles the desktop/mobile client, which links
+      # webkit2gtk. On this machine those come from `nix develop .#tauri`;
+      # there is no nix here, so the runner needs them from apt or the gate
+      # cannot run — and a gate that cannot run is the hole it was added to
+      # close. Same reason as cargo-audit above: the install is what makes
+      # the check real.
+      - name: Tauri client system libraries
         run: |
-          nix develop --command bash -c "npm run build:happ"
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libsoup-3.0-dev \
+            libjavascriptcoregtk-4.1-dev libgtk-3-dev librsvg2-dev
 
-      - name: Install and test
-        run: |
-          nix develop --command bash -c "npm install && npm run test:ci"
+      # The engine's multi-node tests bind fixed consensus ports from a base
+      # (default 26600). Nothing else should hold them on a fresh runner, but
+      # naming the base here documents the dependency and gives one place to
+      # move it if a hosted image ever does.
+      - name: just ci
+        run: just ci
+        env:
+          EDET_CONSENSUS_BASE_PORT: "26600"

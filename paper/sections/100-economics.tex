@@ -1,0 +1,69 @@
+\section{Economic position}
+\label{sec:economics}
+
+\subsection{No rent on the medium of exchange}
+
+\begin{property}[Absence of monetary rent]
+\label{prop:no-rent}
+No party earns income from the operation of the medium. There is no fee token, no gas,
+no seigniorage, no interest on capacity, no treasury and no protocol revenue. Validators
+are community institutions bearing a cost, not intermediaries extracting one.
+\end{property}
+
+A structural commitment rather than a policy setting, and it constrains the rest of the
+design: spam cannot be priced by fees, so it is priced by refundable bonds
+(\S\ref{sec:recourse}); capacity cannot be sold, so it must be earned; loss cannot be
+absorbed by a treasury that does not exist, so mutualization rests on a standing, signed
+liability somebody accepted in advance --- a supply declaration, the only thing in the
+model that can carry a loss.
+
+\subsection{Bounded standing, and nothing to hoard}
+
+\begin{property}[No hoardable store of value]
+\label{prop:no-hoard}
+The protocol has no balance. What a member accumulates is capacity, which is
+non-transferable, non-purchasable, bounded by a cut, decaying unless renewed, and held
+in other members' stakes rather than in the member's own account.
+\end{property}
+
+A member cannot accumulate the medium, corner it, lend it at interest or exit into it. A
+large claim is a large expectation of future delivery, and it decays into nothing if the
+community around it stops trading: what one accumulates is a relationship, and
+relationships lapse. Capacity concentrates only to the extent that many members
+individually choose to stake on the same account, and even then
+Corollary~\ref{cor:uw-bound} bounds the result; no mechanism lets holding capacity
+generate more.
+
+\subsection{Loss, mutualized but bounded}
+
+Where a loss falls is decided by the tier, not by an ordering between remedies. An
+\textbf{insured} loss falls on the underwriters whose supply carried it, split by exactly
+what each arc carried and bounded by Corollary~\ref{cor:uw-bound}; if one of them defaults
+in turn, on the creditor, visibly. An \textbf{uninsured} loss falls on the creditor who
+chose it, alone (Remark~\ref{rem:uninsured-alone}). There is nothing after that, because
+there is nothing else to draw on: no lender of last resort. A community that could
+socialize unbounded loss would have created an unfunded liability on its members, the
+failure mode this design most wants to avoid, since it converts a credit system into a
+claim on people who never agreed to underwrite it.
+
+\subsection{Autonomy and regulatory scope}
+
+Obligations here are commercial trade credit between counterparties who have transacted,
+denominated in a community unit, non-transferable to third parties as an instrument, and
+not redeemable for currency. The medium is not a deposit, not a security and not a payment
+token; it is the bookkeeping of mutual trade credit, made explicit. That describes the
+mechanism, is not legal advice, and varies by jurisdiction. What the design provides for is
+auditability: a community can publish its state root, prove any member's position, and
+export a signed history.
+
+\subsection{What conventional money still does better}
+
+Money is accepted by strangers; capacity here is worth nothing to a community one has not
+traded with. Money stores value across decades; capacity decays within epochs. Money is
+anonymous at the point of sale; obligations here are between identified counterparties
+within a community. Money can be saved by an individual acting alone; provision here runs
+through named counterparties, and at long horizons through institutions
+(\S\ref{sec:provision}). This design does not replace money. The claim is narrower: for
+the subset of economic life that consists of regular mutual trade among producers who know
+one another, a clearing medium fits better than a scarce asset, and that subset is larger
+than it is usually taken to be.

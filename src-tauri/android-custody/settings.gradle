@@ -1,0 +1,45 @@
+// The Gradle root that RUNS Android custody: `:edet-keystore`, the one module
+// it compiles against, and nothing else.
+//
+// `gen/android` is the app project. Its `settings.gradle` applies
+// `tauri.settings.gradle`, and that file is written by the `tauri` crate's
+// build script during an Android build of the app — never by `tauri android
+// init` — so a checkout that has not cross-built the app cannot configure the
+// app project at all, and getting there needs the NDK, a Rust Android target
+// and a frontend build. The module under test is plain Android (a `Context`,
+// no Tauri types), so this root points at the module where it lives and at
+// the tauri crate's Android sources where cargo keeps them, located through
+// `cargo metadata` against `src-tauri/Cargo.lock`: what it compiles against
+// is the version the app links, not a copy.
+//
+// `just android-keystore-test` runs the instrumented test from here on an
+// emulator; `.github/workflows/android-custody.yaml` runs the same task on
+// GitHub's image. `TAURI_ANDROID_DIR` overrides the lookup.
+import groovy.json.JsonSlurper
+
+rootProject.name = 'edet-android-custody'
+
+include ':edet-keystore'
+project(':edet-keystore').projectDir = new File(settingsDir, '../gen/android/edet-keystore')
+
+def tauriAndroid = System.getenv('TAURI_ANDROID_DIR')
+if (!tauriAndroid) {
+    def manifest = new File(settingsDir, '../Cargo.toml').canonicalPath
+    def proc = ['cargo', 'metadata', '--format-version', '1', '--locked', '--manifest-path', manifest].execute()
+    def out = new StringBuffer()
+    def err = new StringBuffer()
+    proc.waitForProcessOutput(out, err)
+    if (proc.exitValue() != 0) {
+        throw new GradleException("cargo metadata failed (is cargo on PATH?):\n${err}")
+    }
+    def tauri = new JsonSlurper().parseText(out.toString()).packages.find { it.name == 'tauri' }
+    if (tauri == null) {
+        throw new GradleException("the tauri crate is not in the dependency graph of ${manifest}")
+    }
+    tauriAndroid = new File(new File(tauri.manifest_path).parentFile, 'mobile/android').path
+}
+if (!new File(tauriAndroid, 'build.gradle.kts').isFile()) {
+    throw new GradleException("no tauri Android module at ${tauriAndroid}")
+}
+include ':tauri-android'
+project(':tauri-android').projectDir = new File(tauriAndroid)

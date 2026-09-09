@@ -1,21 +1,22 @@
 <script lang="ts">
   import { _ } from 'svelte-i18n';
-  import { onMount } from 'svelte';
+  import Explain from '../components/Explain.svelte';
   import List, { Item, Graphic, Text } from '@smui/list';
   import Button, { Label } from '@smui/button';
-  import Snackbar, { Label as SnackLabel } from '@smui/snackbar';
+  import Textfield from '@smui/textfield';
+
   import { localizationSettings, updateSetting, TIMEZONE_OPTIONS, LOCALE_OPTIONS } from '../common/localizationSettings';
   import { formatDateTime, formatNumber } from '../common/functions';
-  import {
-    readBackupMetadata,
-    exportBackupCopy,
-    type BackupMetadata,
-  } from '../common/backupStorage';
-  import { suggestedBackupFileName } from '../common/backup';
-  import { forceBackup } from '../common/backupScheduler';
-  import { errorStore } from '../common/errorStore';
   import { lsGet, lsSet, lsRemove } from '../common/safeStorage';
-  import { goToStep } from '../common/onboardingStore';
+  import { replayTour } from '../common/onboardingStore';
+  import { currentActorId, nicknames, setNickname } from '../lib/actors';
+  import { addressOf, copyText } from '../lib/display';
+  import { activeBase, customChainId, customNodeUrl, networkId, networkNodes, nodeUrlLocked } from '../lib/node';
+  import { NETWORKS } from '../lib/networks';
+  import { errorStore } from '../common/errorStore';
+  import MemberChip from '../components/MemberChip.svelte';
+  import AccountRecovery from './AccountRecovery.svelte';
+  import BackupSecurity from './BackupSecurity.svelte';
 
   let theme: 'light' | 'dark' | 'system' = (lsGet('edet-theme') as any) || 'system';
 
@@ -25,7 +26,7 @@
     const darkState = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     const themeLink = document.getElementById('smui-theme') as HTMLLinkElement;
     if (themeLink) {
-      themeLink.href = darkState ? 'smui-dark.css' : 'smui.css';
+      themeLink.href = darkState ? '/smui-dark.css' : '/smui.css';
     }
     if (darkState) {
         document.documentElement.classList.add('dark-theme');
@@ -37,129 +38,244 @@
   $: theme, updateTheme(theme);
 
   // Preview values
-  const sampleTimestamp = Date.now() * 1000; // Current time in microseconds
+  const sampleTimestamp = Date.now();
   const sampleNumber = 1234.56;
 
   $: dateTimePreview = $localizationSettings && formatDateTime(sampleTimestamp);
   $: numberPreview = $localizationSettings && formatNumber(sampleNumber, 2);
 
-  // Backup & Recovery section
-  let backupMeta: BackupMetadata | null = null;
-  let exportingBackup = false;
-  let exportSnackbar: Snackbar;
+  // Identity
+  let nicknameDraft = '';
+  $: if ($currentActorId !== null && nicknameDraft === '') {
+    nicknameDraft = $nicknames[$currentActorId] ?? '';
+  }
 
-  onMount(async () => {
-    backupMeta = await readBackupMetadata();
-  });
+  function saveNickname() {
+    if ($currentActorId === null) return;
+    setNickname($currentActorId, nicknameDraft);
+  }
 
-  async function onExportBackup() {
-    exportingBackup = true;
-    try {
-      // Force a fresh backup write before handing the file to the user so
-      // the exported copy is up-to-date.
-      await forceBackup('user-requested');
-      const ok = await exportBackupCopy(suggestedBackupFileName());
-      backupMeta = await readBackupMetadata();
-      if (ok) exportSnackbar?.open();
-    } catch (e: any) {
-      errorStore.pushError(
-        $_('settings.backup.exportError', {
-          values: { message: e?.message ?? String(e) },
-          default: 'Failed to export backup: {message}',
-        }),
-        'error',
-      );
-    } finally {
-      exportingBackup = false;
+  async function copyMyAddress() {
+    const addr = $currentActorId === null ? null : $addressOf($currentActorId);
+    if (addr && (await copyText(addr))) {
+      errorStore.pushError($_('common.copied', { default: 'Copied to clipboard' }), 'warning');
     }
   }
 
   function onReplayTour() {
     // Clear the persisted "seen" flag and flip the shared onboarding store
-    // to the tour step. App.svelte has a reactive `$: if (step === 'tour')`
-    // watcher that starts Shepherd with its drawer / section host — using
-    // the same code path as first-run guarantees the replay behaves
-    // identically (drawer opens, sections switch).
+    // to the tour step via the dedicated replay entry point. App.svelte has
+    // a reactive `$: if (step === 'tour')` watcher that starts Shepherd with
+    // its drawer / section host — the same code path as first-run, so the
+    // replay behaves identically. `replayTour()` marks this a replay so
+    // that when the tour ends, App.svelte returns straight to the app
+    // instead of re-entering the wizard.
     lsRemove('edet-tour-seen');
-    goToStep('tour');
+    replayTour();
   }
-
-  function formatBackupTime(meta: BackupMetadata | null): string {
-    if (!meta) return $_('settings.backup.never', { default: 'No backup saved yet' });
-    return formatDateTime(meta.createdAt * 1000);
-  }
-
 </script>
 
 <div class="settings-container flex-column">
   <div class="settings-card card">
-    <h2 class="section-title">{$_('settings.title')}</h2>
-    
+    <h2 class="section-title">{$_('settings.title', { default: 'Settings' })}</h2>
+
+    <!-- Identity -->
+    <div class="setting-item flex-column">
+      <span class="setting-label">{$_('settings.identity.title', { default: 'Identity' })}</span>
+      {#if $currentActorId !== null}
+        <div class="identity-row">
+          <MemberChip memberId={$currentActorId} size={36} detail={$_('settings.identity.actingAs', { default: 'acting on this device' })} />
+        </div>
+        {#if $addressOf($currentActorId)}
+          <div class="identity-address">
+            <code>{$addressOf($currentActorId)}</code>
+            <button
+              type="button"
+              class="copy-btn"
+              aria-label={$_('common.copy', { default: 'Copy' })}
+              title={$_('common.copy', { default: 'Copy' })}
+              on:click={copyMyAddress}
+            >
+              <i class="material-icons" aria-hidden="true">content_copy</i>
+            </button>
+          </div>
+        {/if}
+        <div class="identity-controls">
+          <Textfield
+            label={$_('settings.identity.nickname', { default: 'Display name (local only)' })}
+            bind:value={nicknameDraft}
+          />
+          <Button variant="outlined" on:click={saveNickname}>
+            <Label>{$_('common.save', { default: 'Save' })}</Label>
+          </Button>
+        </div>
+        <p class="setting-description">
+          {$_('settings.identity.nicknameNote', {
+            default: 'Names never leave this device — on the ledger you are your membership, not a username.',
+          })}
+        </p>
+        <div class="setting-description">
+            <Explain
+              tone="plain"
+              summary={$_('settings.identity.phraseSummary', {
+                default: 'Your identity key derives from your recovery phrase.',
+              })}
+            >
+              {$_('settings.identity.phraseNote', {
+                default:
+                  'The phrase is never stored anywhere — whoever holds it can become you, and without it a lost device cannot be recovered (unless your guardians rotate you to a new key). Keep it written down, offline.',
+              })}
+            </Explain>
+        </div>
+      {/if}
+    </div>
+
+    <!-- Backup & security -->
+    <BackupSecurity />
+
+    <!-- Account & recovery -->
+    <AccountRecovery />
+
+    <!-- Connection -->
+    <div class="setting-item flex-column">
+      <span class="setting-label">{$_('settings.connection.title', { default: 'Node connection' })}</span>
+      {#if nodeUrlLocked}
+        <p class="setting-description">
+          {$_('settings.connection.locked', {
+            default: 'This instance is bound to its node by the launcher — one device, one node, one identity.',
+          })}
+        </p>
+        <code class="node-url">{$activeBase}</code>
+      {:else}
+        <div class="setting-description">
+          <Explain
+            tone="plain"
+            summary={$_('settings.connection.networkSummary', { default: 'The network this device acts in.' })}
+          >
+            {$_('settings.connection.network', {
+              default:
+                'Your standing lives on one ledger, and there is no way to carry it to another — so change this only deliberately.',
+            })}
+          </Explain>
+        </div>
+        <List class="network-list">
+          {#each NETWORKS as n (n.id)}
+            <Item on:click={() => ($networkId = n.id)} selected={$networkId === n.id}>
+              <Graphic class="material-icons">
+                {$networkId === n.id ? 'radio_button_checked' : 'radio_button_unchecked'}
+              </Graphic>
+              <Text>{$_(`settings.connection.net.${n.id}`, { default: n.id })}</Text>
+            </Item>
+          {/each}
+        </List>
+        {#if $networkId === 'custom'}
+          <Textfield
+            label={$_('settings.connection.nodes', { default: 'Node URLs, separated by spaces' })}
+            bind:value={$customNodeUrl}
+            style="width: 100%;"
+          />
+          <Textfield
+            label={$_('settings.connection.chain', { default: 'Chain id' })}
+            bind:value={$customChainId}
+            style="width: 100%;"
+          />
+          <div class="setting-description">
+              <Explain
+                tone="plain"
+                summary={$_('settings.connection.chainSummary', {
+                  default: 'The chain id is what every signature from this device binds to.',
+                })}
+              >
+                <!-- Its own key: `chainHelp` is also the onboarding step's
+                     copy, where the whole sentence belongs — a first-run
+                     screen is the one place not to fold an explanation. -->
+                {$_('settings.connection.chainDetail', {
+                  default:
+                    'Take it from whoever runs the network — it is in the genesis file and on the Network status of every node — never from the node you are about to trust: a node that names the chain chooses which ledger you sign for.',
+                })}
+              </Explain>
+          </div>
+        {/if}
+        <p class="setting-description">
+          {#if $networkNodes.length > 1}
+            {$_('settings.connection.crosscheck', {
+              values: { n: $networkNodes.length },
+              default: `Reads are checked against ${$networkNodes.length} nodes of this network — Network status shows whether they agree.`,
+            })}
+          {:else}
+            {$_('settings.connection.single', {
+              default: 'One node, so there is nothing to check its answers against. Network status will say so.',
+            })}
+          {/if}
+        </p>
+      {/if}
+    </div>
+
     <!-- Theme Setting -->
     <div class="setting-item flex-column">
-      <span class="setting-label">{$_('settings.theme')}</span>
-      
+      <span class="setting-label">{$_('settings.theme', { default: 'Theme' })}</span>
+
       <List class="theme-list">
         <Item on:click={() => (theme = 'light')} selected={theme === 'light'}>
           <Graphic class="material-icons">{theme === 'light' ? 'radio_button_checked' : 'radio_button_unchecked'}</Graphic>
-          <Text>{$_('settings.themeLight')}</Text>
+          <Text>{$_('settings.themeLight', { default: 'Light' })}</Text>
         </Item>
         <Item on:click={() => (theme = 'dark')} selected={theme === 'dark'}>
           <Graphic class="material-icons">{theme === 'dark' ? 'radio_button_checked' : 'radio_button_unchecked'}</Graphic>
-          <Text>{$_('settings.themeDark')}</Text>
+          <Text>{$_('settings.themeDark', { default: 'Dark' })}</Text>
         </Item>
         <Item on:click={() => (theme = 'system')} selected={theme === 'system'}>
           <Graphic class="material-icons">{theme === 'system' ? 'radio_button_checked' : 'radio_button_unchecked'}</Graphic>
-          <Text>{$_('settings.themeSystem')}</Text>
+          <Text>{$_('settings.themeSystem', { default: 'System' })}</Text>
         </Item>
       </List>
     </div>
 
     <!-- Date & Time Format -->
     <div class="setting-item flex-column">
-      <span class="setting-label">{$_('settings.dateTimeFormat')}</span>
-      
+      <span class="setting-label">{$_('settings.dateTimeFormat', { default: 'Date & time format' })}</span>
+
       <div class="subsetting">
-        <span class="subsetting-label">{$_('settings.dateFormat')}</span>
+        <span class="subsetting-label">{$_('settings.dateFormat', { default: 'Date format' })}</span>
         <List class="format-list">
           <Item on:click={() => updateSetting('dateFormat', 'iso')} selected={$localizationSettings.dateFormat === 'iso'}>
             <Graphic class="material-icons">{$localizationSettings.dateFormat === 'iso' ? 'radio_button_checked' : 'radio_button_unchecked'}</Graphic>
-            <Text>{$_('settings.dateFormatISO')}</Text>
+            <Text>{$_('settings.dateFormatISO', { default: 'ISO 8601 (YYYY-MM-DD)' })}</Text>
           </Item>
           <Item on:click={() => updateSetting('dateFormat', 'us')} selected={$localizationSettings.dateFormat === 'us'}>
             <Graphic class="material-icons">{$localizationSettings.dateFormat === 'us' ? 'radio_button_checked' : 'radio_button_unchecked'}</Graphic>
-            <Text>{$_('settings.dateFormatUS')}</Text>
+            <Text>{$_('settings.dateFormatUS', { default: 'US Format (MM/DD/YYYY)' })}</Text>
           </Item>
           <Item on:click={() => updateSetting('dateFormat', 'eu')} selected={$localizationSettings.dateFormat === 'eu'}>
             <Graphic class="material-icons">{$localizationSettings.dateFormat === 'eu' ? 'radio_button_checked' : 'radio_button_unchecked'}</Graphic>
-            <Text>{$_('settings.dateFormatEU')}</Text>
+            <Text>{$_('settings.dateFormatEU', { default: 'European Format (DD/MM/YYYY)' })}</Text>
           </Item>
         </List>
       </div>
 
       <div class="subsetting">
-        <span class="subsetting-label">{$_('settings.timeFormat')}</span>
+        <span class="subsetting-label">{$_('settings.timeFormat', { default: 'Time format' })}</span>
         <List class="format-list">
           <Item on:click={() => updateSetting('timeFormat', '24h')} selected={$localizationSettings.timeFormat === '24h'}>
             <Graphic class="material-icons">{$localizationSettings.timeFormat === '24h' ? 'radio_button_checked' : 'radio_button_unchecked'}</Graphic>
-            <Text>{$_('settings.timeFormat24h')}</Text>
+            <Text>{$_('settings.timeFormat24h', { default: '24-hour' })}</Text>
           </Item>
           <Item on:click={() => updateSetting('timeFormat', '12h')} selected={$localizationSettings.timeFormat === '12h'}>
             <Graphic class="material-icons">{$localizationSettings.timeFormat === '12h' ? 'radio_button_checked' : 'radio_button_unchecked'}</Graphic>
-            <Text>{$_('settings.timeFormat12h')}</Text>
+            <Text>{$_('settings.timeFormat12h', { default: '12-hour' })}</Text>
           </Item>
         </List>
       </div>
 
       <div class="preview">
-        <span class="preview-label">{$_('settings.preview')}:</span>
+        <span class="preview-label">{$_('settings.preview', { default: 'Preview' })}:</span>
         <span class="preview-value">{dateTimePreview}</span>
       </div>
     </div>
 
     <!-- Timezone -->
     <div class="setting-item flex-column">
-      <span class="setting-label">{$_('settings.timezone')}</span>
+      <span class="setting-label">{$_('settings.timezone', { default: 'Timezone' })}</span>
       <select bind:value={$localizationSettings.timezone} class="timezone-select">
         {#each TIMEZONE_OPTIONS as tz}
           <option value={tz.value} disabled={tz.disabled}>{tz.label}</option>
@@ -169,53 +285,33 @@
 
     <!-- Number Format -->
     <div class="setting-item flex-column">
-      <span class="setting-label">{$_('settings.numberFormat')}</span>
-      
+      <span class="setting-label">{$_('settings.numberFormat', { default: 'Number format' })}</span>
+
       <List class="format-list">
         <Item on:click={() => updateSetting('numberFormat', 'dot-comma')} selected={$localizationSettings.numberFormat === 'dot-comma'}>
           <Graphic class="material-icons">{$localizationSettings.numberFormat === 'dot-comma' ? 'radio_button_checked' : 'radio_button_unchecked'}</Graphic>
-          <Text>{$_('settings.numberFormatDotComma')}</Text>
+          <Text>{$_('settings.numberFormatDotComma', { default: 'Dot decimal, comma thousands' })}</Text>
         </Item>
         <Item on:click={() => updateSetting('numberFormat', 'comma-dot')} selected={$localizationSettings.numberFormat === 'comma-dot'}>
           <Graphic class="material-icons">{$localizationSettings.numberFormat === 'comma-dot' ? 'radio_button_checked' : 'radio_button_unchecked'}</Graphic>
-          <Text>{$_('settings.numberFormatCommaDot')}</Text>
+          <Text>{$_('settings.numberFormatCommaDot', { default: 'Comma decimal, dot thousands' })}</Text>
         </Item>
       </List>
 
       <div class="preview">
-        <span class="preview-label">{$_('settings.preview')}:</span>
+        <span class="preview-label">{$_('settings.preview', { default: 'Preview' })}:</span>
         <span class="preview-value">{numberPreview}</span>
       </div>
     </div>
 
     <!-- Language -->
     <div class="setting-item flex-column">
-      <span class="setting-label">{$_('settings.language')}</span>
+      <span class="setting-label">{$_('settings.language', { default: 'Language' })}</span>
       <select bind:value={$localizationSettings.locale} class="timezone-select">
         {#each LOCALE_OPTIONS as lang}
           <option value={lang.value}>{lang.label}</option>
         {/each}
       </select>
-    </div>
-
-    <!-- Backup & Recovery -->
-    <div class="setting-item flex-column">
-      <span class="setting-label">{$_('settings.backup.title', { default: 'Backup & Recovery' })}</span>
-      <p class="setting-description">
-        {$_('settings.backup.description', {
-          default:
-            'Your identity is backed up automatically on this device and encrypted with your 12-word recovery phrase. Export a copy and keep it somewhere safe.',
-        })}
-      </p>
-      <div class="backup-info">
-        <span class="backup-label">{$_('settings.backup.lastBackup', { default: 'Last backup:' })}</span>
-        <span class="backup-value">{formatBackupTime(backupMeta)}</span>
-      </div>
-      <div class="backup-actions">
-        <Button variant="raised" on:click={onExportBackup} disabled={exportingBackup}>
-          <Label>{$_('settings.backup.exportNow', { default: 'Export backup file now' })}</Label>
-        </Button>
-      </div>
     </div>
 
     <!-- Tour -->
@@ -232,12 +328,19 @@
         </Button>
       </div>
     </div>
+
+    <!-- About -->
+    <div class="setting-item flex-column">
+      <span class="setting-label">{$_('settings.about.title', { default: 'About' })}</span>
+      <!-- svelte-ignore missing-declaration -->
+      <p class="setting-description">
+        edet {__APP_VERSION__} — {$_('settings.about.body', {
+          default: 'a feeless mutual-credit ledger run by your community.',
+        })}
+      </p>
+    </div>
   </div>
 </div>
-
-<Snackbar bind:this={exportSnackbar} leading>
-  <SnackLabel>{$_('settings.backup.exported', { default: 'Backup file exported' })}</SnackLabel>
-</Snackbar>
 
 <style>
   .settings-container {
@@ -245,6 +348,7 @@
     padding: 16px;
     box-sizing: border-box;
     align-items: center;
+      max-width: var(--edet-column);
   }
 
   .settings-card {
@@ -373,38 +477,64 @@
     color: var(--mdc-theme-text-secondary-on-surface);
     line-height: 1.5;
     font-size: 0.95rem;
-  }
 
-  .backup-info {
-    display: flex;
-    gap: 8px;
-    align-items: baseline;
-    padding: 8px 12px;
-    border-radius: 4px;
-    background: var(--mdc-theme-background, #f5f5f5);
-    border: 1px dashed var(--mdc-theme-text-hint-on-background, #ccc);
-    margin-bottom: 8px;
-  }
 
-  :global(.dark-theme) .backup-info {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .backup-label {
-    font-size: 0.85rem;
-    color: var(--mdc-theme-text-secondary-on-surface);
-  }
-
-  .backup-value {
-    font-family: monospace;
-    font-weight: 600;
-    color: var(--mdc-theme-primary);
   }
 
   .backup-actions {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
+  }
+
+  .identity-row {
+    margin-bottom: 12px;
+  }
+
+  .identity-address {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  .identity-address code {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--mdc-theme-text-secondary-on-surface, #666);
+    overflow-wrap: anywhere;
+  }
+
+  .copy-btn {
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    color: var(--mdc-theme-text-secondary-on-surface, #999);
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+
+  .copy-btn:hover {
+    color: var(--mdc-theme-primary);
+  }
+
+  .copy-btn i {
+    font-size: 16px;
+  }
+
+  .identity-controls {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .node-url {
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: var(--mdc-theme-text-secondary-on-surface, #666);
+    overflow-wrap: anywhere;
   }
 </style>

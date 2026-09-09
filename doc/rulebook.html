@@ -1,0 +1,1241 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style>
+<title>The edet Rulebook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+</head>
+<body>
+<style>
+:root{
+  --ground:#eff2f1;
+  --surface:#fbfcfc;
+  --surface-2:#e6ebea;
+  --ink:#131b1d;
+  --ink-2:#41575c;
+  --ink-3:#6c8085;
+  --rule:#cdd8d7;
+  --rule-soft:#dee6e5;
+  --accent:#0e5f5b;
+  --accent-soft:#d7e7e5;
+  --refuse:#8f3a27;
+  --refuse-soft:#f0dfd9;
+  --caution:#8a6614;
+  --caution-soft:#f0e6cf;
+  --shadow:0 1px 2px rgba(19,27,29,.06);
+  --measure:68ch;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0d1315;
+    --surface:#141d20;
+    --surface-2:#1b2528;
+    --ink:#dfe8e8;
+    --ink-2:#a3b5b7;
+    --ink-3:#7c9094;
+    --rule:#27353a;
+    --rule-soft:#1f2b2f;
+    --accent:#5cc0b6;
+    --accent-soft:#12312f;
+    --refuse:#e0917a;
+    --refuse-soft:#33201a;
+    --caution:#d0a44f;
+    --caution-soft:#2e2718;
+    --shadow:0 1px 2px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0d1315;
+  --surface:#141d20;
+  --surface-2:#1b2528;
+  --ink:#dfe8e8;
+  --ink-2:#a3b5b7;
+  --ink-3:#7c9094;
+  --rule:#27353a;
+  --rule-soft:#1f2b2f;
+  --accent:#5cc0b6;
+  --accent-soft:#12312f;
+  --refuse:#e0917a;
+  --refuse-soft:#33201a;
+  --caution:#d0a44f;
+  --caution-soft:#2e2718;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"Newsreader",Georgia,"Times New Roman",serif;
+  font-size:17px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.page{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0;
+  max-width:1220px;
+  margin:0 auto;
+  padding:0 22px 96px;
+}
+@media (min-width:1080px){
+  .page{grid-template-columns:210px minmax(0,1fr);gap:56px;padding-left:28px;padding-right:28px}
+}
+
+/* ---------------------------------------------------------------- rail -- */
+.rail{display:none}
+@media (min-width:1080px){
+  .rail{
+    display:block;
+    position:sticky;
+    top:0;
+    align-self:start;
+    max-height:100vh;
+    overflow-y:auto;
+    padding:38px 0 40px;
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    font-size:12.5px;
+    line-height:1.45;
+  }
+}
+.rail ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.rail .rail-group{
+  margin:18px 0 6px;
+  font-size:10.5px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  font-weight:600;
+}
+.rail .rail-group:first-child{margin-top:0}
+.rail a{
+  display:block;
+  padding:3px 8px 3px 10px;
+  color:var(--ink-2);
+  text-decoration:none;
+  border-left:2px solid transparent;
+  border-radius:0 3px 3px 0;
+}
+.rail a:hover{color:var(--accent);border-left-color:var(--accent);background:var(--surface)}
+.rail a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* -------------------------------------------------------------- masthead */
+.masthead{padding:64px 0 40px;border-bottom:1px solid var(--rule)}
+.eyebrow{
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.17em;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin:0 0 18px;
+}
+h1{
+  font-weight:500;
+  font-size:clamp(38px,6vw,58px);
+  line-height:1.06;
+  letter-spacing:-.022em;
+  margin:0 0 20px;
+  text-wrap:balance;
+  max-width:16ch;
+}
+.standfirst{
+  font-size:20px;
+  line-height:1.55;
+  color:var(--ink-2);
+  max-width:62ch;
+  margin:0 0 26px;
+}
+.equation{
+  border-left:3px solid var(--accent);
+  background:var(--surface);
+  padding:18px 22px;
+  max-width:62ch;
+  font-size:18px;
+  line-height:1.5;
+  box-shadow:var(--shadow);
+}
+.equation strong{font-weight:600}
+.equation .eq-note{
+  display:block;
+  margin-top:10px;
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:13px;
+  line-height:1.5;
+  color:var(--ink-3);
+}
+
+/* ------------------------------------------------------------- structure */
+main{padding-top:12px}
+section{padding:44px 0 8px;scroll-margin-top:20px}
+section + section{border-top:1px solid var(--rule-soft)}
+.part-open{
+  display:flex;
+  align-items:baseline;
+  gap:14px;
+  margin:0 0 4px;
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+}
+.part-open::after{content:"";flex:1;height:1px;background:var(--rule)}
+h2{
+  font-weight:500;
+  font-size:31px;
+  line-height:1.16;
+  letter-spacing:-.014em;
+  margin:14px 0 14px;
+  text-wrap:balance;
+  max-width:24ch;
+}
+h2 .num{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.58em;
+  color:var(--accent);
+  margin-right:.6em;
+  letter-spacing:0;
+  vertical-align:.12em;
+}
+h3{
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-weight:600;
+  font-size:14.5px;
+  letter-spacing:.005em;
+  margin:34px 0 10px;
+  color:var(--ink);
+  max-width:var(--measure);
+}
+p{margin:0 0 15px;max-width:var(--measure)}
+ul,ol.body-list{margin:0 0 16px;padding-left:1.15em;max-width:var(--measure)}
+li{margin:0 0 8px}
+strong{font-weight:600}
+em{font-style:italic}
+a{color:var(--accent)}
+.lede{font-size:18.5px;color:var(--ink-2);max-width:64ch}
+
+/* ------------------------------------------------------------- mono bits */
+.code,code{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.84em;
+  letter-spacing:-.01em;
+}
+.rc{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.78em;
+  letter-spacing:.01em;
+  background:var(--refuse-soft);
+  color:var(--refuse);
+  padding:1px 5px;
+  border-radius:2px;
+  white-space:nowrap;
+}
+.qty{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.84em;
+  font-variant-numeric:tabular-nums;
+  color:var(--ink);
+}
+
+/* ---------------------------------------------------------- rule blocks */
+.rule-block{
+  background:var(--surface);
+  border:1px solid var(--rule);
+  border-left:3px solid var(--accent);
+  margin:0 0 18px;
+  box-shadow:var(--shadow);
+}
+.rule-head{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:10px;
+  padding:13px 18px 11px;
+  border-bottom:1px solid var(--rule-soft);
+}
+.rule-head .name{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:14px;
+  font-weight:500;
+  color:var(--ink);
+}
+.rule-head .what{
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:13px;
+  color:var(--ink-3);
+}
+.rule-head .price{
+  margin-left:auto;
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:10.5px;
+  font-weight:600;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  padding:2px 7px;
+  border-radius:2px;
+  background:var(--surface-2);
+  color:var(--ink-2);
+  white-space:nowrap;
+}
+.rule-head .price.free{background:var(--accent-soft);color:var(--accent)}
+.rule-head .price.seats{background:var(--caution-soft);color:var(--caution)}
+.rule-block dl{
+  display:grid;
+  grid-template-columns:104px minmax(0,1fr);
+  margin:0;
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:14px;
+  line-height:1.55;
+}
+@media (max-width:560px){
+  .rule-block dl{grid-template-columns:1fr}
+  .rule-block dt{padding-bottom:0 !important}
+}
+.rule-block dt{
+  padding:11px 0 11px 18px;
+  font-size:10.5px;
+  font-weight:600;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  border-top:1px solid var(--rule-soft);
+}
+.rule-block dd{
+  margin:0;
+  padding:11px 18px 11px 12px;
+  border-top:1px solid var(--rule-soft);
+  color:var(--ink-2);
+}
+.rule-block dt:first-of-type,.rule-block dd:first-of-type{border-top:0}
+.rule-block dd ul{margin:0;padding-left:1.05em;max-width:none}
+.rule-block dd li{margin:0 0 5px}
+.rule-block dd li:last-child{margin-bottom:0}
+
+/* ----------------------------------------------------------- pull notes */
+.note{
+  background:var(--surface);
+  border:1px solid var(--rule);
+  padding:15px 18px;
+  margin:0 0 20px;
+  max-width:var(--measure);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:14px;
+  line-height:1.58;
+  color:var(--ink-2);
+}
+.note .tag{
+  display:block;
+  font-size:10.5px;
+  font-weight:600;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  margin-bottom:7px;
+  color:var(--ink-3);
+}
+.note.trap{border-left:3px solid var(--refuse)}
+.note.trap .tag{color:var(--refuse)}
+.note.order{border-left:3px solid var(--caution)}
+.note.order .tag{color:var(--caution)}
+.note p{max-width:none;margin:0 0 10px}
+.note p:last-child{margin:0}
+
+/* --------------------------------------------------------------- tables */
+.tablewrap{
+  overflow-x:auto;
+  margin:0 0 24px;
+  border:1px solid var(--rule);
+  background:var(--surface);
+  box-shadow:var(--shadow);
+}
+table{
+  border-collapse:collapse;
+  width:100%;
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:13.5px;
+  line-height:1.5;
+}
+th{
+  text-align:left;
+  font-size:10.5px;
+  font-weight:600;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  padding:11px 14px;
+  border-bottom:1px solid var(--rule);
+  white-space:nowrap;
+  background:var(--surface-2);
+}
+td{
+  padding:10px 14px;
+  border-bottom:1px solid var(--rule-soft);
+  color:var(--ink-2);
+  vertical-align:top;
+}
+tr:last-child td{border-bottom:0}
+td.k{color:var(--ink);font-weight:500;white-space:nowrap}
+td.n{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+@media (min-width:1080px){
+  .wide{width:calc(100% + 90px)}
+}
+
+/* ------------------------------------------------------------ limit list */
+.limits{list-style:none;margin:0 0 20px;padding:0;display:flex;flex-direction:column;gap:0;max-width:none;border-top:1px solid var(--rule-soft)}
+.limits li{
+  display:grid;
+  grid-template-columns:200px minmax(0,1fr);
+  gap:0 22px;
+  margin:0;
+  padding:14px 0;
+  border-bottom:1px solid var(--rule-soft);
+}
+@media (max-width:640px){.limits li{grid-template-columns:1fr;gap:4px}}
+.limits .lname{
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:13px;
+  font-weight:600;
+  color:var(--ink);
+  line-height:1.4;
+}
+.limits .lbody{
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:14px;
+  line-height:1.58;
+  color:var(--ink-2);
+  max-width:60ch;
+}
+
+/* ------------------------------------------------------------- colophon */
+footer{
+  margin-top:60px;
+  padding-top:22px;
+  border-top:1px solid var(--rule);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:12.5px;
+  line-height:1.6;
+  color:var(--ink-3);
+  max-width:var(--measure);
+}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+</style>
+
+<div class="page">
+<nav class="rail" aria-label="Contents">
+  <div class="rail-group">Orientation</div>
+  <ol>
+    <li><a href="#shape">What the thing is</a></li>
+    <li><a href="#readings">Four readings, one graph</a></li>
+    <li><a href="#tiers">Insured and uninsured</a></li>
+  </ol>
+  <div class="rail-group">The member's path</div>
+  <ol>
+    <li><a href="#s1">1 · A key, not an account</a></li>
+    <li><a href="#s2">2 · Buying</a></li>
+    <li><a href="#s3">3 · Selling</a></li>
+    <li><a href="#s4">4 · Paying back</a></li>
+    <li><a href="#s5">5 · The insured term</a></li>
+    <li><a href="#s6">6 · Missing a maturity</a></li>
+    <li><a href="#s7">7 · Arbitration</a></li>
+    <li><a href="#s8">8 · Support circle</a></li>
+    <li><a href="#s9">9 · Underwriting</a></li>
+    <li><a href="#s10">10 · Governance</a></li>
+    <li><a href="#s11">11 · Keys and recovery</a></li>
+    <li><a href="#s12">12 · Leaving</a></li>
+  </ol>
+  <div class="rail-group">Cross-cutting</div>
+  <ol>
+    <li><a href="#budget">The write budget</a></li>
+    <li><a href="#seats">Seats</a></li>
+    <li><a href="#status">Status</a></li>
+  </ol>
+  <div class="rail-group">Operator side</div>
+  <ol>
+    <li><a href="#validator">Running a validator</a></li>
+    <li><a href="#api">The node's API</a></li>
+  </ol>
+  <div class="rail-group">Reference</div>
+  <ol>
+    <li><a href="#order">Order of operations</a></li>
+    <li><a href="#numbers">The numbers</a></li>
+    <li><a href="#cannot">What it will not do</a></li>
+  </ol>
+</nav>
+
+<div>
+<header class="masthead">
+  <p class="eyebrow">edet v0.7.0 · from the member's side</p>
+  <h1>The edet Rulebook</h1>
+  <p class="standfirst">Everything you can do on an edet ledger, what each act needs to be true <em>first</em>, and where the system stops. Twelve steps from the member’s side, then the two views that are not a member’s — the validator operator’s and the integrator’s.</p>
+  <div class="equation">
+    <strong>Capacity is the maximum flow into an account from the community's underwriters, across directed stakes of what creditors have placed. Nobody can stake beyond what they may confer. Outstanding credit reserves its flow.</strong>
+    <span class="eq-note">For you: you may owe the community as much as it has put behind you. Everything below is a consequence of that sentence, or a bound the sentence needed in order to be true.</span>
+  </div>
+</header>
+
+<main>
+<section id="shape">
+  <p class="part-open">Orientation</p>
+  <h2>What the thing is, and what it refuses to be</h2>
+  <p class="lede">There is no coin. Every transaction is a promise between two named members, recorded in one total order that a set of charter validators replicates. What circulates is debt; what you accumulate is not a balance but a <em>ceiling</em>.</p>
+
+  <h3>There is no membership</h3>
+  <p>No status, no attestation, no probation, no admission transition, no sponsor who approves you. An account row is created by the first bonded trade that names its key — and creating it grants nothing, because an account with no incident stakes has a capacity of exactly zero, by arithmetic rather than by rule. Nobody decides whether your row appears. The trade does.</p>
+
+  <h3>You cannot hold value, only owe less of it</h3>
+  <p>Buying is taking on a debt to the seller; that debt <em>is</em> the payment. Selling is how you discharge: a sale first nets against what you already owe the buyer, then clears your other debts (and your support circle's), and only the remainder becomes fresh debt owed by the buyer to you. There is no wallet balance to spend down, no yield, and no fee — the ledger never credits anybody for another member's traffic.</p>
+
+  <h3>Standing is evidence of having owed and paid</h3>
+  <p>The one thing that grows the graph is <strong>settlement</strong>. A stake runs from creditor to debtor, is written only when a debt is discharged, is capped by what the creditor may confer, and is a <em>peak</em> rather than a sum. Three consequences you will feel:</p>
+  <ul>
+    <li><strong>Selling earns you nothing.</strong> Two thousand settled sales leave the seller at zero. One honoured purchase gives the buyer standing at once.</li>
+    <li><strong>A wash loop cannot accumulate.</strong> Running the same cycle between one pair a thousand times raises the edge exactly as high as running it once.</li>
+    <li><strong>Standing fades.</strong> Every stake decays <span class="qty">2.3%</span> an epoch, halving in about thirty, unless trade renews it. An edge that a live obligation is drawing on cannot decay below what it holds.</li>
+  </ul>
+
+  <h3>A community is a region of the graph</h3>
+  <p>Nothing in the ledger names a community. Two co-ops on one chain are separate as long as nobody trades across, and become one the moment somebody does — with no transition, no bridge, no ceremony. The corollary is the hard one: <strong>standing cannot be carried between ledgers</strong>, so the network you choose when you set up your wallet is the one your whole history lives on, permanently.</p>
+</section>
+
+<section id="readings">
+  <h2>Four readings of one graph</h2>
+  <p>Your wallet shows several numbers that look like the same number and are not. Confusing them is the single most common way to mispredict what the ledger will let you do. All four are max-flow readings over the same stake graph; they differ in exactly what they net out.</p>
+  <div class="tablewrap wide">
+  <table>
+    <thead><tr><th>Reading</th><th>Nets out</th><th>Your own supply?</th><th>Answers</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Capacity</td><td>credit already outstanding on you</td><td>excluded</td><td>How much <em>more</em> the community will stand behind for you. The ceiling on your next <em>insured</em> purchase — not on your next purchase.</td></tr>
+      <tr><td class="k">Conferrable</td><td>your own borrowing</td><td>it <em>is</em> your declared supply, if you underwrite</td><td>How much you may put behind somebody else. It is a limit, not a balance: back twenty people and your own capacity is unchanged.</td></tr>
+      <tr><td class="k">Seed reach</td><td>nothing</td><td>included</td><td>What you have to <em>lose</em>. The base of your write budget, and the test for whether your free allowance opens at all.</td></tr>
+      <tr><td class="k">Seat reach</td><td>every live seat you sponsor</td><td>included</td><td>How many more newcomers your standing carries into the ledger. It never refills.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note trap">
+    <span class="tag">The distinction that bites</span>
+    <p>Capacity is read on the <em>residual</em> graph and seed reach is read <em>gross</em>. So a community drawn to its ceiling has members with capacity zero who can still trade normally, because a full ceiling withholds <strong>insurance</strong>, not trade. If your write budget went to zero the moment somebody else borrowed, that would be a defect, not the design.</p>
+  </div>
+</section>
+
+<section id="tiers">
+  <h2>Insured and uninsured, and why the difference is not a permission</h2>
+  <p><strong>There is no capacity gate on borrowing.</strong> Capacity bounds what the community <em>underwrites</em>, never what a member may choose to risk. Both parties sign, so both consented to which of the two they got.</p>
+  <ul>
+    <li><strong>Insured</strong> — the debt fits your capacity at the moment it is accepted, and its maturity is inside the insured horizon. It <em>reserves</em> the flow along the exact path that justified it. If you default, the underwriters whose supply carried that path become your creditor's debtors, and your debt moves to them.</li>
+    <li><strong>Uninsured</strong> — it fits neither. It reserves nothing, triggers no community recourse, and the creditor bears it alone.</li>
+  </ul>
+  <p>This is what dissolves the bootstrap. A community where everybody starts at zero would deadlock if capacity were a permission. It is not one: first trades are uninsured, they settle, they write stakes, and capacity is their residue.</p>
+  <div class="note">
+    <span class="tag">Decided at acceptance, and it can only fall</span>
+    <p>An obligation's insured flag is fixed when it is booked. Nothing later raises it, and a default does <em>not</em> release the flow it committed — which is why stealing through a default costs the thief exactly what they hold, once, and cannot be repeated. What can lower it: an extension past the horizon, or a transfer to a successor the community cannot carry. Both take the creditor's signature.</p>
+  </div>
+</section>
+
+<section id="s1">
+  <p class="part-open">The member's path</p>
+  <h2><span class="num">01</span>You have a key. You do not yet have an account.</h2>
+  <p>Your wallet generates a twelve-word recovery phrase and derives one key from it. The phrase is shown once and never stored. At this point the ledger knows nothing about you, <code>/whois</code> answers <code>null</code>, and your capacity is zero — as it is for everybody who has just arrived and everybody whose standing decayed away. That is not a refusal.</p>
+
+  <h3>What creates the row</h3>
+  <p>A trade. Specifically, an <code>Accept</code> or a <code>Sale</code> in which one party is named by <em>key</em> rather than by member id, and that key signs. The row is written last, after every other refusal has been cleared, so a trade that fails leaves no account behind.</p>
+
+  <div class="rule-block">
+    <div class="rule-head"><span class="name">first trade, seated</span><span class="what">creates one or two rows</span><span class="price seats">bond + seat</span></div>
+    <dl>
+      <dt>Signs</dt><dd>Both parties. A party named by a key nobody holds must sign with that key — that is the key-control proof.</dd>
+      <dt>Requires</dt><dd><ul>
+        <li>The key is unclaimed: not a member's key, not sitting in somebody's pending rotation, not a registered validator consensus key.</li>
+        <li>A <strong>sponsor</strong>: some signer who is an active member with both work headroom and seat reach. Two fresh keys trading with each other write nothing at all.</li>
+      </ul></dd>
+      <dt>Costs</dt><dd>The sponsor pays a work bond <em>and</em> one seat — one bond unit of their reach on the graph, held for as long as the row exists. Seating is never covered by the free allowance.</dd>
+      <dt>Refuses</dt><dd><span class="rc">ET-BND-004</span> nobody present can be billed · <span class="rc">ET-BND-006</span> the sponsor's seat reach is spent · <span class="rc">ET-ADM-002</span> the key is already spoken for</dd>
+    </dl>
+  </div>
+
+  <div class="note order">
+    <span class="tag">Order that catches people</span>
+    <p>Nominate your guardians <strong>before</strong> you lose the key. <code>RegisterGuardians</code> takes your own signature and nothing else can substitute for it. A newcomer with no allowance can still do it exactly once: every seated row holds one <em>self-act</em> its seat paid for, spendable only by that row's own key on a transition about that row and nobody else.</p>
+  </div>
+</section>
+
+<section id="s2">
+  <h2><span class="num">02</span>Buying</h2>
+  <p><strong>Buying is the one trade the wallet records</strong>, for a member and a fresh key alike. There is no "I sold" form: a sale is recorded by the person taking on the debt, and the seller signs it.</p>
+
+  <div class="rule-block">
+    <div class="rule-head"><span class="name">Sale</span><span class="what">discharge first, then create</span><span class="price">1 bond unit</span></div>
+    <dl>
+      <dt>Signs</dt><dd>Seller and buyer. Either may be named by key.</dd>
+      <dt>Requires</dt><dd><ul>
+        <li>Seller is Active — or Suspended <em>and</em> the sale is fully covered by what it nets between the two of them.</li>
+        <li>Buyer is Active.</li>
+        <li>Amount above dust and representable; maturity between <span class="qty">30</span> and <span class="qty">10,000</span> epochs.</li>
+        <li>Not a self-deal.</li>
+      </ul></dd>
+      <dt>Costs</dt><dd>One bond unit from the first signer in canonical order who can pay, allowance before bond. Two seats on top if it names two fresh keys.</dd>
+      <dt>Refuses</dt><dd><span class="rc">ET-MEM-004</span> suspended seller past the netting line · <span class="rc">ET-CTR-005</span> / <span class="rc">ET-CTR-008</span> maturity out of range · <span class="rc">ET-CTR-007</span> self-deal</dd>
+    </dl>
+  </div>
+
+  <h3>What a sale actually does, in order</h3>
+  <ol class="body-list">
+    <li><strong>Netting.</strong> Whatever the seller already owes the buyer extinguishes, oldest first. This is a real discharge: it writes the buyer's stake on the seller.</li>
+    <li><strong>The cascade.</strong> The remainder clears the seller's own debts oldest-first — or, if the seller has published a beneficiary listing, it is waterfilled across that listing (the seller's own share included), recursing up to twenty levels deep.</li>
+    <li><strong>The remainder.</strong> Whatever the cascade could not absorb becomes fresh debt owed by the buyer to the seller, maturing at the sale's own date.</li>
+  </ol>
+  <p>The buyer's total new obligation is exactly the sale amount either way; what changes is who ends up holding the claims.</p>
+
+  <div class="note trap">
+    <span class="tag">Two rules inside the cascade nobody expects</span>
+    <p>A cleared debt <strong>moves only as far as the buyer can carry it insured</strong>, and the part that cannot move stays with its original debtor. And a routed claim inherits <strong>the earlier of its own maturity and the sale's</strong>, plus its original acceptance date as the horizon base — so passing a debt around cannot push its due date out of reach.</p>
+  </div>
+
+  <h3>If you have no account yet</h3>
+  <p>Your purchase still has to reach the seller's device. Two paths, and the wallet takes them in this order:</p>
+  <ul>
+    <li><strong>The seller's invitation.</strong> Their "pay me" QR carries a signature over the chain, their key, an expiry and a nonce. That invitation is what lets your keyed request open an entry in the pending pool — charged to the inviter's bucket, admitting purchases from the inviter only, and capped at <span class="qty">8</span> open per inviter. A key can never be charged for pool occupancy, which is why the invitation exists.</li>
+    <li><strong>A code you show them.</strong> Without an invitation, the same signed envelope leaves your device as an <code>edet://buy</code> code. The seller's wallet verifies it against the digest it computes itself, co-signs, and submits.</li>
+  </ul>
+</section>
+
+<section id="s3">
+  <h2><span class="num">03</span>Selling, and what you get for it</h2>
+  <p>You publish your address (a QR). The buyer records the purchase; it lands in your <em>Requests</em> inbox; you sign or decline. Nothing binds until every required party has signed from their own device.</p>
+  <p><strong>You earn no standing from selling.</strong> The stake edge runs creditor → debtor, so what you accumulate by selling is receivables, not capacity. Held symmetrically, lending would raise the lender's own limit — which is backwards.</p>
+
+  <h3>Deciding without being present</h3>
+  <p>An optional acceptance rule scores each incoming purchase from ledger facts — what the community backs the buyer for, what they already owe, how fast they are taking on debt — and signs below your threshold, declines above another, holds the band between. Three bounds on it, all deliberate:</p>
+  <ul>
+    <li>It runs only while the app is open. Nothing signs in your name while it is closed.</li>
+    <li>It only ever decides purchases where you grant credit. Key recoveries, guardian changes, arbitration and governance always wait for you.</li>
+    <li>A request the ledger would reject is never signed.</li>
+  </ul>
+  <p>Your personal reading of a member is kept on your device and shown <em>beside</em> the community's score, never in place of it.</p>
+</section>
+
+<section id="s4">
+  <h2><span class="num">04</span>Paying back</h2>
+  <p>Three ways your debt goes down, and only two of them build your standing.</p>
+
+  <div class="rule-block">
+    <div class="rule-head"><span class="name">Settle</span><span class="what">discharge a live obligation</span><span class="price free">free, always</span></div>
+    <dl>
+      <dt>Signs</dt><dd>The debtor, <em>and</em> the creditor — or a threshold of the creditor's guardians. Never the debtor's guardians: that would be a debtor declaring their own payment.</dd>
+      <dt>Requires</dt><dd><ul>
+        <li>Contract is Active.</li>
+        <li>Amount is positive and no more than what is outstanding.</li>
+        <li>A partial payment is at least <span class="qty">1/128</span> of the original — unless it closes the row, which any amount may do.</li>
+      </ul></dd>
+      <dt>Costs</dt><dd>Nothing, ever. The recovery path is never bonded: a bond that could strand a member inside their own default would make a recoverable failure absorbing.</dd>
+      <dt>Refuses</dt><dd><span class="rc">ET-CTR-002</span> wrong state · <span class="rc">ET-CTR-004</span> bad amount, over-payment, or below the installment floor · <span class="rc">ET-MEM-003</span> a required signature missing</dd>
+    </dl>
+  </div>
+
+  <p>The row closes when at most dust is left, so paying all but a cent closes it and forgives the cent. Your stake credit reads the obligation's <em>cumulative</em> repayment, not the installment — two halves of 1,000 stake 1,000, exactly as paying at once would.</p>
+
+  <div class="note trap">
+    <span class="tag">A creditor who will not sign strands you, and the ledger cannot see it</span>
+    <p><strong>You have no unilateral act.</strong> Both routes out need the creditor: <code>Settle</code> takes their signature, and the sale that nets the debt is a purchase <em>they</em> record. A creditor who loses their keys, stops answering, or simply declines drives the debt to maturity whatever you do.</p>
+    <p><strong>And the offer you made leaves no trace.</strong> A discharge submitted without them is refused, refunded and its id forgotten — measured, the state root is bit-identical before and after. A refused discharge and one that was never offered are the same state, so nothing on the ledger can be keyed on "I tried to pay". That is not an oversight: the creditor's signature <em>is</em> the record that value arrived, and a rule where silence discharges would hand every debtor a way to clear any debt by waiting.</p>
+    <p>What exists is the creditor's own guardians, who may sign a discharge in their stead — letting a threshold of them do it adds no trust the creditor had not already placed, since they could rotate the key and sign as them anyway. And the two routes below.</p>
+  </div>
+
+  <h3>The other two ways</h3>
+  <ul>
+    <li><strong>Sell to your creditor.</strong> Their purchase nets your debt automatically, oldest first. This is the ordinary path and it earns you the full stake.</li>
+    <li><strong>A supporter's sale drains into it.</strong> This clears the debt and earns you <strong>nothing</strong> — it is a debtor swap, and a stake is only ever placed by a transition the creditor signed. Relief now against standing later; see §8.</li>
+  </ul>
+
+  <div class="rule-block">
+    <div class="rule-head"><span class="name">Transfer</span><span class="what">somebody else takes the debt over</span><span class="price free">free</span></div>
+    <dl>
+      <dt>Signs</dt><dd>The current debtor and the successor — plus the creditor <strong>only if</strong> the successor would not be insured for it, or the claim is past its horizon. Whether the creditor is asked is a fact about the graph, not a choice anybody makes.</dd>
+      <dt>Requires</dt><dd><strong>Contract Active</strong> — so this route closes the moment it matures; successor is Active and is neither the current debtor nor the creditor.</dd>
+      <dt>Costs</dt><dd>Nothing. It is discharge for the outgoing debtor, who may be the one at their ceiling.</dd>
+      <dt>Refuses</dt><dd><span class="rc">ET-CTR-007</span> successor is already a party · <span class="rc">ET-MEM-003</span> the creditor's signature is required and absent</dd>
+    </dl>
+  </div>
+  <p>The successor inherits the original maturity <em>and</em> the original acceptance date. A transfer moves who owes, never when it is due.</p>
+
+  <h3>Two routes out of a creditor who will not sign, and one deadline</h3>
+  <ol class="body-list">
+    <li><strong>Hand the claim on, before it matures.</strong> Where the community can back the successor for the amount, the creditor is not asked at all — two signatures, neither of them theirs, and you are out with no default recorded. It needs somebody willing, and it is refused the moment the row stops being Active. That deadline is the whole of the risk: the escape closes at exactly the maturity the refusal was driving toward.</li>
+    <li><strong>Let it default — if it was insured.</strong> Substitution moves the claim onto the underwriters, so the row's creditor becomes one of <em>them</em>, and an underwriter can sign the <code>Cure</code> the original creditor would not. The default is repaired, the allowance reopens and the capacity comes back. The cost is one recorded default and a closed allowance in between.</li>
+  </ol>
+  <p>What has no route at all is the residue: an <strong>uninsured</strong> claim, a creditor who registered no guardians, and no successor found before maturity. Nothing substitutes, nothing transfers, nothing nets — the open default stands, and <code>Exit</code> stays refused. Which inverts the usual reading: <strong>the tier that carries community risk is also the only one with a fallback signer.</strong></p>
+
+  <div class="note">
+    <span class="tag">What the refusal is worth to the refuser</span>
+    <p>Measured over six debtors against a control aged identically: a creditor who signs every discharge and one who signs none end with <em>identical</em> capacity, conferrable, seed reach, write headroom, allowance and default record. The refuser ends holding the whole amount as a claim on the underwriters; the signer holds nothing, because being paid confers standing rather than earning it. Nothing anywhere records that a creditor was the beneficiary of a default.</p>
+    <p>It is bounded — the whole scheme cannot draw more than the seed, and each use burns a backed debtor, since a second claim on the same debtor is uninsured and substitutes nobody — and it is not detectable, by the paragraph above. Do not deliver value ahead of the signature, and prefer a counterparty who has registered guardians.</p>
+  </div>
+</section>
+
+<section id="s5">
+  <h2><span class="num">05</span>The insured term, and how to lose it</h2>
+  <p>Insurance has a clock as well as an amount. A claim is insured only if it matures within the <strong>insured horizon</strong> — <span class="qty">365</span> epochs at genesis, governed between the maturity floor and the maximum horizon — measured from its <em>acceptance</em>.</p>
+
+  <div class="rule-block">
+    <div class="rule-head"><span class="name">Extend</span><span class="what">move a maturity out</span><span class="price">1 bond unit</span></div>
+    <dl>
+      <dt>Signs</dt><dd>Debtor and creditor, both.</dd>
+      <dt>Requires</dt><dd>Contract Active; the new date is strictly later than the current one and no more than <span class="qty">10,000</span> epochs from now.</dd>
+      <dt>Costs</dt><dd>One bond unit — and, past the horizon, the insurance. The reservation is released and the claim becomes the creditor's own from then on.</dd>
+      <dt>Refuses</dt><dd><span class="rc">ET-CTR-004</span> the new date is not later · <span class="rc">ET-CTR-008</span> beyond the maximum horizon</dd>
+    </dl>
+  </div>
+
+  <div class="note order">
+    <span class="tag">Why the base is acceptance and not "now"</span>
+    <p>Measured from now, a chain of extensions each inside the horizon would roll an insured claim for ever, and the underwriters holding it were never asked. Measured from acceptance, it cannot. <strong>To keep a claim insured for longer you settle it and re-accept it</strong> against the current cut — which prices it again, on today's graph, with today's signatures.</p>
+  </div>
+</section>
+<section id="s6">
+  <h2><span class="num">06</span>Missing a maturity</h2>
+  <p>Past its maturity an obligation can be marked defaulted by anybody — and it does not depend on anybody, because the epoch sweep runs the crank itself at every boundary. Nobody chooses whether a default counts, or when.</p>
+
+  <div class="rule-block">
+    <div class="rule-head"><span class="name">MarkExpired</span><span class="what">the default crank</span><span class="price free">free · permissionless</span></div>
+    <dl>
+      <dt>Signs</dt><dd>Nobody. It carries no signature and needs none.</dd>
+      <dt>Requires</dt><dd>Contract Active, current epoch past its maturity, outstanding above dust. A pure state check, so it can neither be forged against somebody who is not due nor suppressed by whoever would have had to call it.</dd>
+      <dt>Costs</dt><dd>Nothing. A crank that finds nothing to do leaves no trace at all.</dd>
+      <dt>Refuses</dt><dd><span class="rc">ET-CTR-002</span> not Active · <span class="rc">ET-CTR-006</span> not due</dd>
+    </dl>
+  </div>
+
+  <h3>What lands on whom</h3>
+  <ul>
+    <li><strong>Your standing stays consumed.</strong> A default releases none of the flow it committed. Your capacity does not come back.</li>
+    <li><strong>If it was insured</strong>, the creditor's claim moves onto the underwriters whose arcs carried it, split by exactly what each carried; each becomes an ordinary debtor of the creditor. Your debt subrogates to them — so if you cure, they recover, because the creditor is already whole. The substitution leg is itself uninsured, deliberately: losses land on source arcs, never cascading to the next ring.</li>
+    <li><strong>If it was uninsured</strong>, nothing substitutes. The creditor bears it alone. <strong>There is no layer under the uninsured tier</strong> — no pool, no fund, no backstop.</li>
+    <li><strong>Your free allowance closes</strong> while an open default stands, whatever your backing says. The recovery path stays free regardless.</li>
+    <li><strong>You get a counterparty who can still be paid</strong>, on an insured claim: the row's creditor is now the underwriter, and they sign the cure. This is the one way a refusing or vanished creditor partly undoes itself — and it exists only on the insured tier.</li>
+  </ul>
+
+  <div class="rule-block">
+    <div class="rule-head"><span class="name">Cure</span><span class="what">late discharge</span><span class="price free">free, always</span></div>
+    <dl>
+      <dt>Signs</dt><dd>Debtor, and creditor or the creditor's guardian threshold — the same rule <code>Settle</code> runs on.</dd>
+      <dt>Requires</dt><dd>Contract is Expired; amount positive, not over the outstanding, and at or above the installment floor unless it closes the row.</dd>
+      <dt>Costs</dt><dd>Nothing.</dd>
+      <dt>Refuses</dt><dd><span class="rc">ET-CTR-002</span> the row is not in default · <span class="rc">ET-CTR-004</span> bad amount</dd>
+    </dl>
+  </div>
+  <p>In the wallet the advice is simpler than the transition: <strong>sell to your creditor</strong>. Their purchase cures the default and repairs both sides in one act.</p>
+
+  <h3>Rings net themselves</h3>
+  <p>If A owes B owes C owes A and every hop is in default, the epoch sweep nets the ring by its smallest hop — with no signature from anybody. The argument for needing no consent is exact and does not survive weakening: <em>every party is already due</em>, so nobody is being paid early and nobody loses time value. Bounded at <span class="qty">8</span> hops and <span class="qty">64</span> rings an epoch; each hop is an ordinary discharge and earns its stake. A ring with an arbitration panel open on it is the panel's business and is left alone.</p>
+</section>
+
+<section id="s7">
+  <h2><span class="num">07</span>Arbitration</h2>
+  <p>The one remedy for non-delivery. It is a <em>consented</em> channel: a panel, a quorum, a window and an award ceiling that both parties pin at acceptance and that nothing can change afterwards.</p>
+
+  <div class="note trap">
+    <span class="tag">You cannot add a panel later</span>
+    <p>Terms are validated and frozen when the obligation is booked. If you are buying from somebody nobody has backed, naming an arbiter at that moment is the only thing that binds them to an outcome — there is no way back to it once the trade is on the ledger.</p>
+  </div>
+
+  <div class="rule-block">
+    <div class="rule-head"><span class="name">arbitration terms</span><span class="what">named at acceptance, immutable</span><span class="price">part of the trade</span></div>
+    <dl>
+      <dt>Signs</dt><dd>Both trade parties, by signing the trade that carries them.</dd>
+      <dt>Requires</dt><dd><ul>
+        <li>Quorum at least 1 and no more than the panel size; panel at most <span class="qty">16</span> arbiters.</li>
+        <li>Window between 1 and <span class="qty">10,000</span> epochs, counted from the contract's creation.</li>
+        <li>Every arbiter already a member — and neither trade party.</li>
+        <li>An award ceiling that is a finite, representable, non-negative amount.</li>
+      </ul></dd>
+      <dt>Costs</dt><dd>Nothing beyond the trade's own bond.</dd>
+      <dt>Refuses</dt><dd><span class="rc">ET-ARB-006</span> malformed terms · <span class="rc">ET-MEM-001</span> an arbiter who is not a member</dd>
+    </dl>
+  </div>
+
+  <div class="rule-block">
+    <div class="rule-head"><span class="name">ArbAttest</span><span class="what">an arbiter states the justified amount</span><span class="price free">free</span></div>
+    <dl>
+      <dt>Signs</dt><dd>The arbiter, from their own device.</dd>
+      <dt>Requires</dt><dd>You are on that contract's panel; the window is still open; no award has been minted; you have not attested before. Nothing can compel an attestation.</dd>
+      <dt>Costs</dt><dd>Nothing — billing a member for discharging an arbiter's duty would price participation itself.</dd>
+      <dt>Refuses</dt><dd><span class="rc">ET-ARB-002</span> not on the panel · <span class="rc">ET-ARB-003</span> window closed · <span class="rc">ET-ARB-004</span> already attested · <span class="rc">ET-ARB-005</span> already awarded</dd>
+    </dl>
+  </div>
+
+  <h3>What the award is</h3>
+  <p>The <strong>median over every attestation the window received</strong>, minted by the sweep at the window's close — never at quorum. Minting at quorum would make the panel a race decided by whoever signs first; a median is a statement about a set. The quorum is therefore a <em>floor for minting at all</em>, not a trigger.</p>
+  <p>It runs from the original <strong>creditor to the original debtor</strong>: it is the buyer's remedy for non-delivery, and it is bounded three ways — the median, the ceiling both parties agreed, and the original amount. It is minted regardless of the loser's headroom, and it is an <strong>ordinary uninsured claim</strong>. It does not consume the loser's capacity and it is not a lien; what it does is net against any future trade the loser does with the winner.</p>
+  <p>If the window closes without the quorum, nothing mints and the row is marked resolved so a late attestation cannot revive it.</p>
+</section>
+
+<section id="s8">
+  <h2><span class="num">08</span>The support circle</h2>
+  <p>You can direct your sales to clear other members' debts instead of only your own. This is the mechanism the user's question names, and it has <strong>three</strong> preconditions, of which the third is invisible in the UI until you look for it.</p>
+
+  <ol class="body-list">
+    <li><strong>You list them.</strong> <code>ListBeneficiaries</code> publishes a weighted listing. Listing needs no consent from anybody — up to 64 entries, all weights positive, all beneficiaries existing members. Your own entry is legal and is your share of your own waterfill.</li>
+    <li><strong>They approve you.</strong> <code>ApproveSupporter</code> is the beneficiary's own signature, and it can only be given to somebody who <em>already lists them</em>. It can be revoked at any time.</li>
+    <li><strong>The two of you have settled something.</strong> The drain edge carries at most ν times what the pair has staked in each other, in either direction — and that is exactly <strong>zero</strong> until a debt between you has been carried and paid. There is deliberately no floor: an approval with no trade behind it is evidence of nothing.</li>
+  </ol>
+
+  <div class="note trap">
+    <span class="tag">Approving a supporter is a real economic decision</span>
+    <p>A debt cleared for you by a supporter is a <em>debtor swap</em>, so <strong>no stake is written</strong>. Measured: 80 cleared by a supporter confers 0 where paying the same 80 yourself confers 80, and three rounds leave capacity at 200 against 380. The choice is relief now against standing later, and it is yours alone — which is why it takes your signature and cannot be automated away.</p>
+  </div>
+
+  <div class="rule-block">
+    <div class="rule-head"><span class="name">the drain, in one sale</span><span class="what">waterfill over the listing</span><span class="price">inside the sale's bond</span></div>
+    <dl>
+      <dt>Signs</dt><dd>Nobody extra. The consent was given in advance, on both sides.</dd>
+      <dt>Requires</dt><dd><ul>
+        <li>Listed, approved, and a positive pair stake — all three.</li>
+        <li>The beneficiary has debts the buyer can carry insured; what the buyer cannot carry stays where it is.</li>
+        <li>Recursion at most 20 levels; no member drained twice in one sale.</li>
+      </ul></dd>
+      <dt>Costs</dt><dd>Standing, to the beneficiary — see above.</dd>
+      <dt>Refuses</dt><dd><span class="rc">ET-CAS-001</span> non-positive weight · <span class="rc">ET-CAS-003</span> more than 64 beneficiaries · <span class="rc">ET-CAS-004</span> approving somebody who has not listed you</dd>
+    </dl>
+  </div>
+  <p>A seller with <em>no</em> listing at all keeps the default: the whole sale clears their own debts, oldest first.</p>
+</section>
+
+<section id="s9">
+  <h2><span class="num">09</span>Underwriting</h2>
+  <p>An underwriter is a member who has declared a supply: the credit they stand behind. It is an accepted liability, not a rank, and there is no yield of any kind — the protocol collects no rent, so underwriting is a club good.</p>
+
+  <div class="note trap">
+    <span class="tag">A supply can never be raised by the member holding it</span>
+    <p><code>DeclareSupply</code> lowers, and only lowers. Every raise is refused with <span class="rc">ET-UWR-001</span>, at any capacity. Capping a raise by the declarer's own capacity reads correctly one member at a time and is hollow in aggregate: twelve joiners wash-backing each other behind a seed of 100 reach a declared 204,900 and borrow 204,800 of ledger-labelled <em>insured</em> credit, with every invariant satisfied. A supply rises through a ceremony — genesis, or an endorsed seed amendment — and through nothing else.</p>
+  </div>
+
+  <div class="rule-block">
+    <div class="rule-head"><span class="name">DeclareSupply</span><span class="what">lower, or leave the role</span><span class="price free">free to lower</span></div>
+    <dl>
+      <dt>Signs</dt><dd>The underwriter.</dd>
+      <dt>Requires</dt><dd><ul>
+        <li>Not Exited. A <em>Suspended</em> underwriter may lower and leave — the sanction must not make its target a permanent involuntary insurer.</li>
+        <li>The new figure is at or below the current one. Restating an unchanged supply is legal.</li>
+        <li>It is at or above the flow already committed through you. The debt did not shrink because you changed your mind.</li>
+      </ul></dd>
+      <dt>Costs</dt><dd>Nothing to lower. Nobody may ever be priced out of reducing what they stand behind.</dd>
+      <dt>Refuses</dt><dd><span class="rc">ET-UWR-001</span> a raise · <span class="rc">ET-UWR-002</span> below the committed flow</dd>
+    </dl>
+  </div>
+
+  <h3>Becoming one</h3>
+  <p>A <code>SeedAmendment</code> proposal. It names no beneficiary because the beneficiary <em>is</em> its author — a supply is a signed standing consent to inherit other members' debts, so an amendment naming somebody else would volunteer a member to underwrite. You propose it yourself; you may not assent to it (<span class="rc">ET-SED-002</span>); and the community's underwriters carry it. Bounded at <strong>β × the external seed already tracked, per epoch</strong> — 2% at genesis, so a ceremony a month grows the roll about 27% a year, and only a ceremony every epoch compounds at the full rate. The headroom does not carry over between epochs.</p>
+  <p>What the bound is honestly worth: a majority can still endorse a phantom commitment. No rule prevents a community lying to itself. What the bound changes is the shape of the failure — an explosion becomes a slow, public, attributable leak, during which lenders, who must still choose to deliver goods against the figure, can simply stop.</p>
+</section>
+
+<section id="s10">
+  <h2><span class="num">10</span>Governance</h2>
+  <p>Members propose; the ceremony enacts. Two separate franchises, and conflating them is the usual mistake.</p>
+
+  <div class="rule-block">
+    <div class="rule-head"><span class="name">Propose</span><span class="what">put a change on the record</span><span class="price">2 bond units</span></div>
+    <dl>
+      <dt>Signs</dt><dd>The author.</dd>
+      <dt>Requires</dt><dd><ul>
+        <li>Active — or Suspended, for an <code>Unsuspend</code> and nothing else.</li>
+        <li><strong>Conferrable above dust</strong>: something to lose. Free keys are excluded by arithmetic, not by a quota.</li>
+        <li>One exemption: a <code>SeedAmendment</code>, because a member bringing backing from outside has nothing on-ledger to be established by. Their write is still bonded, so an established member co-signs and pays.</li>
+        <li>The value is inside the constitutional safe range for its key, and — for the bond unit and for re-denomination — leaves the unit at least one minor unit wide.</li>
+      </ul></dd>
+      <dt>Costs</dt><dd>Two bond units. A proposal is a permanent, globally visible row.</dd>
+      <dt>Refuses</dt><dd><span class="rc">ET-GOV-001</span> not established · <span class="rc">ET-GOV-003</span> outside the safe range · <span class="rc">ET-GOV-006</span> re-denomination outside its band</dd>
+    </dl>
+  </div>
+
+  <div class="rule-block">
+    <div class="rule-head"><span class="name">Assent</span><span class="what">the vote</span><span class="price free">free</span></div>
+    <dl>
+      <dt>Signs</dt><dd>The assenting member.</dd>
+      <dt>Requires</dt><dd><ul>
+        <li><strong>You hold external supply.</strong> Governance weight is a share of the external seed for every proposal kind. Backing that came from inside the community carries no vote at all — refused, not silently discounted.</li>
+        <li>You have not already assented to this proposal.</li>
+        <li>Not your own seed amendment.</li>
+        <li>If your assent would enact it: the parameter's cooldown has run, and the enactment's own checks pass at <em>today's</em> state.</li>
+      </ul></dd>
+      <dt>Costs</dt><dd>Nothing — participation is not priced.</dd>
+      <dt>Refuses</dt><dd><span class="rc">ET-GOV-007</span> no mandate · <span class="rc">ET-GOV-008</span> already assented · <span class="rc">ET-SED-002</span> your own amendment · <span class="rc">ET-GOV-004</span> cooldown</dd>
+    </dl>
+  </div>
+
+  <h3>Two bars, not one</h3>
+  <p><strong>A change to who orders the ledger takes two thirds of the seed; everything else takes a half.</strong> A parameter moved too far is moved back through the same door — every value inside a constitutional range is one the ledger keeps working at. A validator set is not recoverable that way, because the coalition holding it decides which blocks exist, including the ones that would undo it. Suspension sits in the higher class exactly when its target holds voting power, read off state rather than off the proposal's name.</p>
+  <p>Some constants are <strong>frozen</strong>: the two adoption thresholds themselves have no parameter key, because a constant that guards amendment must not be amendable through the door it guards.</p>
+</section>
+
+<section id="s11">
+  <h2><span class="num">11</span>Keys, loss, and theft</h2>
+  <p>Whoever holds the phrase holds the identity. There is no freeze, no support desk and no reset. What exists is a recovery path you must set up <em>in advance</em>.</p>
+
+  <div class="rule-block">
+    <div class="rule-head"><span class="name">RegisterGuardians</span><span class="what">nominate who can rotate you</span><span class="price">1 bond unit or the seat slot</span></div>
+    <dl>
+      <dt>Signs</dt><dd>You, and only you. Nothing substitutes.</dd>
+      <dt>Requires</dt><dd><ul>
+        <li>Threshold at least <span class="qty">2</span>, and at least that many guardians.</li>
+        <li>Veto window between <span class="qty">30</span> and <span class="qty">10,000</span> epochs. A zero window would make the veto structurally unreachable and turn a threshold of compromised guardians into an immediate takeover.</li>
+        <li>Every guardian is an existing member, and none of them is you.</li>
+      </ul></dd>
+      <dt>Costs</dt><dd>One bond unit — or a newcomer's single seat slot, which is exactly what it is there for.</dd>
+      <dt>Refuses</dt><dd><span class="rc">ET-ROT-002</span> threshold or list too small · <span class="rc">ET-ROT-006</span> veto window out of range</dd>
+    </dl>
+  </div>
+  <p>Registering a new guardian set also <strong>deletes any pending rotation</strong>. That is deliberate: revoking compromised guardians must not leave the attacker's request standing and re-measured against the new, shorter window.</p>
+
+  <h3>The rotation itself</h3>
+  <ul>
+    <li><strong>RotateRequest</strong> — a threshold of your guardians sign. The new key list is 1 to <span class="qty">8</span> keys, none of them already claimed. Costs one bond unit.</li>
+    <li><strong>RotateVeto</strong> — your own signature. It <em>deletes</em> the request rather than flagging it, so a second veto finds nothing. Free. Your old key vetoes a thief's rotation; a thief's key cannot stop your guardians.</li>
+    <li><strong>RotateFinalize</strong> — permissionless, once the veto window has elapsed. Free.</li>
+  </ul>
+
+  <div class="note trap">
+    <span class="tag">Without guardians there is no way back</span>
+    <p>If the key is gone and nobody was nominated, the only path is a new key and a new row. Your old standing stays with the lost key, and its open debts default at maturity — falling on whoever was backing them. Guardians can only be nominated while you still control your key.</p>
+  </div>
+
+  <h3>A validator's key is not a member's key</h3>
+  <p>If you run a validator, <code>SetConsensusKey</code> registers a <em>separate</em> key that can never sign a transaction, checked unique against both namespaces. A validator key sits unencrypted on a server that answers the internet; a member key signs obligations from a device you carry. The community cannot vote you voting power before you have registered one (<span class="rc">ET-VAL-004</span>), and you cannot retire the registration while you still hold power.</p>
+</section>
+
+<section id="s12">
+  <h2><span class="num">12</span>Leaving, and being retired</h2>
+
+  <div class="rule-block">
+    <div class="rule-head"><span class="name">Exit</span><span class="what">voluntary and terminal</span><span class="price free">free</span></div>
+    <dl>
+      <dt>Signs</dt><dd>You.</dd>
+      <dt>Requires</dt><dd><ul>
+        <li>No outstanding debt and no open default above dust.</li>
+        <li>No operation bond of yours still encumbered.</li>
+        <li>You are not an underwriter — <strong>withdraw your supply to zero first</strong>, which has its own floor at the flow drawn through you.</li>
+        <li>Removing you leaves the validator set at or above its floor.</li>
+        <li>You have not already exited.</li>
+      </ul></dd>
+      <dt>Costs</dt><dd>Nothing. Winding down under sanction is the recovery path, so a Suspended member may exit too.</dd>
+      <dt>Refuses</dt><dd><span class="rc">ET-LIF-001</span> debt outstanding · <span class="rc">ET-LIF-002</span> bonds outstanding · <span class="rc">ET-UWR-003</span> still an underwriter · <span class="rc">ET-VAL-002</span> would leave too few validators</dd>
+    </dl>
+  </div>
+  <p>Exit is terminal: a key that has exited cannot rejoin as itself. Your history stays. The stake graph is deliberately <em>not</em> swept — an edge records what a creditor placed behind you and your leaving does not un-place it; decay is what retires standing, on the one schedule that applies to everybody.</p>
+
+  <h3>Retirement, which is different</h3>
+  <p>A row that has held nothing for a year is dropped by the sweep — no edges either way, no contracts in any status, no bonds, no default, no supply, no vote, no pending rotation, and named by no panel, proposal, guardian roll or seat. It returns its seat to the sponsor's reach and frees its key, so <strong>a retired row's key can be seated again by a later trade</strong>. A suspended row is never retired: a sanction is not nothing. And a row that sponsors a live seat is never empty, whatever else it holds.</p>
+</section>
+<section id="budget">
+  <p class="part-open">Cross-cutting</p>
+  <h2>The write budget: why an action can be refused when nothing is wrong with it</h2>
+  <p>Every transition that grows the ledger is priced, and the price is a <strong>reservation</strong>, never a fee. It encumbers part of your own headroom for an epoch and then returns. Nothing is charged, nobody is credited, no balance moves. That is what makes the ledger feeless in the strict sense.</p>
+
+  <h3>Three budgets, and they are not interchangeable</h3>
+  <div class="tablewrap wide">
+  <table>
+    <thead><tr><th>Budget</th><th>What it is</th><th>Refills</th><th>Buys</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Free allowance</td><td><span class="qty">32</span> bonded transitions per epoch</td><td>every epoch</td><td>ordinary non-seating writes</td></tr>
+      <tr><td class="k">Work headroom</td><td>seed reach − your debt − your live bonds − anything forfeited</td><td>as bonds release, one epoch later</td><td>everything the allowance ran out on</td></tr>
+      <tr><td class="k">Seat reach</td><td>your reach net of every seat you already sponsor</td><td><strong>never</strong></td><td>new rows, and only new rows</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>The allowance is not a per-key entitlement</h3>
+  <p>It opens only for an account the seed <strong>reaches for at least 5% of the reference denomination</strong> — <span class="qty">50.00</span> at genesis values — and it closes entirely while you carry an open default. A ring of fresh keys trading only with each other therefore writes <em>nothing</em>: no signer has reach, so no signer has headroom, so the gate refuses. A newcomer trading with an established member writes normally, billed to the member who chose to trade with them.</p>
+
+  <div class="note">
+    <span class="tag">Who pays</span>
+    <p>The bill goes to the <strong>first signer in canonical order who can pay</strong> — ascending member id, allowance before bond — and never to "whoever signed first" in the envelope. Envelope order is chosen by whoever assembles the transaction, so billing on it would let a counterparty put you first every time, drain your headroom, and arm the forfeiture crank against you. Canonical order is a function of <em>who</em> signed, not of how the envelope was laid out.</p>
+  </div>
+
+  <h3>Saturation and forfeiture</h3>
+  <p>An epoch in which the gate denied you and you never came back under your ceiling is a <em>saturated</em> epoch. After <span class="qty">3</span> consecutive ones, anybody may call <code>ForfeitBonds</code> — permissionless, pure state check, no discretion about whether or when it lands. What is forfeited stays encumbered permanently: it is subtracted from your headroom for good. Nothing is minted and nobody receives it; the way back is the model's own, which is to earn more standing.</p>
+  <p>Two refusals deliberately do <em>not</em> arm that counter: a status that zeroed your budget (<span class="rc">ET-BND-005</span>), and a spent seat reach (<span class="rc">ET-BND-006</span>). Neither is abuse, and forfeiting somebody's bonds for either would be a sanction nobody proposed.</p>
+
+  <h3>What is always free</h3>
+  <p>Settle, Cure, Transfer, Exit, a lowering DeclareSupply, the permissionless cranks, Assent, ArbAttest, RotateVeto and RotateFinalize. Every one of them either shrinks state, unblocks a stuck member, or destroys its own precondition. That last clause is load-bearing: a zero-priced transition is unlimited, so each one must refuse its own second call.</p>
+</section>
+
+<section id="seats">
+  <h2>Seats: the one bond that never comes back</h2>
+  <p>A write budget bounds a <em>rate</em>; a row is a <em>stock</em>. It is permanent, hashed into every state root, and retired by nothing but the emptiness sweep. So the two are priced differently, and the seat is the part of the design most likely to surprise you.</p>
+  <ul>
+    <li>Bringing somebody in holds <strong>one bond unit of the flow from the community's seed to you</strong>, on the graph itself, on a reservation the credit layer never reads.</li>
+    <li>It is <strong>shared and permanent</strong> — not per-account, not decaying. Per-account it would compound behind one honest edge; decaying, an accomplice would renew it with free trades.</li>
+    <li>Nothing releases it except retirement of an <em>empty</em> row. Emptiness is a property nobody can impose on another member.</li>
+  </ul>
+  <p>What that buys, measured: <span class="qty">25</span> rows behind a single edge of 500.00, <span class="qty">250</span> behind 5,000.00, unchanged over four hundred epochs of daily renewal. A community can seat its whole external seed over the bond unit and then nobody, until a ceremony. <strong>The seat ceiling and the credit ceiling are one number.</strong></p>
+  <div class="note order">
+    <span class="tag">Three things this bends, and they are the honest price</span>
+    <p>The seat is the one bond no transition returns. The ceiling genuinely binds — a community can run out of room to admit people. And a reservation never reroutes an earlier one, so the gate is first-come and slightly conservative: a full re-solve could occasionally fit one more row than it refuses.</p>
+  </div>
+</section>
+
+<section id="status">
+  <h2>Status: what suspension actually revokes</h2>
+  <p>There is no ladder. <em>Active</em> is the resting state of every account that has not been suspended or left, and the two status machines do not talk to each other.</p>
+  <div class="tablewrap wide">
+  <table>
+    <thead><tr><th></th><th>Active</th><th>Suspended</th><th>Exited</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Originate credit (buy, sell, accept)</td><td>yes</td><td>no — a sale is admitted only as far as it nets</td><td>no</td></tr>
+      <tr><td class="k">Settle, cure, transfer out</td><td>yes</td><td>yes</td><td>—</td></tr>
+      <tr><td class="k">Guardians, rotation, approve a supporter</td><td>yes</td><td>yes, with a co-signer who can pay</td><td>—</td></tr>
+      <tr><td class="k">Lower a supply, and leave</td><td>yes</td><td>yes</td><td>no</td></tr>
+      <tr><td class="k">Propose and assent</td><td>yes</td><td>only <code>Unsuspend</code></td><td>no</td></tr>
+      <tr><td class="k">Own write budget</td><td>full</td><td><strong>zero</strong></td><td>zero</td></tr>
+      <tr><td class="k">Confer standing on others</td><td>yes</td><td>yes</td><td>yes</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>A suspended member's budget is zeroed by their <em>status</em>, not spent — which is why it has its own refusal. Their supply stays in the assent denominator, because removing it would make suspension a franchise act; and they vote on their own reinstatement and nothing else, because an electorate has to survive its own sanctions. Neither suspension nor exit stops a member conferring standing: an edge records what was already placed.</p>
+</section>
+
+<section id="validator">
+  <p class="part-open">Operator side</p>
+  <h2>Running a validator</h2>
+  <p class="lede">Validators are headless institutional nodes: a release build, on a server, ordering blocks. A handset is a poor validator, and the client never becomes one. What follows is the operator's view, and none of it is a member's concern.</p>
+
+  <h3>Two sets are agreed at a founding, and they need not overlap</h3>
+  <p><strong>Who orders transactions</strong> is the validator set. <strong>Where credit comes from</strong> is the founding underwriters. Underwriting is an economic position, not an operational one: an underwriter need not run a validator, and a validator need not underwrite. The genesis file carries both, and only the validator half is amendable at runtime.</p>
+  <div class="note trap">
+    <span class="tag">The seed is the half you cannot fix later</span>
+    <p>A community may found with <em>no</em> underwriters and it will work — every obligation uninsured, borne bilaterally, an ordinary mutual-credit network. But it can never leave that state: with no underwriter, settled trade writes no stake, every capacity stays at zero, and the largest declarable supply is zero, because a declaration is capped by a capacity that is capped by there being no underwriter. Genesis underwriting is not a default; it is the only seed. Size it on <strong>peak simultaneous insured credit</strong>, never on annual volume.</p>
+  </div>
+
+  <h3>Three keys, three places</h3>
+  <div class="tablewrap wide">
+  <table>
+    <thead><tr><th>Key</th><th>Lives</th><th>Signs</th><th>Rotated by</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Member key</td><td>the operator's wallet, derived from a recovery phrase</td><td>obligations, supply declarations, governance</td><td>guardians, after a veto window</td></tr>
+      <tr><td class="k">Consensus key</td><td>the server, unencrypted, mode <span class="qty">0600</span></td><td>a vote a second, and nothing else — it can never sign a transaction</td><td><code>SetConsensusKey</code>, from the wallet</td></tr>
+      <tr><td class="k">Peer id</td><td>derived from the consensus key</td><td>nothing; it is an address</td><td>follows the consensus key</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The separation is the whole point: one key for both roles makes a validator host compromise an <em>economic identity</em> compromise, and makes restoring that recovery phrase into a wallet turn a phone into a hot consensus key. The ledger enforces it in both directions — a consensus key that is somebody's member key is refused, and so is a member key that is somebody's consensus key.</p>
+  <p>Because the peer id follows the consensus key, <strong>rotating it is a config edit on every peer that lists you</strong>. Two more standing limits at the node level: a validator seated after genesis, or one that has rotated, does not resolve its own address against the genesis file and so does not boot; and the community cannot vote anybody voting power before they have registered a consensus key, nor can they retire the registration while they still hold power.</p>
+
+  <h3>The ceremony</h3>
+  <ol class="body-list">
+    <li><strong><code>keygen</code></strong>, per operator, offline. It writes the private half at 0600, refuses to overwrite, never prints it, and prints the public half and the peer id — which is exactly what the genesis author and every peer's config need.</li>
+    <li><strong><code>genesis init</code></strong> authors the file: a chain id, and one <code>--validator ADDR:MEMBERKEY:CONSENSUSKEY:POWER</code> per operator. It refuses addresses with gaps or out of order, a key that is not 32 bytes of hex or not a point Ed25519 accepts, duplicate keys, a set where nobody has power, and — without <code>--dev</code> — a chain id starting with the harness prefix or any published dev key. Every one of these is re-checked at boot; the command exists so a mistake surfaces with an operator still at the keyboard.</li>
+    <li><strong>Publish the file and its <code>sha256sum</code></strong> over the same out-of-band channel, and have every operator recompute it independently. A genesis differing by one byte is a different chain, and those nodes will never agree on anything. The coordinator role is disposable.</li>
+    <li><strong><code>init</code></strong> writes each node home from the real genesis, that operator's own key, and real addresses. It refuses a key the genesis does not name as a consensus key, a member key found on the host, a harness chain id without <code>--dev</code>, a hostname in the listen address, and any peer missing the <code>/p2p/</code> id or carrying one the genesis does not know.</li>
+  </ol>
+
+  <div class="note order">
+    <span class="tag">After first boot, before you transact</span>
+    <p>Wait for the epoch to catch up to wall clock. An epoch is <code>unix_secs / 86400</code>, absolute rather than relative to genesis, so a fresh chain climbs up to 10,000 epochs per block until it arrives — and until it does, every transaction's validity window is already expired.</p>
+  </div>
+
+  <h3>The network, and the one rule that is not upstream's</h3>
+  <p>Discovery is <strong>off</strong>, so no name reaches the transport: a <code>/dns*/</code> peer is resolved once, by the system resolver, at config load, and rewritten to a literal before the transport sees it — which means a DNS change needs a restart, and a <code>/dnsaddr/</code> peer, a name in the listen address or a name that does not resolve all refuse to boot.</p>
+  <p>On top of that, <strong>a validator dials only the peers whose peer id is greater than its own</strong>, so each pair keeps exactly one connection, dialed by the lower id. That is why every peer entry ends in <code>/p2p/&lt;peer id&gt;</code> and why <code>init</code> checks it against the genesis. Two connections per pair reorder gossipsub — both sides dial at boot, a message takes whichever connection is ready, a proposal's parts arrive with the close before the hash, and one Nil prevote fails a round of three. Measured A/B over 90 s with a fourth validator paused: <span class="qty">69/70</span> blocks on one connection per pair against <span class="qty">16/26</span> on two.</p>
+
+  <h3>What a block may cost, and what refuses one</h3>
+  <ul>
+    <li><strong>Pacing.</strong> An empty block is held to one a second; a block carrying transactions is not paced at all. Unpaced and idle, a solo node produced 1.87 M heights in 26 minutes.</li>
+    <li><strong>Batch ceiling</strong> of <span class="qty">512</span> transactions, equal to the proposer's own batch — so an honest node can never build a block this refuses.</li>
+    <li><strong>No envelope that authorises nothing.</strong> Such an envelope is refunded, unbilled and re-appliable, yet still costs every validator a max-flow per signer. It is refused at the ingress, at the pre-vote screen and at commit — three places, one function, because three copies of a validity rule is a fork waiting for a disagreement.</li>
+  </ul>
+  <div class="note trap">
+    <span class="tag">Invalid is a fail-stop, not a vote</span>
+    <p>The consensus library asserts that the value it decides was screened Valid. A node that answers Invalid for a block a quorum then decides does not vote against it — its consensus actor dies and the process runs on with no consensus at all, reporting sync-required for ever. So the pre-vote screen answers only the half it is in a position to answer (the transactions are signed for this chain, the timestamp is not from the future), defers every parent-relative check to commit, and treats a block for a height it has not reached as Valid rather than guessing.</p>
+  </div>
+
+  <h3>The halt</h3>
+  <p>The seven invariants run on the <em>commit</em> path, on every node. A violation stops the replica at that height: every read then answers <strong>503</strong> with the height it stopped at and the reason, outside the rate limiter (a halted node owes the same answer to everyone however often they ask) and inside CORS (a browser has to be able to read it). It is 503 rather than 500 because the node is not broken — it has stopped on purpose.</p>
+  <p>The halt is not persisted, and does not need to be: the WAL append happens <em>after</em> the audit, so a restart comes back at the last height that passed, and opening a store audits the snapshot and every block it replays. Both halts this design has actually carried came from lawful operation rather than an attacker — an audit clause comparing a stored fact against a live parameter is a halt waiting for the dial.</p>
+
+  <h3>Disk, outage, and getting back</h3>
+  <div class="tablewrap wide">
+  <table>
+    <thead><tr><th>Knob</th><th>Default</th><th>What it buys</th></tr></thead>
+    <tbody>
+      <tr><td class="k">snapshot interval</td><td class="n">operator's choice</td><td>How far back a restart replays. The WAL alone still replays deterministically, just from further back.</td></tr>
+      <tr><td class="k">prune margin</td><td class="n">86,400 blocks</td><td>One day at the empty-block pace: how long this validator may be down and still rejoin from a peer. Floored at two snapshot intervals whatever it says.</td></tr>
+      <tr><td class="k">unpruned WAL</td><td class="n">~31.5 M frames/yr</td><td>Every frame read and decoded at every start. The margin is a duration, not a size, for that reason.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>A node down longer than the <em>shortest</em> peer's margin is below every peer's history floor, and value sync has nothing to serve it. The remedy is an operator carrying state: <code>export-snapshot</code> on a healthy node, <code>import-snapshot</code> here. The import checks that the file is a legal state of <em>this</em> chain whose commitment a certified block claims — <strong>where the file came from is the operator's to vouch for.</strong> A node that has pruned reports its <code>history_min_height</code>, so peers can see what it can serve.</p>
+  <p>Resuming also re-checks the two fields nothing evolves: a snapshot replaces the genesis you supplied for everything the ledger changes, but the chain id and the root salt are written once and must agree, or one of them is not describing this node's chain. Without that check, a corrected genesis was a no-op on every node that had already run.</p>
+
+  <h3>Standing a validator down</h3>
+  <p>Three paths, and every one of them holds the floor — <span class="qty">4</span> on a real chain, 1 on the dev one: the member's own <code>Exit</code>, a <code>Suspend</code>, or a <code>ValidatorPower</code> of zero. The floor is genesis data rather than a constant, because the ceremony knows which kind of chain it is founding and the state machine does not; held only at founding, a four became a three on one member's free exit, on no vote at all. Per-validator power is capped at <span class="qty">1,000,000</span>, and the whole set's total is re-checked at enactment against the <code>u64</code> consensus sums it into.</p>
+</section>
+
+<section id="api">
+  <h2>The node's API surface</h2>
+  <p class="lede">One HTTP surface, and it carries <strong>no consensus</strong>. Propose and vote are the embedded engine's, over its own authenticated libp2p mesh, and never cross this port. What is here is reads, submission, the pending-signature pool, sessions, and the transaction gossip that puts a submission into every validator's mempool.</p>
+
+  <h3>The routes</h3>
+  <div class="tablewrap wide">
+  <table>
+    <thead><tr><th>Route</th><th>Answers</th><th>Gate</th></tr></thead>
+    <tbody>
+      <tr><td class="k"><code>GET /health</code></td><td>liveness</td><td>none — the one path outside the read budget</td></tr>
+      <tr><td class="k"><code>GET /head</code></td><td>height, epoch, commit count, <code>app_hash</code>, seed and seat figures</td><td>public</td></tr>
+      <tr><td class="k"><code>GET /network</code></td><td>member counts, insured and uninsured totals, utilisation, validator set</td><td>public</td></tr>
+      <tr><td class="k"><code>GET /members</code></td><td>the roll, up to 500 rows a page</td><td>public; amounts per viewer</td></tr>
+      <tr><td class="k"><code>GET /member/:id</code></td><td>one row, with the ledger's own <code>established</code> answer</td><td>exact only for the member or a validator</td></tr>
+      <tr><td class="k"><code>GET /contracts</code></td><td>the book</td><td>amounts per viewer</td></tr>
+      <tr><td class="k"><code>GET /params</code> · <code>/proposals</code></td><td>governed constants, open proposals</td><td>public</td></tr>
+      <tr><td class="k"><code>GET /whois/:key</code></td><td>the member holding a key or address</td><td><strong>authenticated member only</strong></td></tr>
+      <tr><td class="k"><code>GET /proof/member/:id</code><br><code>GET /proof/contract/:id</code></td><td>an inclusion proof against <code>app_hash</code></td><td>the same rule the record's own view carries — the leaf is the record, verbatim</td></tr>
+      <tr><td class="k"><code>POST /session</code></td><td>a bearer token, from one signature</td><td>a verified viewer credential</td></tr>
+      <tr><td class="k"><code>POST /tx</code></td><td>submits; returns the outcome hash</td><td>signature verification, then the screens below</td></tr>
+      <tr><td class="k"><code>POST /tx/check</code> · <code>/tx/digest</code></td><td>dry run; the digest a wallet should have computed</td><td>outcome disclosure is gated on being a party</td></tr>
+      <tr><td class="k"><code>GET /tx/outcome/:hash</code></td><td>what happened to a submission</td><td>public by hash</td></tr>
+      <tr><td class="k"><code>GET /pending/:member</code><br><code>GET /pending/key/:key</code></td><td>signature requests waiting on you</td><td>the viewer must be that member — or hold that key</td></tr>
+      <tr><td class="k"><code>POST /pending/sign</code> · <code>/pending/decline</code></td><td>add a co-signature, or refuse</td><td>per-signature verification</td></tr>
+      <tr><td class="k"><code>POST /p2p/*</code></td><td>transaction and co-signature gossip between nodes</td><td>perimeter only — source address, or a shared token</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Who is asking</h3>
+  <p>An anonymous caller is <em>answered, and answered less</em>. Two credentials end at the same fact — this caller controls a key the ledger attributes to a member — and both verify through one signed message, so the replay window, the single-use rule and the path binding are shared rather than reasoned about twice.</p>
+  <ul>
+    <li><strong>Per-request signature.</strong> Headers naming either a member id or the key itself (the only form onboarding can present, because a restoring device does not yet know its id), plus a signature, a timestamp and a 16-byte nonce. The signed bytes are <code>edet-view-v2 · chain · METHOD path · unix secs · nonce</code>.</li>
+    <li><strong>A bearer session token</strong>, which amortises that signature over a short TTL.</li>
+  </ul>
+  <p>Three bindings, each closing something specific. The <strong>domain tag</strong> keeps a credential from being reinterpreted as a payload of another kind. The <strong>chain id</strong> stops a credential captured in transit from reading as that member on every other chain where the same key is a member. The <strong>nonce</strong> is what makes it single-use: Ed25519 is deterministic, so without one, two honest reads of one path in the same second carry the identical signature and a signature-keyed replay cache refuses the second. The window is 60 seconds, checked in both directions.</p>
+  <p>A credential that is present and does not check out is a <strong>401</strong>, never a silent downgrade to anonymous.</p>
+
+  <h3>What each viewer sees</h3>
+  <div class="tablewrap wide">
+  <table>
+    <thead><tr><th>Field</th><th>Anonymous</th><th>Any member</th><th>Party to the record</th><th>Validator</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Member exists, id, address, status</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+      <tr><td class="k">Amounts, when <code>SealAmounts</code> is armed</td><td>power-of-two bucket</td><td>bucket</td><td><strong>exact</strong></td><td><strong>exact</strong></td></tr>
+      <tr><td class="k">Amounts, policy open</td><td>exact</td><td>exact</td><td>exact</td><td>exact</td></tr>
+      <tr><td class="k">Resolve an address (<code>whois</code>)</td><td><strong>refused</strong></td><td>yes</td><td>yes</td><td>yes</td></tr>
+      <tr><td class="k">A member's signature queue</td><td>no</td><td>only their own</td><td>—</td><td>only their own</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>A validator sees exact amounts across the surface because it already attests to state transitions; blanket visibility matches the role rather than extending it. <code>whois</code> refuses the anonymous caller because answering would make the endpoint a membership oracle — and a needle that resolves to nobody returns <code>null</code> for <em>everyone</em>, anonymous included, which is precisely what lets a newly created identity poll for its own admission. Listings truncate at 500 rows, so somebody missing from <code>/members</code> may still be on the ledger; that is why scanning the list is not a substitute for resolving an address.</p>
+
+  <h3>Cross-checking a node you do not run</h3>
+  <p>Every read but one is this node's unsigned word for what the ledger says. <code>/head</code> is the exception: it carries the state commitment at that height, so a client can ask several nodes the same question and compare — which is why the wallet takes a network as a <em>set</em> of URLs declared where the node cannot reach it, and why a peer list obtained from the node being checked would be circular. Inclusion proofs go one step further and verify a record against exactly that commitment; a proof is one epoch wide, because the leaf salt binds the epoch it belongs to.</p>
+  <p>The bound this buys is precise: <strong>a lying node can withhold and omit, never forge.</strong> It cannot invent a member, an obligation or a balance that the commitment will agree to.</p>
+
+  <h3>What happens to a submission</h3>
+  <ol class="body-list">
+    <li><strong>Body limit, 64 KiB</strong>, outermost — before any handler, extractor or signature check. One 1.38 MB request once bought 118 ms of verification and returned 200.</li>
+    <li><strong>At most 32 claimed signers</strong>, checked before any of them is verified, so the work is bounded in the unit that costs.</li>
+    <li><strong>Per-IP read budget</strong>, priced by endpoint and by body size.</li>
+    <li><strong>Dedup by content hash</strong> — before the per-signer token, so re-posting somebody's own envelope cannot drain their bucket.</li>
+    <li><strong>Ids the ledger has issued</strong>, so an envelope naming a row from the future never takes a block slot.</li>
+    <li><strong>The bond screen</strong>, over the same memo the commit path uses. Advisory and deliberately so: a node screens against the state it holds, and two honest nodes at different heights may disagree at the margin, so a screened-out transaction is dropped and not relayed — never voted down. Making a headroom reading a validity rule would fork the network on a disagreement that is not a fault.</li>
+    <li><strong>The authorisation screen</strong>, which is the same deterministic function the block rule applies — so this node and the block rule can only disagree by being at different heights.</li>
+    <li><strong>Mempool, then gossip</strong> to the configured peers, because the consensus mesh carries consensus messages and not transactions.</li>
+  </ol>
+  <p>The response is the outcome hash and the wallet polls it. Per-signer buckets are keyed in canonical order, never in envelope order — a bucket keyed on how the envelope was assembled is a bucket the assembler chooses to drain.</p>
+
+  <h3>The pending-signature pool</h3>
+  <p>No device ever holds another member's key, so a bilateral transaction is assembled here: entries keyed by the exact digest everyone signs, co-signatures gossiped so a pair split across two nodes converges, and completion idempotent — every node that reaches the threshold submits, and the mempool dedups. At most 1,024 entries; anything nobody finished co-signing in 90 days is abandoned. A key with no account may co-sign an entry that names it, and may <em>open</em> one only on a member's signed invitation, because occupancy has to be charged to somebody the ledger can count.</p>
+
+  <h3>Perimeter, and what it does not do</h3>
+  <ul>
+    <li><strong>Default bind is loopback.</strong> The gossip routes carry no per-message signature of their own — the transactions inside them are verified at the ingress like any other — so they are gated by source address, or by a shared <code>x-edet-cluster-token</code> header, which a <code>--bind-all</code> deployment should set. That is a perimeter, never message authentication.</li>
+    <li><strong>CORS</strong> admits the wallet's three origins and the local dev ports. The viewer headers are allowlisted from one list rather than repeated, because a header missing from the allowlist does not degrade to an unauthenticated read — the browser refuses to send the request at all, and the failure surfaces as an opaque transport error far from its cause.</li>
+    <li><strong>Rate limiting</strong> is a bounded in-memory token bucket, per source IP for reads and per verified signer for writes. When the table fills, buckets that have refilled to capacity are swept before anything is refused: a full bucket and an absent one grant the same thing, so evicting one resets nobody's limit — and an attacker who wants to keep the table full must keep spending, continuously.</li>
+    <li><strong><code>X-Forwarded-For</code> is trusted only when the operator says so</strong>, and the default is off. A header any client can set is a fresh bucket per request, which turns the read budget off entirely; leaving it off behind a proxy merely makes every reader share the proxy's bucket.</li>
+    <li><strong>The surface is plain HTTP.</strong> Viewer signatures and bearer tokens travel in clear. A captured viewer signature is at least already spent; a bearer token is replayable for its whole TTL. Anything reachable from beyond the host must terminate TLS in front of the node — that is the operator's job and no code here can check it.</li>
+  </ul>
+</section>
+
+<section id="order">
+  <p class="part-open">Reference</p>
+  <h2>The order every transaction is judged in</h2>
+  <p>Knowing this order explains most surprising refusals, because a check that never runs cannot be the reason.</p>
+  <ol class="body-list">
+    <li><strong>Envelope.</strong> Not expired; validity window no longer than <span class="qty">30</span> epochs; not a replay. A refused envelope leaves nothing behind.</li>
+    <li><strong>The gate.</strong> Status, then the work bond, then the seat. A refusal here is not admitted at all: nothing is charged and no id is spent.</li>
+    <li><strong>The replay id is recorded</strong> — unconditionally, before the transition is attempted.</li>
+    <li><strong>Dispatch.</strong> Signatures, then state preconditions, then the amounts, then the write. Rows and reservations are written <em>last</em>, after every refusal.</li>
+  </ol>
+  <div class="note trap">
+    <span class="tag">A rejected transaction still burns its nonce</span>
+    <p>If the ledger refuses your transition for an economic reason, the envelope's id is spent and you must re-sign with a fresh nonce to retry. That is deliberate: otherwise somebody could hold a transaction that fails today — say, for want of capacity — and replay the identical signed bytes later, once it would succeed. The one exception is an envelope whose signatures authorised nothing at all; that one is refunded and forgotten, so that stripping a co-signature out of a request in the pending pool cannot kill the genuine transaction.</p>
+  </div>
+
+  <h3>Multi-signature, in practice</h3>
+  <p>No device ever holds another member's key. The initiating wallet signs what it can and parks the transaction in the node's pending pool, keyed by the exact digest everyone signs; the counterparty's device lists what awaits them, reviews it, and adds its own signature. When the required signers are all present the node assembles and submits it. Entries live 90 days. <strong>The wallet computes the digest it signs itself</strong> — a node-supplied payload would be the node choosing what you sign — and it refuses to sign at all for a network with no declared chain id.</p>
+</section>
+
+<section id="numbers">
+  <h2>The numbers, at genesis values</h2>
+  <p>Denomination-valued figures rescale together on a re-denomination; the dimensionless ones do not. Governed constants can be moved by proposal, inside a hard range; frozen ones have no door at all.</p>
+  <div class="tablewrap wide">
+  <table>
+    <thead><tr><th>Quantity</th><th>Value</th><th>Class</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Epoch</td><td class="n">86,400 s</td><td>frozen</td><td>One day, absolute — epoch N names the same stretch of time in every community.</td></tr>
+      <tr><td class="k">Reference denomination</td><td class="n">1,000.00</td><td>genesis</td><td>Every threshold below stated as a fraction of it.</td></tr>
+      <tr><td class="k">Smallest unit</td><td class="n">0.01</td><td>frozen</td><td>Two decimals. The ledger stores integers; the wire carries reals.</td></tr>
+      <tr><td class="k">Dust</td><td class="n">0.01</td><td>genesis</td><td>A row closes when at most this is left.</td></tr>
+      <tr><td class="k">Bond unit</td><td class="n">2% → 20.00</td><td>governed <span class="code">0.001–0.10</span></td><td>The one dial that moves the seat count. Bounded above as strictly as below: a bond set too high is censorship by arithmetic.</td></tr>
+      <tr><td class="k">Free allowance</td><td class="n">32 / epoch</td><td>genesis</td><td>Opens at 5% of the denomination in seed reach; closes on an open default.</td></tr>
+      <tr><td class="k">Bond release</td><td class="n">1 epoch</td><td>genesis</td><td></td></tr>
+      <tr><td class="k">Forfeiture</td><td class="n">3 saturated epochs</td><td>genesis</td><td>Permissionless once due.</td></tr>
+      <tr><td class="k">Stake decay</td><td class="n">977 / 1000 per epoch</td><td>governed <span class="code">900–999</span></td><td>Halves in ~30 epochs. Floored at whatever a live reservation holds.</td></tr>
+      <tr><td class="k">Minimum maturity</td><td class="n">30 epochs</td><td>genesis</td><td>No parameter reaches it; the seed turns over at most 12× a year.</td></tr>
+      <tr><td class="k">Maximum horizon</td><td class="n">10,000 epochs</td><td>frozen</td><td>The ceiling on any date a transaction names.</td></tr>
+      <tr><td class="k">Insured horizon</td><td class="n">365 epochs</td><td>governed <span class="code">30–10,000</span></td><td>From <em>acceptance</em>, inherited by every debtor swap.</td></tr>
+      <tr><td class="k">Installment floor</td><td class="n">1/128 of the original</td><td>frozen</td><td>Unless the payment closes the row. A five-year monthly plan is 60 installments.</td></tr>
+      <tr><td class="k">Adoption threshold</td><td class="n">1/2</td><td><strong>frozen</strong></td><td>Of the external seed. No parameter key reaches it.</td></tr>
+      <tr><td class="k">Validator-set threshold</td><td class="n">2/3</td><td><strong>frozen</strong></td><td>The bar the BFT quorum below it already uses.</td></tr>
+      <tr><td class="k">Governance cooldown</td><td class="n">90 epochs</td><td>genesis</td><td>Per parameter key, and for re-denomination.</td></tr>
+      <tr><td class="k">Seed rate β</td><td class="n">2% / epoch</td><td>governed <span class="code">0.001–0.05</span></td><td>Of the seed tracked when the epoch opened. Does not carry over.</td></tr>
+      <tr><td class="k">Re-denomination band</td><td class="n">|ln π| ≤ 0.5</td><td>genesis</td><td>Roughly 0.61× to 1.65× per event.</td></tr>
+      <tr><td class="k">Validator floor</td><td class="n">4</td><td>genesis</td><td>1 on a dev chain. Every removal path holds it.</td></tr>
+      <tr><td class="k">Guardian threshold</td><td class="n">≥ 2</td><td>frozen</td><td></td></tr>
+      <tr><td class="k">Veto window</td><td class="n">30 – 10,000 epochs</td><td>frozen</td><td>The time you have to refuse a rotation you did not ask for.</td></tr>
+      <tr><td class="k">Keys per account</td><td class="n">≤ 8</td><td>frozen</td><td></td></tr>
+      <tr><td class="k">Arbitration panel</td><td class="n">≤ 16</td><td>frozen</td><td>Quorum is a floor for minting, not a trigger.</td></tr>
+      <tr><td class="k">Beneficiaries</td><td class="n">≤ 64, depth ≤ 20</td><td>frozen</td><td>Drain coefficient ν = 1.</td></tr>
+      <tr><td class="k">Default netting</td><td class="n">≤ 8 hops, ≤ 64 rings/epoch</td><td>frozen</td><td></td></tr>
+      <tr><td class="k">Transaction lifetime</td><td class="n">≤ 30 epochs</td><td>frozen</td><td>Bounds the replay cache.</td></tr>
+      <tr><td class="k">Retention</td><td class="n">365 epochs</td><td>frozen</td><td>Closed contracts, proposals, and empty rows. A defaulted row is <em>never</em> retired — a default is live.</td></tr>
+      <tr><td class="k">Invitations open</td><td class="n">≤ 8 per inviter</td><td>frozen</td><td>Pending pool entries a member's invitations may hold at once.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="cannot">
+  <h2>What it will not do</h2>
+  <p class="lede">These are not gaps waiting for a release. Each one is a capability the design refuses, with a reason it has already paid for.</p>
+  <ul class="limits">
+    <li><span class="lname">Carry your standing anywhere else</span><span class="lbody">One ledger, one total order. There is no bridge, no merge and no split — severing a stake graph destroys every edge crossing the cut, and two orders becoming one would have to choose a validator set and earn every stake again from nothing. Communities that expect to trade share an order rather than bridge. No proof or foreign state root may authorise a transition.</span></li>
+    <li><span class="lname">Scale without a stated bound</span><span class="lbody">Designed and measured for communities on the order of a hundred thousand accounts on one box. A larger ledger is an open problem the paper states rather than answers, and no published figure comes from validators more than a loopback apart.</span></li>
+    <li><span class="lname">Verify that an underwriter can pay</span><span class="lbody">Externality is precisely the property no set of signatures can prove. The protocol enforces the consequences of a declaration and cannot check the promise behind it. Genesis was never a verification — it was a ceremony the ledger recorded, and a seed amendment is that ceremony made repeatable.</span></li>
+    <li><span class="lname">Pay anybody for underwriting</span><span class="lbody">An underwriter bears real expected loss and earns nothing. There is no yield, no fee and no rent anywhere in the system; underwriting is a club good and stays one.</span></li>
+    <li><span class="lname">Catch you below the uninsured tier</span><span class="lbody">If an underwriter defaults on a substituted obligation, the creditor finally bears the loss — visibly and attributably, because that second default is ordinary and substitutes nothing. Without an external asset the system cannot do better and does not pretend to. There is no pool: a layer funded by signatures cannot be repaired by a cap.</span></li>
+    <li><span class="lname">Freeze a stolen key</span><span class="lbody">Whoever holds the key or the phrase <em>is</em> that identity. The only remedy is a guardian rotation, and guardians can only be nominated while you still control the key.</span></li>
+    <li><span class="lname">Let you pay without your creditor</span><span class="lbody">Every discharge is authorised by the party who loses if it is wrong, or by the guardians they appointed, or bounded so they cannot lose. There is no unilateral settlement, and there never will be — a forged discharge costs the forger nothing and would leave lifetime extraction bounded by elapsed time rather than by capacity. What you have instead is a handover before maturity, and the underwriter's signature after one.</span></li>
+    <li><span class="lname">Tell an unpaid debt from an unacknowledged one</span><span class="lbody">The creditor's signature is the only record that value arrived, so a discharge they refused is bit-identical to one nobody offered. No rule can be keyed on the attempt, and a rule where silence discharges hands every debtor a wait-out. The loss allocation follows the only observable there is, which is why a default names the debtor even when the creditor manufactured it.</span></li>
+    <li><span class="lname">Make an award into a lien</span><span class="lbody">An arbitration award is an ordinary uninsured claim between the original parties, bounded by the median, the agreed ceiling and the original amount. It nets against future trade and does nothing else. Nothing compels an attestation, so the panel and the quorum are what both parties consent to, in advance.</span></li>
+    <li><span class="lname">Give you privacy from the ledger</span><span class="lbody">Membership, the stake graph and the contract book are replicated state. A governed policy can seal precise amounts to the parties and validators — everyone else sees power-of-two buckets — and that is the whole of it. A node you read can withhold and omit, never forge; a members list is served 500 rows at a time, so somebody missing from it may still be on the ledger.</span></li>
+    <li><span class="lname">Detect anything</span><span class="lbody">No heuristic is tuned, no behaviour is classified, no membrane quality is assumed. Sybil resistance is arithmetic: capacity is a cut, so the bound holds for a coalition as a whole and splitting across identities gains nothing. Wash trading confers zero, usage cannot seed insured credit, and attacking costs what participating costs, at 1.00×.</span></li>
+    <li><span class="lname">Let a majority undo a validator capture</span><span class="lbody">Parameters are recoverable through the door that moved them; a validator set is not, because the coalition holding it decides which blocks exist. That is why the bar is two thirds there and a half everywhere else — and why the two thresholds themselves are frozen.</span></li>
+    <li><span class="lname">Stop a community lying to itself</span><span class="lbody">A seed majority can endorse a phantom commitment. The rate bound turns that from an explosion into a slow, public, attributable leak, during which lenders — who must still choose to deliver goods against the figure — can stop. No rule does more, and none ever will.</span></li>
+  </ul>
+</section>
+
+<footer>
+  <p>Values are the genesis constants of edet v0.7.0. Governed figures move by proposal inside the ranges shown; frozen ones have no transition that reaches them. The paper is the specification and the ledger is the authority — where this page and the ledger disagree, the ledger is right.</p>
+</footer>
+</main>
+</div>
+</div>
+
+</body></html>

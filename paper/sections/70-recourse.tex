@@ -1,0 +1,239 @@
+\section{Recourse}
+\label{sec:recourse}
+
+What happens when an obligation fails depends on whether the community stood behind it.
+An insured obligation is settled by \emph{substitution}: the underwriters whose supply
+carried it become the creditor's debtors, and the defaulter's debt moves to them. Beside
+it sit two optional instruments, an arbitration panel the parties consented to in advance
+and the forfeiture of a member's operation bonds for abusing the write surface. An
+uninsured obligation has no recourse machinery at all (\S\ref{sec:no-pool}). None of it
+creates money.
+
+\subsection{Substitution: what an underwriter actually pays}
+\label{sec:substitution}
+
+Corollary~\ref{cor:uw-bound} bounds an underwriter's loss; this section settles it. With
+no external redemption there is no asset to hand over, so one constraint shapes the answer:
+
+\begin{quote}
+In a closed system, the only way anyone can pay is to become a debtor. ``You lose $x$''
+can only mean ``you now owe $x$ of goods and services.''
+\end{quote}
+
+A default on an insured obligation is one event with two movements. In
+\emph{substitution}, the creditor's claim lands on the underwriters, split by exactly what
+each one's supply arc carried --- a lookup, since the obligation records which arcs it
+drew and how much on each (\S\ref{sec:standing}) --- and each underwriter becomes an
+ordinary debtor of the creditor, discharging the way anyone discharges anything. In
+\emph{subrogation}, the defaulter's debt runs to the underwriters instead of to the
+creditor, so a defaulter who cures repays the underwriter, and the creditor, already
+whole, is not paid twice.
+
+\begin{property}[Consent through declaration]
+\label{prop:uw-consent}
+Every discharge is authorised by the party who loses if it is wrong. Here that party is
+the underwriter, who authorised it by declaring a supply: a declaration is not a number
+but a signed, standing consent to inherit the debts of those the community's stakes
+reach through the declarer, up to the declared amount.
+\end{property}
+
+The claim keeps the flow it held, with three consequences. The defaulter's standing stays
+consumed, so paying a loss does not restore the member who caused it. The underwriter's
+supply stays drawn until the defaulter repays them, so unpaid absorbed losses throttle
+the declaration and \S\ref{sec:standing}'s withdrawal floor stops them walking out from
+under it. And the reservation totals do not move: the pieces partition the original
+reservation arc by arc.
+
+A consented panel stays with the claim. Its terms record the parties and the amount they
+were consented for, so the change of creditor does not reach them: the award is still the
+buyer's remedy against the seller for non-delivery, minted between them, bounded by the
+original amount, and never against an underwriter who was never asked. Dropping the panel
+with the party would close the remedy in the one case arbitration exists for, a buyer who
+withholds payment for non-delivery and defaults.
+
+The substituted leg is \emph{uninsured}. Insuring it would draw on what others have put
+behind that underwriter --- the loss walking one hop further out, the path contagion
+\S\ref{sec:stability} refuses. If the underwriter defaults on it too, the creditor bears
+the loss, visibly and attributably; without an external asset the system cannot do better
+and must not pretend to. What substitution buys is that a supply declared by somebody who
+cannot honour it fails in public.
+
+\begin{remark}[An underwriter's loss is bounded; their time is not]
+\label{rem:uw-duration}
+Committed flow is released by the defaulter repaying and by nothing else --- not by the
+underwriter satisfying the creditor, and not by time. An underwriter who has honoured a
+substituted obligation in full therefore stays floored at the committed flow, unable to
+withdraw the supply, exit the role or put a date on either, for as long as the defaulter
+declines to cure. That is the throttle: releasing on a timer would let an underwriter
+absorb a loss, wait, and insure the same amount over again. What is bounded is the
+\emph{amount} (Corollary~\ref{cor:uw-bound}); the duration of a default is the defaulter's.
+\emph{Extend} produces the same lock with no default at all, on the signatures of the
+debtor and creditor alone --- but only within the \emph{insured horizon} of the claim's
+acceptance, $\kConstInsuredHorizonEpochs$ epochs at genesis and governed
+(\S\ref{sec:governance}): an acceptance or an extension past it books or leaves the claim
+uninsured, the flow returns, and an underwriter's exposure in time on a performing claim is
+bounded by a horizon the electorate --- the underwriters --- set in advance. The horizon
+is measured from the acceptance, which a transfer and a routed successor inherit, never
+from now, so no chain of extensions rolls it; keeping a claim insured longer is settling
+and re-accepting it against the current cut.
+\end{remark}
+
+\subsection{Consented arbitration}
+
+Parties may attach arbitration terms at acceptance: a panel of named arbiters, a quorum,
+a window and an award ceiling, pinned there and immutable --- a channel cannot be opened,
+widened or repointed afterwards by either party. Arbiters within the window each attest an
+amount; at quorum the award is the \emph{median} of the attestations, minted once as an
+ordinary obligation from the original \textbf{creditor} to the original \textbf{debtor},
+the buyer's remedy for non-delivery: an obligation records that the debtor received value
+and owes for it, and the dispute an award settles is whether the creditor delivered it.
+The award is bounded three ways, all consented at acceptance --- the median, the agreed
+ceiling, and the original amount.
+
+The remedy is available in \emph{any} state of the original obligation, settled included,
+and after substitution, when the row has become an underwriter's claim
+(\S\ref{sec:substitution}): a buyer who has paid in full and received nothing is the case
+it exists for, and gating it on the obligation still being open would close the channel
+the moment it falls due.
+
+\begin{property}[Median capture resistance]
+\label{prop:median}
+With a quorum of $q$ arbiters, an award is moved only by a coalition holding more than
+$\lfloor q/2 \rfloor$ panel seats. A minority, however extreme its attestations, cannot
+move the median.
+\end{property}
+
+\begin{property}[An award is bounded and uninsured]
+\label{prop:additive}
+An award is minted at most once per contract, never exceeds the original amount or the
+agreed ceiling, and is \textbf{uninsured}: it reserves no flow, draws on no underwriter,
+and substitutes nothing if it is never honoured --- it is worth exactly what
+\S\ref{sec:medium} says any uninsured claim is worth. What it costs the loser is their
+\emph{write} channel, since an operation bond is measured against headroom net of what the
+member owes (Property~\ref{prop:write-floor}), and it nets against any future trade the
+loser does with the winner, the ordinary way anything is paid in a mutual-credit
+community.
+\end{property}
+
+An award is therefore worth less here than in a court. The alternative would draw on the
+community's underwriters to satisfy a private dispute between two members: capacity
+bounds what the community underwrites, and nobody underwrote the quarrel. The panel size
+is capped at $\kConstNArb$, and arbiters may not be either party.
+
+\subsection{Netting rings of defaults}
+\label{sec:netting}
+
+A sale nets before it creates: whatever the seller already owes the buyer extinguishes
+first (\S\ref{sec:sale}, step 1). That is a cycle of length two, and nothing in the
+argument depends on the length: in a ring of $A$ owing $B$ owing $C$ owing $A$, netting
+the smallest of the three relieves each party of exactly as much debt as claim.
+
+The epoch sweep does it with no signature, because every hop is in \emph{default}: every
+party is already due, so nobody is paid early, nobody loses time value, and each is
+relieved of a debt they did not pay against a claim they could not collect. Netting a live
+obligation would hand its creditor an early payment they never agreed to take, so the
+default condition is a rule rather than a heuristic, and a claim under an open arbitration
+window belongs to the panel rather than to the sweep.
+
+Each hop is an ordinary discharge and earns standing accordingly, capped as always by what
+the creditor may confer: the debtor gave up a claim of their own worth exactly what they
+were relieved of. Where a hop was insured, netting \emph{cures} it and the reservation
+follows the debt down, which a default does not do on its own.
+
+Substitution breaks a ring of insured defaults, and that is not a defect: an insured claim
+moves onto the underwriters at default (\S\ref{sec:substitution}), so its creditor becomes
+an underwriter and the cycle is a cycle no longer. What the sweep finds is therefore mostly
+rings of \emph{uninsured} defaults, where nothing else was going to help: no underwriter
+stands behind them and the creditors bear them alone.
+
+Zero-priced and permissionless, it is bounded like every other crank: at most
+$\kConstNettingMaxRing$ hops to a ring and $\kConstNettingMaxRingsPerEpoch$ rings to a
+sweep. Every ring netted closes at least one hop and so destroys its own precondition, so a
+sweep cannot find the same ring twice, and what is not reached this epoch is reached the
+next.
+
+\subsection{The uninsured tier, and why there is no pool}
+\label{sec:no-pool}
+
+The layer that suggests itself is a funded loss pool: members take a covenant --- a
+per-event contribution cap, a committed balance and a ceiling on total commitment --- and a
+creditor covered by it claims against a defaulted \emph{uninsured} obligation.
+Assumption~\ref{ass:free-signatures} rules it out.
+
+A covenant is funded by nothing the ledger can hold. A commitment reserves no flow and is
+checked only against a ceiling the member declares for themselves, so it is a signature in
+exactly the sense the assumption means: measured, a member holding $1.0$ of standing
+pledges $10^9$, is displayed to every creditor as coverage, and mints $399.9998$ of a $400$
+claim while an honest member's $500$ mints nothing --- an uninsured obligation the pledger
+never honours. Capping the pledge does not repair it: a cap is checked once and not
+maintained, so a member may pledge at their ceiling and then borrow the same capacity away
+before any claim arrives. The only way to make a pledge funded is to \emph{reserve} flow,
+which is the insured tier --- reserving against the claim actually at risk, at the moment
+it is taken, bounded by the cut, subrogated when it fails. A pool cannot be made sound
+without becoming substitution, and the measurement in \S\ref{sec:security} is the same
+fact from the other side: a mutual pool funded from inside re-labels the seed instead of
+adding to it.
+
+\begin{remark}[The uninsured tier is borne alone, and that is what earns standing]
+\label{rem:uninsured-alone}
+A creditor who lends beyond a debtor's capacity bears the loss --- \S\ref{sec:medium}'s
+asymmetry, unqualified. Settlement is the only way the stake graph grows
+(Remark~\ref{rem:only-settlement}), so a creditor's own risk on a first trade is what
+confers standing on a stranger. Socialising it would make standing manufacturable: a
+ring covenanting for one another could trade inside itself, default, and extract every
+honest pledge for the price of restitution it never honours.
+\end{remark}
+
+Mutual aid needs no transition. A member who chooses to carry a neighbour's loss issues the
+injured creditor an obligation, or nets it against their own trade, at the moment the loss
+is real --- funded when it is used, targeted at the loss that happened, and signed by
+somebody with the capacity to mean it. What the pool added was a number the ledger could
+not keep.
+
+\subsection{Operation bonds}
+
+Writes are feeless: no gas, no fee token, no revenue to anyone
+(Property~\ref{prop:no-rent}). Spam is priced instead by \emph{bonds}: a transition beyond
+a member's free allowance of $\kConstBondFreeAllowance$ per epoch encumbers headroom equal
+to the bond unit $\kConstBondUnitFraction \cdot \vbase$, which returns after
+$\kConstBondReleaseEpochs$ epoch unless forfeited. The headroom it is measured against is
+not the declared supply but what the community's external seed reaches the member for
+(Property~\ref{prop:write-floor}).
+
+A bond is reserved headroom, never a balance: nothing in it is owed to anyone and every
+entry returns on schedule. Only sustained exhaustion --- being denied by the gate in
+$\kConstBondForfeitEpochs$ consecutive epochs without returning under the ceiling --- makes
+bonds forfeitable, and a forfeited bond is recorded against the member rather than paid to
+anyone.
+
+\begin{property}[A forfeiture is a reservation that never returns]
+\label{prop:forfeit}
+Forfeiture removes the encumbered headroom permanently: the amount is recorded against the
+member and subtracted from their bond headroom from then on. Nothing is minted, nobody is
+owed it, and no position anywhere improves, so the sanction is enforceable by arithmetic
+and still collects no rent (Property~\ref{prop:no-rent}). The way back is the model's own:
+a member whose standing grows beyond what was taken has a write channel again.
+\end{property}
+
+Two exemptions keep the sanction from being absorbing. The free allowance still applies,
+and the recovery path --- discharge, cure, transfer, exit, and reducing a supply --- is
+priced at zero, so a member who has lost its headroom can still pay what it owes, provided
+somebody can sign for the payee. A discharge needs the creditor's signature, and a creditor
+who has lost their keys or stopped answering would otherwise make their debtor a permanent
+defaulter --- an uninsured default substitutes nothing, and an open default holds the
+allowance and the exit. So a threshold of the creditor's \emph{guardians} may sign a
+discharge in the creditor's stead: they already hold the power to rotate the creditor's key
+and sign as them, so this adds no trust the creditor had not placed. A creditor who
+registered no guardians and answers nothing leaves a debt nobody can discharge, a fact
+about that creditor the wallet states when a counterparty has none. The same exemption
+keeps the \emph{governance} sanction from being absorbing: a suspended account's headroom
+is zero by status rather than by exhaustion, and a suspended underwriter may still lower
+what they stand behind. A refusal for want of a budget that was never charged is reported
+as its own condition, because the remedies differ --- one waits for a bond to release and
+the other cannot --- and because the exhaustion refusal is the evidence the forfeiture
+crank counts, which must not accumulate against a member for asking.
+
+The allowance is not what carries a newcomer: it goes only to accounts with something to
+lose (Property~\ref{prop:write-floor}), or $N$ free keys would carry $N$ allowances. What
+carries a newcomer is the counterparty, whose bonded first trade seats the row and holds a
+seat on their reach for its life (Remark~\ref{rem:friction}, Property~\ref{prop:seat}).

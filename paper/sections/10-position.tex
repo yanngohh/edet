@@ -1,0 +1,82 @@
+\section{Introduction and design position}
+\label{sec:position}
+
+\subsection{What \edet\ is}
+
+\edet\ is a clearing medium for a community of mutual producers: people and small
+enterprises who buy from one another regularly enough to clear their obligations against
+each other instead of settling in national currency.
+
+Its unit is a debt contract, created by a sale from buyer to seller in a community unit.
+It discharges when the buyer delivers value onward --- to the seller, or to anyone the
+seller directs it to --- so an obligation moves through the community as production does
+and is worked off rather than paid out of a stock. There is no token, no bearer
+instrument, no balance and nothing to hoard: a large claim is a large expectation of
+future delivery, not a holding. What a member accumulates is \emph{capacity}, a ceiling on
+how much the community will underwrite them for: bounded, non-transferable, not for sale,
+living in the stakes others have placed on them and falling when they withdraw
+(\S\ref{sec:standing}).
+
+The design is measured for communities up to the order of $10^5$ accounts on one ledger
+(\S\ref{sec:implementation}); a larger ledger is an open problem this paper states rather
+than escapes, since a stake graph cannot be split without severing every edge across the
+cut.
+
+\subsection{The two structural commitments}
+
+\paragraph{Capacity is a minimum cut.} A member's capacity is the maximum flow from the
+community's underwriters to their account, across directed stakes recording what creditors
+have placed. Nobody can stake beyond what they may confer, outstanding credit reserves the
+flow that justified it, and an underwriter is any member who has declared a supply they
+will stand behind. The ledger stores stakes and outstanding obligations; capacity is the
+cut computed from them.
+
+One equation settles four questions a credit system normally answers with policy.
+Admission: an account with no stakes has capacity zero, so creating one grants nothing.
+Reputation: the stakes \emph{are} the reputation. Sybil resistance: the capacity of any set
+of accounts is bounded by the stakes crossing into it, so identities are free and worthless
+together. Fraud: volume internal to a set never crosses that set's own boundary, so
+fabricated trade is arithmetically void. These are theorems rather than process ---
+Theorem~\ref{thm:cut} is argued once --- where a rule that must be remembered can be
+forgotten, one that must be enforced can be evaded, and a bound re-argued for each new
+attack is eventually re-argued wrongly.
+
+\paragraph{Capacity underwrites, it does not permit.} Credit within a debtor's capacity is
+\emph{insured}: it reserves flow, and the community's recourse machinery stands behind it.
+Credit beyond it is permitted but \emph{uninsured}, and the creditor bears it alone. This
+is what lets a community begin: first trades are uninsured, they settle, they create
+stakes, and capacity is their residue (\S\ref{sec:standing}).
+
+\paragraph{Ledger-scoped total order.} A ledger is one replicated state machine under
+Byzantine-fault-tolerant consensus among validators its members operate themselves, with
+no world-global chain, no gas and no fee token, and every quantity in the model computed
+within one order. A ledger is not a community: a community is a region of the stake
+graph, one ledger carries as many as its members form, and communities that expect to
+trade belong on one, which is why there is no bridge (\S\ref{sec:model},
+\S\ref{sec:oneledger}). Consensus is load-bearing: reservation makes capacity a conserved
+budget over a shared graph, and a conserved budget needs a serialization point
+(Remark~\ref{rem:order}).
+
+\subsection{The boundaries that remain}
+
+Two limits are structural, and neither is acceptance. The limitation usually written here
+--- that nobody can be made to want a medium they cannot hold --- describes a bearer
+instrument; a sale here discharges before it creates (\S\ref{sec:sale}), so a producer
+with obligations is paid by ceasing to owe. What binds is the thesis's antecedent, that
+enough of what a community buys is available from within it: a property of the community,
+measurable before founding, which no protocol changes (\S\ref{sec:adoption}). And zero is
+absorbing: a community that underwrites nothing at genesis can never leave that state from
+inside, and \S\ref{sec:seed-amendments} is its only door. The newcomer's first uninsured
+trade is not a third limit but a priced cost: somebody extends a small uninsured risk, it
+settles, and the stake it writes makes the next trade insured (Remark~\ref{rem:friction}).
+
+\subsection{Reader's map}
+
+\S\ref{sec:model} fixes the system model; \S\ref{sec:medium} defines the contract and
+how it clears; \S\ref{sec:standing} defines capacity and is the core of the design;
+\S\ref{sec:stability} treats containment; \S\ref{sec:recourse} covers default,
+substitution and arbitration; \S\ref{sec:governance} covers governed constants and
+re-denomination; \S\ref{sec:security} states and proves the security results;
+\S\ref{sec:economics} through \S\ref{sec:provision} take the economic position; and
+\S\ref{sec:implementation} and \S\ref{sec:verification} describe what is built and what
+is checked.

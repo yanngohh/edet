@@ -1,0 +1,42 @@
+[package]
+name = "edet-state"
+description = "The edet state machine: objects, transitions, invariants"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+edet-kernel = { path = "../kernel" }
+libm = { workspace = true }
+serde = { workspace = true }
+# The state root (`root.rs`): this crate defines the commitment to its own
+# state, so the hash and the canonical record encoding live with the type
+# they commit to — which is also what lets the exhaustive `State`
+# destructuring there act as a compile-time completeness check.
+sha2 = { workspace = true }
+bincode = { workspace = true }
+# The record leaves of each section are hashed across a pool. Determinism is
+# not at risk: the collect is ordered, so the leaves land in the positions
+# their own hashes commit to whatever the machine's core count is
+# (`root::record_leaves`).
+rayon = { workspace = true }
+
+[dev-dependencies]
+# **One driver, not two.** The state suite's `Chain` is `edet_swarm::Driver`
+# plus its fixtures, so the mechanics every suite here depends on — a distinct
+# id per transaction, the gate lockstep before every write, the witness and
+# both audits after it — are the same code a population of strategies and the
+# node's own conformance replay run on. A second driver would drift, and the
+# one that drifted would be the one nothing else exercises.
+#
+# A dev-dependency cycle, which cargo permits: `edet-state` compiles once as
+# the library `edet-swarm` links against and once more as its own `cfg(test)`
+# harness. The rule that keeps it harmless is that **nothing under
+# `crates/state/src` may name `edet_swarm`** — a unit test that did would hold
+# two `State` types that do not unify.
+edet-swarm = { path = "../swarm" }
+# The wire form the node's `/tx` endpoint and every client speak. A retired
+# transition comes back through a client or a stored transaction rather than
+# through a call site the compiler can see, so `alphabet.rs` gates the
+# deserializer rather than the enum.
+serde_json = { workspace = true }

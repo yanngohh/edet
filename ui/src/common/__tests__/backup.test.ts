@@ -2,104 +2,62 @@ import { describe, expect, it } from 'vitest';
 
 import {
     BACKUP_MAGIC,
-    BACKUP_SCHEMA_VERSION,
     BackupDecryptError,
     BackupFormatError,
-    MnemonicMismatchError,
     decodeBackup,
     encodeBackup,
     parseEnvelope,
     suggestedBackupFileName,
+    type BackupPayload,
 } from '../backup';
-import type { BackupPayload } from '../backup';
-import { deriveKeys, generateNewMnemonic, mnemonicFingerprint } from '../mnemonic';
 
-function samplePayload(): BackupPayload {
-    return {
-        schema_version: BACKUP_SCHEMA_VERSION,
-        created_at_us: 1_700_000_000_000_000,
-        app_id: 'edet',
-        dna_hash: new Uint8Array([0x84, 0x24, ...new Array(37).fill(0)]),
-        agent_pub_key: new Uint8Array([0x84, 0x20, 0x24, ...new Array(36).fill(0)]),
-        source_chain: [{ placeholder: true, n: 42 }],
-    };
-}
+// Light KDF for tests — production uses DEFAULT_KDF (N=2^15).
+const KDF = { N: 2 ** 8, r: 8, p: 1 };
 
-describe('backup', () => {
-    it('round-trips an encrypted bundle with the right mnemonic', async () => {
-        const mnemonic = generateNewMnemonic();
-        const { backupKey, fingerprint } = await deriveKeys(mnemonic);
-        const payload = samplePayload();
+const payload: BackupPayload = {
+    schema_version: 2,
+    seeds: { 5: Array(32).fill(42), 7: Array(32).fill(9) },
+    nicknames: { 5: 'Ada' },
+    actor: 5,
+};
 
-        const bytes = encodeBackup(payload, backupKey, fingerprint);
-        const decoded = decodeBackup(bytes, backupKey, fingerprint);
-
-        expect(decoded.schema_version).toBe(BACKUP_SCHEMA_VERSION);
-        expect(decoded.app_id).toBe('edet');
-        expect(decoded.created_at_us).toBe(payload.created_at_us);
-        expect(Array.from(decoded.dna_hash)).toEqual(Array.from(payload.dna_hash));
-        expect(Array.from(decoded.agent_pub_key)).toEqual(Array.from(payload.agent_pub_key));
-        expect(decoded.source_chain).toEqual(payload.source_chain);
+describe('backup envelope', () => {
+    it('round-trips through encrypt/decrypt', () => {
+        const text = encodeBackup(payload, 'correct horse battery', KDF);
+        const back = decodeBackup(text, 'correct horse battery');
+        expect(back).toEqual(payload);
     });
 
-    it('envelope carries the correct magic + version + fingerprint', async () => {
-        const mnemonic = generateNewMnemonic();
-        const { backupKey, fingerprint } = await deriveKeys(mnemonic);
-        const bytes = encodeBackup(samplePayload(), backupKey, fingerprint);
-        const env = parseEnvelope(bytes);
+    it('rejects a wrong passphrase via AEAD, not silently', () => {
+        const text = encodeBackup(payload, 'right-pass', KDF);
+        expect(() => decodeBackup(text, 'wrong-pass')).toThrow(BackupDecryptError);
+    });
+
+    it('never contains seed material in the plaintext envelope', () => {
+        const text = encodeBackup(payload, 'right-pass', KDF);
+        // The seeds as JSON would appear as long runs of "42," — assert the
+        // serialized plaintext payload is not embedded anywhere.
+        expect(text).not.toContain(JSON.stringify(payload.seeds));
+        expect(text).not.toContain('"Ada"');
+        const env = parseEnvelope(text);
         expect(env.magic).toBe(BACKUP_MAGIC);
-        expect(env.schema_version).toBe(BACKUP_SCHEMA_VERSION);
-        expect(Array.from(env.mnemonic_fp)).toEqual(Array.from(fingerprint));
-        expect(env.nonce).toHaveLength(24);
-        expect(env.ciphertext.length).toBeGreaterThan(0);
+        expect(env.kdf.algo).toBe('scrypt');
     });
 
-    it('rejects a wrong mnemonic before attempting to decrypt', async () => {
-        const correct = generateNewMnemonic();
-        let wrong = generateNewMnemonic();
-        while (wrong === correct) wrong = generateNewMnemonic();
-        const { backupKey, fingerprint } = await deriveKeys(correct);
-        const bytes = encodeBackup(samplePayload(), backupKey, fingerprint);
-        const wrongKeys = await deriveKeys(wrong);
-        expect(() =>
-            decodeBackup(bytes, wrongKeys.backupKey, wrongKeys.fingerprint),
-        ).toThrow(MnemonicMismatchError);
+    it('rejects garbage, foreign files, and memory-bomb KDF params', () => {
+        expect(() => parseEnvelope('not json')).toThrow(BackupFormatError);
+        expect(() => parseEnvelope(JSON.stringify({ magic: 'OTHER' }))).toThrow(BackupFormatError);
+        const text = encodeBackup(payload, 'p'.repeat(8), KDF);
+        const env = JSON.parse(text);
+        env.kdf.N = 2 ** 30;
+        expect(() => parseEnvelope(JSON.stringify(env))).toThrow(BackupFormatError);
     });
 
-    it('rejects a tampered ciphertext even with a matching fingerprint', async () => {
-        const mnemonic = generateNewMnemonic();
-        const { backupKey, fingerprint } = await deriveKeys(mnemonic);
-        const bytes = encodeBackup(samplePayload(), backupKey, fingerprint);
-        // Flip the last byte of the whole envelope; this lands inside the
-        // ciphertext region when msgpack encodes arrays sequentially.
-        bytes[bytes.length - 1] ^= 0xff;
-        expect(() => decodeBackup(bytes, backupKey, fingerprint)).toThrow(BackupDecryptError);
+    it('refuses an empty passphrase', () => {
+        expect(() => encodeBackup(payload, '', KDF)).toThrow(BackupFormatError);
     });
 
-    it('rejects malformed magic', () => {
-        // Hand-craft an envelope with the wrong magic string.
-        const evil = new Uint8Array([
-            0x85, // map(5)
-            0xa5, 0x6d, 0x61, 0x67, 0x69, 0x63, // "magic"
-            0xa5, 0x57, 0x52, 0x4f, 0x4e, 0x47, // "WRONG"
-            0xae, 0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
-            0x01,
-            0xab, 0x6d, 0x6e, 0x65, 0x6d, 0x6f, 0x6e, 0x69, 0x63, 0x5f, 0x66, 0x70,
-            0xc4, 0x04, 0x00, 0x00, 0x00, 0x00,
-            0xa5, 0x6e, 0x6f, 0x6e, 0x63, 0x65,
-            0xc4, 0x18, ...new Array(24).fill(0),
-            0xaa, 0x63, 0x69, 0x70, 0x68, 0x65, 0x72, 0x74, 0x65, 0x78, 0x74,
-            0xc4, 0x00,
-        ]);
-        expect(() => parseEnvelope(evil)).toThrow(BackupFormatError);
-    });
-
-    it('rejects junk bytes', () => {
-        expect(() => parseEnvelope(new Uint8Array([0x00, 0x01, 0x02]))).toThrow(BackupFormatError);
-    });
-
-    it('suggestedBackupFileName uses ISO date shape', () => {
-        const name = suggestedBackupFileName(new Date(Date.UTC(2026, 3, 28)));
-        expect(name).toBe('edet-backup-2026-04-28.edet-backup');
+    it('suggests a dated .edet filename', () => {
+        expect(suggestedBackupFileName(new Date('2026-07-24T12:00:00Z'))).toBe('edet-backup-2026-07-24.edet');
     });
 });

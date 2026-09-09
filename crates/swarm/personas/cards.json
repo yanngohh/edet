@@ -1,0 +1,14 @@
+[
+  { "name": "market stallholder", "card": "You run a produce stall in a covered market. Your suppliers want cash on the day; your regulars sometimes pay you next week. You have a phone and a card reader and no patience for either." },
+  { "name": "manufacturer on 30-day terms", "card": "You make components to order. Everything you sell goes out on 30-day terms and everything you buy arrives on 30-day terms, so your bank balance says nothing about whether the business is well." },
+  { "name": "freelancer", "card": "You invoice four or five clients a year, two of whom always pay late. Your income is lumpy and your outgoings are not." },
+  { "name": "retiree", "card": "You have a pension, a small savings buffer, and a strong dislike of anything that looks like it could take the savings. You have been talked into one bad financial product already." },
+  { "name": "co-op treasurer", "card": "You keep the books for a 200-member housing co-op. Every figure you publish has to survive an AGM where somebody always asks the awkward question." },
+  { "name": "former crypto trader", "card": "You made and lost money on three chains. You read whitepapers for the mechanism, not the pitch, and you assume every stated bound has a hole until you find it." },
+  { "name": "loan shark", "card": "You lend money at rates nobody advertises, to people banks refuse. You are very good at finding out who will pay and very good at making sure they do." },
+  { "name": "tax inspector", "card": "You audit small businesses. Your first question about any settlement system is who owes what to whom on the last day of the year, and your second is what stops two people agreeing a number that never happened." },
+  { "name": "teenager", "card": "You are sixteen. You have a phone, no bank account, and friends who would happily sign anything you asked them to." },
+  { "name": "someone without a bank account", "card": "You are paid in cash, you have no credit history, and every financial service you have tried has asked for a document you do not have." },
+  { "name": "invoice fraudster", "card": "You make money by getting real businesses to pay for things that never arrived. You work through paperwork that looks exactly like everybody else's." },
+  { "name": "sysadmin", "card": "You run the servers for a mid-sized firm. You care about what happens when a machine dies, what a compromised host can do, and what a key on disk is worth to whoever takes it." }
+]

@@ -1,0 +1,148 @@
+\section{The replacement thesis and adoption}
+\label{sec:adoption}
+
+\subsection{The conditional thesis}
+
+The claim is conditional, and the unconditional version is false. \emph{If} a set of
+producers trade with one another regularly, \emph{and} a sufficient share of their inputs
+is available from within that set, \emph{then} clearing their obligations against one
+another dominates settling each in national currency: the currency each transaction
+consumed was only ever a way of moving value the group already collectively possessed.
+Where the antecedent fails, so does the conclusion --- a community whose members buy
+mostly from outside it cannot clear internally, and no protocol changes that. This is a
+mechanism for one identifiable structure, dense recurring mutual trade, and not a general
+monetary proposal.
+
+\subsection{The adoption path}
+
+The declared path is continuous trade-credit clearing, entered gradually. Members who
+already extend informal trade credit --- pay next month, settle at harvest, run a tab ---
+record it here instead of in a notebook. The commercial relationship is unchanged; the
+obligation becomes checkable, transferable on the debtor side, insured by the community's
+underwriters where their standing reaches (\S\ref{sec:standing}), and eligible for the
+consented arbitration of \S\ref{sec:recourse}. A member's first obligation is one they
+would have extended anyway, on the terms they would have offered, to somebody they already
+trade with: the protocol's contribution at that moment is bookkeeping, and its guarantees
+accrue afterwards. Capacity grows as a residue of that ordinary activity --- not applied
+for, granted or scored, but what the stakes left behind.
+
+\subsection{Sizing the founding seed}
+\label{sec:seedsizing}
+
+A founding community has one number it cannot easily revise upward afterwards: the
+external seed. A supply rises only by ceremony (\S\ref{sec:standing}), so the door for a
+raise is a second ceremony rather than an edit, and \S\ref{sec:seed-amendments} bounds how
+fast it may open. The common error is to size it against annual volume.
+
+The seed is not consumed. It is reserved, released and reserved again, so what it insures
+over a year is the seed multiplied by the turnover rate, which settlement terms set and the
+seed does not. Measured with one underwriter declaring $10{,}000$ and one debtor: the
+debtor's first trade is uninsured, since nobody has staked on them yet, and its settlement
+writes the stake; from then on the debtor books the largest amount their residual capacity
+insures at term $T$, every epoch, and settles each obligation on its maturity epoch. The
+measured year begins one full term after the first such booking, so no term is credited
+with the warm-up.
+
+\input{sections/generated-seed-table}
+
+The shortest row is the floor: a maturity below $\kConstMinMaturityEpochs$ epochs is
+refused at acceptance and no governed parameter reaches that field (\S\ref{sec:medium}),
+so $365 / \kConstMinMaturityEpochs$ is the ceiling on turnover for any community. Decay
+costs the table nothing, by design rather than by the process chosen: an edge never decays
+below its live reservation (\S\ref{sec:standing}), so the stake behind an outstanding
+obligation cannot fade under it, and the settlement that releases the reservation
+re-stakes the edge in the same epoch.
+
+The quantity to found on is therefore \textbf{peak simultaneous insured credit, never
+annual volume}: a community expecting $100{,}000$ of trade a year on monthly terms needs a
+seed near $10{,}000$, not near $100{,}000$.
+
+The seed also bounds membership. A row is seated by one bond unit of flow held on the
+seed's reach and never released (\S\ref{sec:implementation}), so a community seats
+$\sum \supply$ over the unit rows and then nobody until a ceremony: at the genesis unit,
+one row per $20.00$ of seed, so a founding membership of $M$ needs a seed of at least $M$
+units before any credit is sized. The rehearsal (\texttt{the\_seed\_sizing\_rehearsal})
+seats founding members by trade, arrives newcomers through members with standing, retires
+members at the founder's churn, runs the seed ceremony on the cadence the founder names,
+and reports the seats beside the credit: at its default process a seed of $5{,}000$ seats
+its $250$ rows and refuses the next thirty-nine epochs into the measured year, while
+$20{,}000$ seats every arrival. The rate headroom of \S\ref{sec:seed-amendments} does not
+carry over between epochs, so a ceremony a month grows the ceiling by $27\%$ a year and
+only a ceremony every epoch compounds at $\beta$.
+
+Who seats a row is a fact about standing, and standing is earned by owing. A seat is held
+on its \emph{sponsor's} reach and selling earns none, so the member best placed to bring a
+newcomer in --- the shopkeeper letting them run a tab --- can seat nobody until they have
+borrowed and repaid themselves, and beyond the one self-act their seat paid for ---
+registering guardians, once (\S\ref{sec:implementation}) --- administer their own account
+only with a co-signer who has. Onboarding and a member's own administration concentrate
+in borrowers and underwriters, and a founder should expect to seat the first members
+themselves. A community on a seasonal rhythm sizes the decay ratio before the seed: at the
+genesis ratio an unrenewed edge keeps $12\%$ after a quarter and $0.02\%$ after a year
+(\S\ref{sec:standing}), and the rehearsal prints the figure beside the seats.
+
+The two errors are not symmetric. Understating the seed costs friction: more obligations
+fall to the uninsured tier, which works and is how the network bootstraps. Overstating it
+has no later correction, because the one assumption the protocol makes is that
+underwriters can bear what they declared (\S\ref{sec:security}). Err low, and re-estimate
+against what the ledger measures: utilisation ($\sum$ reserved over $\sum$ supply); the
+count of obligations that fell to uninsured for want of capacity --- against a ceiling of
+$15{,}000$ with members each wanting $2{,}500$, six members refuse none, ten refuse four,
+twenty refuse fourteen and forty refuse thirty-four; and the realised loss rate, the
+actuarially correct input and the only one that says whether the declared supply was
+priced right.
+
+Unlike the validator set, the underwriter set is \emph{not} frozen at a founding: a
+community whose credit could only originate with its founders would wind down as they
+aged out, since a stake decays and a supply does not renew itself
+(\S\ref{sec:standing}). Members enter the role by an endorsed amendment and leave it by
+withdrawing, floored at the flow already committed through them. Opening the role keeps a
+community alive without making it richer: for that, an underwriter has to bring something
+in from outside, which is a second ceremony (\S\ref{sec:governance}), or the community has
+to merge with another.
+
+\paragraph{Who the ceremony is for.} An insured loss is paid in the underwriters' own
+obligations (\S\ref{sec:substitution}), so insurance is worth what those obligations buy,
+and that is what a seed ceremony decides. A community sizes its seed in underwriters whose
+obligations circulate --- a wholesaler its members buy from, a cooperative that sells to
+them, a municipality that takes them in fees --- and an underwriter nobody buys from
+insures little however much it declares. The first assumption of \S\ref{sec:security} is
+the same sentence from the other side.
+
+\paragraph{Why anybody underwrites.} The ledger pays no rent (Property~\ref{prop:no-rent})
+and does not compensate the role; four things outside the medium's operation do. The
+vote: underwriters are the electorate, and nobody else is (\S\ref{sec:governance}). The
+trade: an underwriter is an institution whose members' or customers' credit it wants to
+exist --- a wholesaler behind its retailers, a cooperative behind its members --- which is
+why suppliers extend terms at their own risk today. The price: a premium is an ordinary
+obligation from the insured to the underwriter, which the ledger cannot tell from a trade
+and treats as one in every respect, standing included; settled, it stakes the underwriter
+on the debtor, bounded by the underwriter's supply like any creditor's stake, so it is no
+new lever. The precedent: mutual guarantee societies have filled exactly this role for
+decades, on membership fees and public backing.
+
+\subsection{Acceptance, and what actually binds}
+
+The question usually put here is whether a producer will accept an obligation in this
+medium for real goods, and the usual answer --- that nothing in the mechanism compels it
+--- describes a different mechanism. A sale discharges before it creates
+(\S\ref{sec:sale}), so a producer carrying obligations is paid by ceasing to owe, and the
+motive is the one that made them a debtor. Measured, netting a debt of $80$ against one's
+creditor writes the whole $80$ of stake, where clearing the same $80$ through the cascade
+writes none (\S\ref{sec:verification}).
+
+The argument does not reach a member who owes nothing and buys nothing from the community.
+For them a claim is what \S\ref{sec:economics} says it is, an expectation of future
+delivery, worth taking only if there are things worth buying from members at prices worth
+paying. That member is the one the thesis's antecedent already excludes: \textbf{the
+binding constraint is the antecedent, not the willingness}. What share of a community's
+inputs can be bought from within it is a structural property of that community,
+ascertainable before a line of this is deployed, and it decides both whether clearing
+dominates and whether anybody has a motive to accept. A community that satisfies it does
+not have to be persuaded; one that does not cannot be, by this or any mechanism, and
+should not adopt one.
+
+A smaller cost sits beside it: the newcomer's first trade (Remark~\ref{rem:friction}).
+Somebody must extend uninsured credit before capacity exists --- a shopkeeper letting a new
+neighbour run a tab --- and that is what writes the first stake. The design bounds that
+risk and states it; it does not remove it.

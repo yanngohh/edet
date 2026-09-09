@@ -1,25 +1,39 @@
 <script lang="ts">
   /**
-   * Pre-tour onboarding wizard.
+   * Pre-tour (and post-tour) onboarding wizard.
    *
    * Renders the appropriate step component for the current onboarding
-   * step. When the store advances to `tour`, `App.svelte` unmounts this
+   * step. When the store advances to `tour`, App.svelte unmounts this
    * overlay (so Shepherd can target the real app DOM) and runs the tour
-   * directly.
+   * directly; once the tour finishes, App.svelte advances the store to
+   * `economics-intro` and this overlay remounts for the final explainer.
    */
   import { _ } from 'svelte-i18n';
+  import { tick } from 'svelte';
 
   import { onboardingStep } from '../../common/onboardingStore';
 
   import LocaleSetupStep from './LocaleSetupStep.svelte';
-  import PathChoiceStep from './PathChoiceStep.svelte';
-  import MnemonicGenerate from './MnemonicGenerate.svelte';
-  import MnemonicConfirm from './MnemonicConfirm.svelte';
-  import BackupExport from './BackupExport.svelte';
-  import RestoreBackupStep from './RestoreBackupStep.svelte';
+  import NetworkChoiceStep from './NetworkChoiceStep.svelte';
+  import ActorChoiceStep from './ActorChoiceStep.svelte';
+  import EconomicsIntroStep from './EconomicsIntroStep.svelte';
+
+  /**
+   * The overlay scrolls, and a step change swaps the CONTENT without moving
+   * it: leave the explainer from its Continue button at the bottom and the
+   * next step opens halfway down itself, below its own title. Reset on every
+   * step, after the new content has rendered.
+   */
+  let overlay: HTMLDivElement | undefined;
+  $: if ($onboardingStep && overlay) void scrollToTop();
+
+  async function scrollToTop() {
+    await tick();
+    overlay?.scrollTo({ top: 0, behavior: 'auto' });
+  }
 </script>
 
-<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+<div class="overlay" bind:this={overlay} role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
   <div class="shell">
     <header class="shell-header">
       <span id="onboarding-title" class="shell-title">
@@ -28,14 +42,12 @@
       <span class="shell-step">
         {#if $onboardingStep === 'locale-setup'}
           {$_('onboarding.steps.locale', { default: 'Language & formats' })}
-        {:else if $onboardingStep === 'path-choice'}
-          {$_('onboarding.steps.pathChoice', { default: 'Create or restore' })}
-        {:else if $onboardingStep === 'mnemonic-generate' || $onboardingStep === 'mnemonic-confirm'}
-          {$_('onboarding.steps.mnemonic', { default: 'Recovery phrase' })}
-        {:else if $onboardingStep === 'backup-export'}
-          {$_('onboarding.steps.backup', { default: 'Backup file' })}
-        {:else if $onboardingStep === 'restore-backup'}
-          {$_('onboarding.steps.restore', { default: 'Restore identity' })}
+        {:else if $onboardingStep === 'network-choice'}
+          {$_('onboarding.steps.network', { default: 'Your network' })}
+        {:else if $onboardingStep === 'actor-choice'}
+          {$_('onboarding.steps.actor', { default: 'Who are you?' })}
+        {:else if $onboardingStep === 'economics-intro'}
+          {$_('onboarding.steps.economics', { default: 'How edet works' })}
         {/if}
       </span>
     </header>
@@ -43,16 +55,12 @@
     <div class="shell-body">
       {#if $onboardingStep === 'locale-setup'}
         <LocaleSetupStep />
-      {:else if $onboardingStep === 'path-choice'}
-        <PathChoiceStep />
-      {:else if $onboardingStep === 'mnemonic-generate'}
-        <MnemonicGenerate />
-      {:else if $onboardingStep === 'mnemonic-confirm'}
-        <MnemonicConfirm />
-      {:else if $onboardingStep === 'backup-export'}
-        <BackupExport />
-      {:else if $onboardingStep === 'restore-backup'}
-        <RestoreBackupStep />
+      {:else if $onboardingStep === 'network-choice'}
+        <NetworkChoiceStep />
+      {:else if $onboardingStep === 'actor-choice'}
+        <ActorChoiceStep />
+      {:else if $onboardingStep === 'economics-intro'}
+        <EconomicsIntroStep />
       {/if}
     </div>
   </div>

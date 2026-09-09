@@ -1,0 +1,1341 @@
+{
+  "version": "0.7.0",
+  "units": "minor",
+  "cases": [
+    {
+      "name": "fresh key",
+      "why": "no incident stakes",
+      "n": 60,
+      "edges": [],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ],
+        [
+          2,
+          250000
+        ],
+        [
+          3,
+          250000
+        ],
+        [
+          4,
+          250000
+        ],
+        [
+          5,
+          250000
+        ]
+      ],
+      "targets": [
+        42
+      ],
+      "own_supply": false,
+      "capacity": 0
+    },
+    {
+      "name": "backed newcomer",
+      "why": "one hop from an underwriter",
+      "n": 60,
+      "edges": [
+        [
+          [
+            0,
+            10
+          ],
+          250000
+        ],
+        [
+          [
+            10,
+            11
+          ],
+          250000
+        ],
+        [
+          [
+            11,
+            12
+          ],
+          250000
+        ]
+      ],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ],
+        [
+          2,
+          250000
+        ],
+        [
+          3,
+          250000
+        ],
+        [
+          4,
+          250000
+        ],
+        [
+          5,
+          250000
+        ]
+      ],
+      "targets": [
+        10
+      ],
+      "own_supply": false,
+      "capacity": 250000
+    },
+    {
+      "name": "three hops out",
+      "why": "standing propagates undiminished",
+      "n": 60,
+      "edges": [
+        [
+          [
+            0,
+            10
+          ],
+          250000
+        ],
+        [
+          [
+            10,
+            11
+          ],
+          250000
+        ],
+        [
+          [
+            11,
+            12
+          ],
+          250000
+        ]
+      ],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ],
+        [
+          2,
+          250000
+        ],
+        [
+          3,
+          250000
+        ],
+        [
+          4,
+          250000
+        ],
+        [
+          5,
+          250000
+        ]
+      ],
+      "targets": [
+        12
+      ],
+      "own_supply": false,
+      "capacity": 250000
+    },
+    {
+      "name": "the chain as a set",
+      "why": "simultaneous use is one supply",
+      "n": 60,
+      "edges": [
+        [
+          [
+            0,
+            10
+          ],
+          250000
+        ],
+        [
+          [
+            10,
+            11
+          ],
+          250000
+        ],
+        [
+          [
+            11,
+            12
+          ],
+          250000
+        ]
+      ],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ],
+        [
+          2,
+          250000
+        ],
+        [
+          3,
+          250000
+        ],
+        [
+          4,
+          250000
+        ],
+        [
+          5,
+          250000
+        ]
+      ],
+      "targets": [
+        10,
+        11,
+        12
+      ],
+      "own_supply": false,
+      "capacity": 250000
+    },
+    {
+      "name": "wash pair",
+      "why": "internal edges never cross the set's own boundary",
+      "n": 60,
+      "edges": [
+        [
+          [
+            40,
+            41
+          ],
+          250000
+        ],
+        [
+          [
+            41,
+            40
+          ],
+          250000
+        ]
+      ],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ],
+        [
+          2,
+          250000
+        ],
+        [
+          3,
+          250000
+        ],
+        [
+          4,
+          250000
+        ],
+        [
+          5,
+          250000
+        ]
+      ],
+      "targets": [
+        40,
+        41
+      ],
+      "own_supply": false,
+      "capacity": 0
+    },
+    {
+      "name": "one supply, 2 debtors",
+      "why": "the supply arc is shared",
+      "n": 4,
+      "edges": [
+        [
+          [
+            0,
+            1
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          250000
+        ]
+      ],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ]
+      ],
+      "targets": [
+        1,
+        2
+      ],
+      "own_supply": false,
+      "capacity": 250000
+    },
+    {
+      "name": "one supply, 2 debtors, singleton",
+      "why": "a per-account check passes here",
+      "n": 4,
+      "edges": [
+        [
+          [
+            0,
+            1
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          250000
+        ]
+      ],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ]
+      ],
+      "targets": [
+        1
+      ],
+      "own_supply": false,
+      "capacity": 250000
+    },
+    {
+      "name": "one supply, 5 debtors",
+      "why": "the supply arc is shared",
+      "n": 7,
+      "edges": [
+        [
+          [
+            0,
+            1
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            5
+          ],
+          250000
+        ]
+      ],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ]
+      ],
+      "targets": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "own_supply": false,
+      "capacity": 250000
+    },
+    {
+      "name": "one supply, 5 debtors, singleton",
+      "why": "a per-account check passes here",
+      "n": 7,
+      "edges": [
+        [
+          [
+            0,
+            1
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            5
+          ],
+          250000
+        ]
+      ],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ]
+      ],
+      "targets": [
+        1
+      ],
+      "own_supply": false,
+      "capacity": 250000
+    },
+    {
+      "name": "one supply, 20 debtors",
+      "why": "the supply arc is shared",
+      "n": 22,
+      "edges": [
+        [
+          [
+            0,
+            1
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            5
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            6
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            7
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            9
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            10
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            11
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            12
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            13
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            14
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            15
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            16
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            17
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            18
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            19
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            20
+          ],
+          250000
+        ]
+      ],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ]
+      ],
+      "targets": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "own_supply": false,
+      "capacity": 250000
+    },
+    {
+      "name": "one supply, 20 debtors, singleton",
+      "why": "a per-account check passes here",
+      "n": 22,
+      "edges": [
+        [
+          [
+            0,
+            1
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            2
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            3
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            4
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            5
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            6
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            7
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            8
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            9
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            10
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            11
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            12
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            13
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            14
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            15
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            16
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            17
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            18
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            19
+          ],
+          250000
+        ],
+        [
+          [
+            0,
+            20
+          ],
+          250000
+        ]
+      ],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ]
+      ],
+      "targets": [
+        1
+      ],
+      "own_supply": false,
+      "capacity": 250000
+    },
+    {
+      "name": "self-underwriting coalition",
+      "why": "supply comes only from outside the set",
+      "n": 80,
+      "edges": [
+        [
+          [
+            0,
+            50
+          ],
+          250000
+        ],
+        [
+          [
+            50,
+            60
+          ],
+          250000
+        ],
+        [
+          [
+            60,
+            50
+          ],
+          250000
+        ]
+      ],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ],
+        [
+          2,
+          250000
+        ],
+        [
+          3,
+          250000
+        ],
+        [
+          4,
+          250000
+        ],
+        [
+          5,
+          250000
+        ],
+        [
+          50,
+          250000
+        ],
+        [
+          60,
+          250000
+        ]
+      ],
+      "targets": [
+        50,
+        60
+      ],
+      "own_supply": false,
+      "capacity": 250000
+    },
+    {
+      "name": "partially drawn",
+      "why": "free capacity is the stake net of what is held",
+      "n": 60,
+      "edges": [
+        [
+          [
+            0,
+            10
+          ],
+          250000
+        ]
+      ],
+      "reserved": [
+        [
+          [
+            0,
+            10
+          ],
+          200000
+        ]
+      ],
+      "committed": [
+        [
+          0,
+          200000
+        ]
+      ],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ],
+        [
+          2,
+          250000
+        ],
+        [
+          3,
+          250000
+        ],
+        [
+          4,
+          250000
+        ],
+        [
+          5,
+          250000
+        ]
+      ],
+      "targets": [
+        10
+      ],
+      "own_supply": false,
+      "capacity": 50000
+    },
+    {
+      "name": "fully drawn",
+      "why": "and nothing is left when it is all held",
+      "n": 60,
+      "edges": [
+        [
+          [
+            0,
+            10
+          ],
+          250000
+        ]
+      ],
+      "reserved": [
+        [
+          [
+            0,
+            10
+          ],
+          250000
+        ]
+      ],
+      "committed": [
+        [
+          0,
+          250000
+        ]
+      ],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ],
+        [
+          2,
+          250000
+        ],
+        [
+          3,
+          250000
+        ],
+        [
+          4,
+          250000
+        ],
+        [
+          5,
+          250000
+        ]
+      ],
+      "targets": [
+        10
+      ],
+      "own_supply": false,
+      "capacity": 0
+    },
+    {
+      "name": "supply at its floor",
+      "why": "a legal withdrawal holds the bound",
+      "n": 60,
+      "edges": [
+        [
+          [
+            0,
+            10
+          ],
+          250000
+        ]
+      ],
+      "reserved": [
+        [
+          [
+            0,
+            10
+          ],
+          200000
+        ]
+      ],
+      "committed": [
+        [
+          0,
+          200000
+        ]
+      ],
+      "underwriters": [
+        [
+          0,
+          200000
+        ]
+      ],
+      "targets": [
+        10
+      ],
+      "own_supply": false,
+      "capacity": 0
+    },
+    {
+      "name": "a founder with no in-stakes",
+      "why": "supply and nothing backing them",
+      "n": 20,
+      "edges": [],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ]
+      ],
+      "targets": [
+        0
+      ],
+      "own_supply": false,
+      "capacity": 0
+    },
+    {
+      "name": "a founder already drawn on",
+      "why": "the residual of their own arc",
+      "n": 20,
+      "edges": [],
+      "reserved": [],
+      "committed": [
+        [
+          0,
+          200000
+        ]
+      ],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ]
+      ],
+      "targets": [
+        0
+      ],
+      "own_supply": false,
+      "capacity": 0
+    },
+    {
+      "name": "a founder who is also backed",
+      "why": "their own arc adds to what reaches them",
+      "n": 20,
+      "edges": [
+        [
+          [
+            1,
+            0
+          ],
+          250000
+        ]
+      ],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ]
+      ],
+      "targets": [
+        0
+      ],
+      "own_supply": false,
+      "capacity": 250000
+    },
+    {
+      "name": "a self-underwriting coalition, write layer",
+      "why": "own supply is one member's, not the set's",
+      "n": 80,
+      "edges": [
+        [
+          [
+            0,
+            50
+          ],
+          250000
+        ],
+        [
+          [
+            50,
+            60
+          ],
+          250000
+        ],
+        [
+          [
+            60,
+            50
+          ],
+          250000
+        ]
+      ],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ],
+        [
+          2,
+          250000
+        ],
+        [
+          3,
+          250000
+        ],
+        [
+          4,
+          250000
+        ],
+        [
+          5,
+          250000
+        ],
+        [
+          50,
+          250000
+        ],
+        [
+          60,
+          250000
+        ]
+      ],
+      "targets": [
+        50,
+        60
+      ],
+      "own_supply": false,
+      "capacity": 250000
+    },
+    {
+      "name": "a founder with no in-stakes",
+      "why": "supply and nothing backing them",
+      "n": 20,
+      "edges": [],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ]
+      ],
+      "targets": [
+        0
+      ],
+      "own_supply": true,
+      "capacity": 250000
+    },
+    {
+      "name": "a founder already drawn on",
+      "why": "the residual of their own arc",
+      "n": 20,
+      "edges": [],
+      "reserved": [],
+      "committed": [
+        [
+          0,
+          200000
+        ]
+      ],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ]
+      ],
+      "targets": [
+        0
+      ],
+      "own_supply": true,
+      "capacity": 50000
+    },
+    {
+      "name": "a founder who is also backed",
+      "why": "their own arc adds to what reaches them",
+      "n": 20,
+      "edges": [
+        [
+          [
+            1,
+            0
+          ],
+          250000
+        ]
+      ],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ]
+      ],
+      "targets": [
+        0
+      ],
+      "own_supply": true,
+      "capacity": 500000
+    },
+    {
+      "name": "a self-underwriting coalition, write layer",
+      "why": "own supply is one member's, not the set's",
+      "n": 80,
+      "edges": [
+        [
+          [
+            0,
+            50
+          ],
+          250000
+        ],
+        [
+          [
+            50,
+            60
+          ],
+          250000
+        ],
+        [
+          [
+            60,
+            50
+          ],
+          250000
+        ]
+      ],
+      "reserved": [],
+      "committed": [],
+      "underwriters": [
+        [
+          0,
+          250000
+        ],
+        [
+          1,
+          250000
+        ],
+        [
+          2,
+          250000
+        ],
+        [
+          3,
+          250000
+        ],
+        [
+          4,
+          250000
+        ],
+        [
+          5,
+          250000
+        ],
+        [
+          50,
+          250000
+        ],
+        [
+          60,
+          250000
+        ]
+      ],
+      "targets": [
+        50,
+        60
+      ],
+      "own_supply": true,
+      "capacity": 750000
+    }
+  ]
+}

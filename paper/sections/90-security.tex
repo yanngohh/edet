@@ -1,0 +1,326 @@
+\section{Security}
+\label{sec:security}
+
+The security of a mutual-credit system is the question of how much an adversary can make
+the community underwrite. Here the question has a closed-form answer, because capacity is
+a cut and cuts compose.
+
+Throughout, $S$ denotes a set of accounts and $\partial S$ the set of stakes running
+\emph{into} $S$ from outside it. All statements are about a single \emph{membership} ---
+one account set, one total order, one underwriter set, one cut. \S\ref{sec:model} explains
+why nothing is ever computed across two orders, and \S\ref{sec:oneledger} why there is one.
+
+\subsection{What cannot be manufactured}
+
+Every result in this section applies one statement repeatedly.
+
+\begin{assumption}[The free-signature bound]
+\label{ass:free-signatures}
+Every ledger event is a signature, and signatures are free. No quantity computed from
+ledger events alone can therefore seed insured credit: the seed must be a commitment by a
+party with something to lose outside the ledger.
+\end{assumption}
+
+Identities are free, settled volume is free, communities are free --- a genesis file costs
+nothing --- and a levy on a free quantity is free. The only unforgeable object in the
+system is a declared liability, and capacity is the arithmetic of tracing how far one
+reaches. Measured against the independent max-flow: a mutual pool funded by a levy on
+every settlement, started with no underwriters, accumulates \emph{zero} over $10{,}000$
+settled trades, because nothing may be conferred, so nothing is staked, so the levy is a
+percentage of nothing. Seeded, the pool does accumulate real stake --- and the members
+measured \emph{together with} it still owe exactly the seed: a pool funded from inside
+re-labels the seed instead of adding to it, which is why the ledger has no loss pool
+(\S\ref{sec:no-pool}). A community that underwrites nothing at genesis can trade
+indefinitely on uninsured credit and can never leave that state, since a supply is seated
+only by a ceremony and a ceremony needs a seed to be a fraction of.
+
+\subsection{The cut bound}
+
+\begin{theorem}[Cut bound]
+\label{thm:cut}
+Let $\drawn(S)$ be the total insured credit outstanding to the members of $S$ that is
+sourced by underwriters outside $S$. Then
+\[
+  \drawn(S) \;\le\; \Capa^{0}(S) \;\le\; \sum_{(a,b)\in\partial S} \stake(a,b)
+  \;+\; \textstyle\sum_{u\in\uw\setminus S}\supply(u).
+\]
+\end{theorem}
+
+\begin{proof}
+By Definition~\ref{def:reservation} every insured obligation to a member of $S$ holds an
+augmenting flow into $S$, and distinct obligations hold disjoint flow, since reservation
+subtracts from $\free$ before the next augmentation is computed. The total held is
+therefore a feasible flow into $S$ over the gross graph, bounded by the maximum such flow,
+which is $\Capa^{0}(S)$. The second inequality is max-flow/min-cut: $\partial S$ together
+with the supply arcs of underwriters outside $S$ forms a cut, so the maximum flow is at
+most its capacity.
+\end{proof}
+
+\begin{remark}[Why the gross reading, and why flow sourced outside $S$]
+\label{rem:cut-gross}
+Both qualifications are load-bearing, and each fixes a different way the statement is
+false without it. Against $\Capa(S)$ the theorem fails for any drawn debtor: the residual
+reading nets out exactly the credit the claim is about, so a member who has borrowed to
+their ceiling has $\Capa(S)=0$ and $\drawn(S)>0$. And $\drawn$ counts flow sourced
+outside $S$ because $\Capa^{0}$ does: an underwriter inside $S$ supplies $S$ nothing in
+the measurement, so credit it insures for its own set is neither bounded by this nor
+claimed to be. This is what the implementation checks after every committed block
+(\S\ref{sec:verification}, invariant~1).
+\end{remark}
+
+The proof uses \emph{disjoint flow}, which binds the implementation as much as the
+argument: an augmenting path runs from a supply arc through stake edges, and a reservation
+must charge both (Remark~\ref{rem:charge-supply}). Charging only the edges leaves the
+theorem true of $\Capa$ while the system reaches states it excludes, a bound argued rather
+than enforced.
+
+Every subsequent result is a corollary of Theorem~\ref{thm:cut} applied to a well-chosen
+$S$. That is the whole of the analysis: a bound that must be re-argued for each new attack
+is a bound that will eventually be re-argued wrongly.
+
+\subsection{Identities are free and worthless}
+
+\begin{corollary}[Sybil invariance]
+\label{cor:sybil}
+Let $x$ be an account with no incident stakes. Then $\Capa(S\cup\{x\}) = \Capa(S)$.
+In particular, an account created by an unheralded key has capacity zero, and creating
+$N$ of them adds nothing to any coalition.
+\end{corollary}
+
+\begin{proof}
+$\partial(S\cup\{x\}) = \partial S$, since $x$ contributes no stakes to the boundary,
+and $x\notin\uw$ since a supply is seated only by a ceremony
+(\S\ref{sec:seed-amendments}) and no ceremony has seated $x$. The two sets induce the
+same cuts, hence the same maximum flow.
+\end{proof}
+
+There is accordingly no admission decision to make and no rate to limit, which is also why
+the ledger carries no creation transition to rate-limit: a row is seated by the first
+trade naming its key, and what bounds it is the bond that trade already pays
+(\S\ref{sec:implementation}). Account creation is permissionless because it is inert.
+
+\subsection{Fabricated trade is worthless}
+
+\begin{corollary}[Wash invariance]
+\label{cor:wash}
+Any sequence of acceptances and settlements between members of $S$ leaves $\Capa(S)$
+unchanged, regardless of the amounts involved.
+\end{corollary}
+
+\begin{proof}
+Such settlements modify $\stake(c,d)$ only for $c,d\in S$ by Definition~\ref{def:stake}.
+Those stakes have both endpoints in $S$, so they cross no cut into $S$ and $\partial S$
+is untouched. By Theorem~\ref{thm:cut} the bound is unchanged; and since the flow must
+still cross $\partial S$, so is the maximum.
+\end{proof}
+
+Corollary~\ref{cor:wash} is why this design contains no wash-trading detector, no
+volume-anomaly heuristic and no rate model: fabricated settlement is not detected and not
+penalised, it is arithmetically void. Remark~\ref{rem:not-volume} explains why a design
+measuring volume instead of stake cannot have this property: settlement demands two
+signatures and no delivery, so its volume is free, and a free quantity placed in
+$\partial S$ makes the right-hand side of Theorem~\ref{thm:cut} unbounded.
+
+\subsection{Collusion does not multiply}
+
+\begin{corollary}[Collusion bound]
+\label{cor:collusion}
+Suppose every stake from $S$ to its complement has its other endpoint at a single
+account $m$, and $m$ is not an underwriter. Then $\Capa(S) \le \Capa(\{m\})$.
+\end{corollary}
+
+\begin{proof}
+Every path into $S$ passes through $m$, so $\{m\}$ is a vertex separator. A feasible flow
+into $S$ is therefore a feasible flow into $m$, and the maximum of the former is at most
+the maximum of the latter.
+\end{proof}
+
+A member who backs an adversary passes on exactly what they hold and no more, however
+many accounts they distribute it across or however large the stakes they write. The
+community's exposure to a coalition is its exposure to the honest members who chose to
+back it, which a community can reason about without knowing who is colluding.
+
+\begin{corollary}[A coalition cannot underwrite itself]
+\label{cor:self-uw}
+Appointing members of $S$ as underwriters does not raise $\Capa(S)$.
+\end{corollary}
+
+\begin{proof}
+Definition~\ref{def:capacity} draws supply only from $\uw\setminus S$, so an underwriter
+inside $S$ contributes no supply arc to $S$'s own measurement. Their stakes on other
+members of $S$ are internal and excluded by Corollary~\ref{cor:wash}.
+\end{proof}
+
+\begin{remark}[What this corollary does \emph{not} say]
+\label{rem:self-uw-limits}
+It is a statement about the members of $S$, and the credit a coalition wants is issued to
+the accounts $S$ \emph{backs}, which are outside it and to which $S$'s supply arcs
+therefore do count. That is not a gap in the corollary but a question it does not answer,
+and the answer comes from elsewhere: a supply is seated only by a ceremony
+(\S\ref{sec:seed-amendments}), so $S$ cannot appoint its own accomplices in the first
+place. A rule that let a member declare against their own capacity would leave this
+corollary true and the community holding $2{,}048$ times its seed in ledger-labelled
+insured credit (\S\ref{sec:standing}).
+\end{remark}
+
+This is what lets the underwriter role be open to every member without opening a door: a
+coalition may propose as many of its own accounts as it likes, measured as a coalition it
+gains nothing even if the community endorses them, and measured individually its members
+are still bounded by what flows in from outside.
+
+\begin{corollary}[Bounded by declared underwriting]
+\label{cor:uw-bound}
+For any set $S$, $\Capa(S) \le \sum_{u\in\uw\setminus S}\supply(u)$. In particular an
+underwriter's total exposure --- across every member they back, however many --- is at
+most their own declared supply.
+\end{corollary}
+
+\begin{proof}
+The supply arcs of $\uw\setminus S$ form a cut.
+\end{proof}
+
+Corollary~\ref{cor:uw-bound} is what makes the recursion in Definition~\ref{def:stake}
+terminate, and it is the community's aggregate solvency statement: total insured credit
+never exceeds what its underwriters have collectively declared. That total is not a
+genesis constant --- it rises when the community endorses an underwriter and falls when
+one withdraws, subject to the floor of \S\ref{sec:standing} --- and it is a measure rather
+than an upper bound precisely because a supply cannot be declared against standing the
+community itself conferred: under a rule that allowed one, \S\ref{sec:standing} measures
+the divergence at $204{,}900$ declared against an aggregate of $100$. What the community
+can pay is what its underwriters can pay from outside the set being measured.
+
+\subsection{The cost of attack}
+
+\begin{corollary}[Linearity]
+\label{cor:linear}
+An adversary who acquires genuine backing worth $B$ --- by trading honestly, at honest
+prices, with members willing to stake on them --- obtains at most $B$ of capacity across
+every account they control.
+\end{corollary}
+
+\begin{proof}
+Take $S$ to be the adversary's accounts. Their genuine backing is exactly $\partial S$;
+apply Theorem~\ref{thm:cut}.
+\end{proof}
+
+The proof rests on one word, \emph{genuine}, and that word binds the transition function:
+it holds only because \textbf{no transition writes an edge of $\partial S$ without the
+signature of somebody outside $S$}. By Remark~\ref{rem:only-settlement} the sole writer is
+settlement, which takes the creditor's signature, and a creditor outside $S$ signing is
+the adversary having persuaded an outsider to back them, which is what the corollary
+counts. That condition is easy to break by accident: a debtor swap looks like a discharge,
+and a rule that staked it would let a ring of $k$ members passing one accepted claim
+collect an edge each from a creditor who signed once --- $\sum \stake$ linear in $k$ from
+one outsider's signature. The swap therefore stakes nothing (\S\ref{sec:medium}), and any
+transition that touches the stake graph has to answer the same question.
+
+\begin{corollary}[Seats are linear in backing]
+\label{cor:seats}
+Let $S'$ be any set of accounts containing no underwriter, and let $\seats(S')$ count the
+rows seated by a sponsor in $S'$. Then
+\[
+  \kConstBondUnitFraction \cdot \vbase \cdot \seats(S')
+  \;\le\; \sum_{e \in \partial S'} \peak(e),
+\]
+where $\peak(e)$ is the all-time maximum weight of arc $e$ and a supply arc counts at its
+all-time maximum declaration. Minimising over supersets gives the bound at the cut.
+\end{corollary}
+
+\begin{proof}
+Every seat holds a flow from the source to its sponsor, of one bond unit, on a reservation
+map the credit layer never reads (Property~\ref{prop:seat}). Consider the net seat flow
+across $\partial S'$: for a sponsor inside $S'$ the whole amount crosses inward, for one
+outside it nets to zero, so the net inward seat flow is exactly
+$\kConstBondUnitFraction \cdot \vbase \cdot \seats(S')$. That flow is at most
+$\sum_{e \in \partial S'} \seatres(e)$, where $\seatres$ is the seat reservation on an arc,
+and each such value is at most $\peak(e)$: a reservation is refused where it would exceed
+the arc's weight at the time it is taken, and nothing but a reservation ever raises one.
+\end{proof}
+
+Counting by sponsor rather than by row is what the statement needs and the honest reading:
+a row an outsider chose to bring in cost that outsider's reach and is not the set's doing,
+and a row the set seated is, wherever its account then sits. The bound is over all-time
+peaks rather than present weights, and that is exact rather than loose for a permanent
+stock backed when it is seated: decay lowers an arc without releasing what a seat took on
+it, so renewal to an old peak opens nothing. Time appears nowhere in the statement, which
+is the point --- a bound that a wait relaxes is a bound on a rate, and a row is a stock.
+Charging the supply arc is what makes the aggregate hold: ten operators each vouched at
+$500$ by one underwriter who declared $2{,}500$ hold $125$ seats between them and not
+$250$, because the ten stake arcs sum to $5{,}000$ and the arc they all draw through does
+not.
+
+There is therefore no leverage anywhere in the system: no configuration of identities,
+volumes, timing or collusion converts $B$ of real economic commitment into more than $B$
+of underwritten credit. The protocol has no attack surface distinct from its participation
+surface. An adversary who wants more must first persuade more members to back them, which
+is indistinguishable from becoming a member in good standing, and costs the same.
+
+\subsection{The scope, and how it is honoured}
+
+Everything above is scoped to one ledger: a cut drawn over one order's accounts never
+measures a coalition that stood up a second. The scope is narrower than it first appears,
+because a ledger is not a community --- two co-operatives sharing an order are inside one
+cut, and every result above applies to a coalition spanning both --- and it is honoured by
+communities that expect to trade sharing a ledger. What lies outside the order lies outside
+the arithmetic; the alternatives were measured (\S\ref{sec:oneledger}) and each voids the
+corollaries above at a stroke.
+
+\subsection{What is assumed}
+
+Theorem~\ref{thm:cut} and its corollaries assume no honesty on the part of any account, no
+bound on identity creation, no external registry, and no observation of behaviour. They
+assume:
+
+\begin{enumerate}[leftmargin=1.6em]
+  \item \textbf{Underwriters can bear what they declared.} A supply is a promise; the
+        protocol enforces its consequences (\S\ref{sec:recourse}) but cannot verify in
+        advance that an underwriter is good for it. A community that lets members declare
+        more than they can bear has mispriced itself, and no later mechanism corrects
+        that.
+  \item \textbf{The order is agreed.} Reservation is a conserved budget, so replicas that
+        disagree on the sequence of acceptances disagree on who holds it
+        (Remark~\ref{rem:order}).
+  \item \textbf{Capacity is computed identically everywhere.} The capacity path is
+        integer throughout for this reason; see \S\ref{sec:implementation}.
+  \item \textbf{No quantity from another order enters.} A single foreign input --- a
+        recognised supply, a discharge authorised by a foreign root --- voids
+        Corollaries~\ref{cor:sybil}, \ref{cor:wash}, \ref{cor:self-uw}
+        and~\ref{cor:linear} together. The assumption is discharged by there being no
+        transition that can carry such an input.
+\end{enumerate}
+
+Nothing else is assumed, and in particular nothing about the proportion of honest members,
+the cost of an identity, or the quality of any membrane.
+
+\subsection{What this does not defend}
+
+\paragraph{A creditor's own judgement.} Uninsured credit is unbounded by construction
+(\S\ref{sec:standing}). A member who lends beyond a debtor's capacity can lose everything
+they lent, and the protocol neither prevents it nor compensates it: the decision sits with
+the party holding the information.
+
+\paragraph{Backing withdrawn by decay.} A member's capacity can fall without any act of
+their own --- because the stakes behind it decay, because those who staked lost their own
+capacity, or because an underwriter reduced their supply. Standing is a claim on others'
+present willingness, not a possession, and a community whose members all stop renewing
+watches its credit fall to zero (Remark~\ref{rem:winddown}).
+
+\paragraph{Allocation under contention.} When several creditors would lend to the same
+debtor, capacity is taken first-come-first-served: the total is bounded correctly, but
+which creditor obtains it is decided by transaction order rather than by any notion of
+fairness, and order within a block is chosen by its proposer. A validator that sees a
+pending acceptance which would exhaust an underwriter can place its own ahead of it in the
+same block. It is the one place a validator's private interest touches who is insured; what
+it can take is bounded by the same cut as everybody else's, and a validator is an
+institution the community chose. Ordering a block's acceptances by their digest would not
+remove the lever but auction it: a submitter controls the envelope, so anyone can grind a
+digest to the front of a block in milliseconds, where today only the proposer reorders;
+and ordering by a value no submitter knows in advance hands the choice back to the
+proposer, who assembles the batch. The statement above is the honest one.
+
+\paragraph{Acceptance.} No result in this section implies that anybody will accept an
+obligation in this medium. What is proved is that it cannot be inflated by an adversary,
+which is necessary and not sufficient; the motive to accept comes from the clearing itself
+(\S\ref{sec:sale}) and is bounded by the condition under which clearing is possible at all
+(\S\ref{sec:adoption}), and neither is a theorem about an adversary. Nor does any result
+supply a newcomer with their first willing counterparty (Remark~\ref{rem:friction}).

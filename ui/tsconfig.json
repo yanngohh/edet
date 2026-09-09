@@ -5,29 +5,16 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "resolveJsonModule": true,
-    /**
-     * Typecheck JS in `.svelte` and `.js` files by default.
-     * Disable checkJs if you'd like to use dynamic types in JS.
-     * Note that setting allowJs false does not prevent the use
-     * of JS in `.svelte` files.
-     */
     "allowJs": true,
     "checkJs": true,
+    // Type-check only — `npm run check` is this config's sole consumer (vite
+    // builds with esbuild). Without it, TS treats `scripts/*.mjs` pulled in
+    // by an import as a file it would emit over, and warns about exactly that.
+    "noEmit": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    "types": [
-      "./src/vite-env.d.ts"
-    ]
+    "types": ["./src/vite-env.d.ts", "vite/client"]
   },
-  "include": [
-    "src/**/*.d.ts",
-    "src/**/*.ts",
-    "src/**/*.js",
-    "src/**/*.svelte"
-  ],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ]
+  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -3,7 +3,7 @@
    * Step 1 of onboarding: let the user pick their language + date/time /
    * number formats before anything else happens.
    *
-   * Everything rendered after this step (the recovery phrase, the tour
+   * Everything rendered after this step (the identity picker, the tour
    * popovers, error banners, etc.) is translated on the fly by svelte-i18n
    * as soon as the user changes the language dropdown, so the rest of the
    * wizard reads naturally in their chosen locale.
@@ -28,7 +28,7 @@
   } from '../../common/onboardingStore';
   import { formatDateTime, formatNumber } from '../../common/functions';
 
-  const sampleTimestamp = Date.now() * 1000; // microseconds
+  const sampleTimestamp = Date.now();
   const sampleNumber = 1234.56;
 
   $: dateTimePreview = $localizationSettings && formatDateTime(sampleTimestamp);
@@ -38,7 +38,6 @@
     // Persist the "the user has explicitly acknowledged these settings"
     // flag so future launches skip the step.
     markLocaleConfigured();
-    // Advance the onboarding orchestrator.
     markStepDone();
     advance();
   }
@@ -51,7 +50,7 @@
   <p class="step-body">
     {$_('onboarding.localeSetup.body', {
       default:
-        'The rest of this wizard — including your recovery phrase and the tour — will be shown in the language you pick here. You can change these settings later under Settings → Localization.',
+        'The rest of this wizard — including the tour — will be shown in the language you pick here. You can change these settings later under Settings.',
     })}
   </p>
 
@@ -65,7 +64,7 @@
   </div>
 
   <div class="setting-item">
-    <span class="setting-label">{$_('settings.dateFormat', { default: 'Date Format' })}</span>
+    <span class="setting-label">{$_('settings.dateFormat', { default: 'Date format' })}</span>
     <List class="format-list">
       <Item on:click={() => updateSetting('dateFormat', 'iso')} selected={$localizationSettings.dateFormat === 'iso'}>
         <Graphic class="material-icons">{$localizationSettings.dateFormat === 'iso' ? 'radio_button_checked' : 'radio_button_unchecked'}</Graphic>
@@ -83,7 +82,7 @@
   </div>
 
   <div class="setting-item">
-    <span class="setting-label">{$_('settings.timeFormat', { default: 'Time Format' })}</span>
+    <span class="setting-label">{$_('settings.timeFormat', { default: 'Time format' })}</span>
     <List class="format-list">
       <Item on:click={() => updateSetting('timeFormat', '24h')} selected={$localizationSettings.timeFormat === '24h'}>
         <Graphic class="material-icons">{$localizationSettings.timeFormat === '24h' ? 'radio_button_checked' : 'radio_button_unchecked'}</Graphic>
@@ -106,7 +105,7 @@
   </div>
 
   <div class="setting-item">
-    <span class="setting-label">{$_('settings.numberFormat', { default: 'Number Format' })}</span>
+    <span class="setting-label">{$_('settings.numberFormat', { default: 'Number format' })}</span>
     <List class="format-list">
       <Item on:click={() => updateSetting('numberFormat', 'dot-comma')} selected={$localizationSettings.numberFormat === 'dot-comma'}>
         <Graphic class="material-icons">{$localizationSettings.numberFormat === 'dot-comma' ? 'radio_button_checked' : 'radio_button_unchecked'}</Graphic>

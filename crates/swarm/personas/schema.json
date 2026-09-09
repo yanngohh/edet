@@ -1,0 +1,48 @@
+{
+  "attack": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["persona", "narrative", "steps", "needs"],
+    "properties": {
+      "persona": { "type": "string" },
+      "narrative": {
+        "type": "string",
+        "description": "How this person would get credit they do not deserve, in their own terms."
+      },
+      "steps": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "The attempt as plain sentences, one act each, in order."
+      },
+      "needs": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "What the attacker must ALREADY hold for step one to be possible."
+      }
+    }
+  },
+  "objection": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["persona", "objection", "would_need_to_see"],
+    "properties": {
+      "persona": { "type": "string" },
+      "objection": { "type": "string", "description": "What stops this person signing up." },
+      "would_need_to_see": {
+        "type": "string",
+        "description": "What would have to be true, or visible, for them to try it anyway."
+      }
+    }
+  },
+  "copy": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["key", "reading", "misreading", "suggested"],
+    "properties": {
+      "key": { "type": "string", "description": "The `en.json` key this is about." },
+      "reading": { "type": "string", "description": "What a stranger takes it to mean." },
+      "misreading": { "type": "string", "description": "What it could be taken to promise that the design does not do." },
+      "suggested": { "type": "string", "description": "A replacement string, or the empty string for none." }
+    }
+  }
+}

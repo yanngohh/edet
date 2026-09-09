@@ -1,0 +1,189 @@
+[package]
+name = "edet-node"
+description = "Node: blocks, durable store, deterministic replicas; embedded-consensus boundary"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+edet-state = { path = "../state" }
+edet-kernel = { path = "../kernel" }
+serde = { workspace = true }
+sha2 = { workspace = true }
+# Transaction signatures: clients sign the tx digest, the node verifies at
+# submit. Core (not feature-gated) because SignedTx carries the signatures.
+ed25519-dalek = { version = "2", default-features = false, features = ["std"] }
+# Dev-genesis founders are phrase-backed like every other identity: their
+# keys derive from BIP39 recovery phrases with published dev entropy.
+bip39 = { version = "2", default-features = false, features = ["std"] }
+
+# Async runtime, shared by the dev server (`serve`) and the engine binding
+# (`malachite`). "full" covers both.
+tokio = { version = "1", features = ["full"], optional = true }
+
+# --- the client surface (feature `serve`) -----------------------------------
+# The HTTP API a node serves to clients (reads, submit, pending pool,
+# sessions) plus the shared node handle the Tauri app reads in-process.
+# No consensus: that is the Malachite binding (feature `malachite`), which
+# turns this on because it builds its client API out of it. Behind a feature
+# so the default build stays lean.
+axum = { version = "0.7", optional = true }
+tower-http = { version = "0.6", features = ["cors", "fs", "trace"], optional = true }
+reqwest = { version = "0.12", default-features = false, features = ["json"], optional = true }
+serde_json = { workspace = true, optional = true }
+# `axum-core`'s `FromRequestParts` is itself `#[async_trait]`-declared (its
+# MSRV predates native async-fn-in-trait), so a custom extractor implementing
+# it (`serve::auth::Viewer`) must match that shape with the same macro.
+async-trait = { version = "0.1", optional = true }
+# `verify_commit_certificate` is `async` on the trait and pure computation in
+# fact; `futures::executor::block_on` drives it where a `.await` would hold
+# the node lock across a yield or reach a synchronous caller.
+futures = { version = "0.3", optional = true }
+# Session bearer tokens (`serve::session::fresh_bytes32`) are financial-read
+# credentials and must come straight from the OS CSPRNG, not from
+# `RandomState`/`SipHash` (a hash-table PRF, not a security primitive — see
+# that module's doc comment for the exploit this closes).
+getrandom = { version = "0.2", optional = true }
+
+# --- embedded consensus engine (milestone M3b, experimental) ---------------
+# The engine rides the pinned Tendermint-in-Rust implementation; the
+# scaffolding context (devnet-grade ids and signing) comes from the engine
+# repo's test crate and is replaced by an edet-owned Context before pilot.
+# Both pulled from the same git tag: the app-channel and test crates must
+# share one copy of malachitebft-core-types, or TestContext fails the Context
+# bound (mixing the crates.io app-channel with the git-only test crate gives
+# two distinct core-types). The test crate is git-only, so both are git.
+malachitebft-app-channel = { package = "informalsystems-malachitebft-app-channel", git = "https://github.com/informalsystems/malachite", rev = "bcac2b2dbd369a6c29b9151fcd0889b133d7221a", optional = true }
+malachitebft-test = { package = "informalsystems-malachitebft-test", git = "https://github.com/informalsystems/malachite", rev = "bcac2b2dbd369a6c29b9151fcd0889b133d7221a", optional = true }
+# The edet-owned `Context` (`engine_context.rs`) implements
+# `malachitebft_core_types::Context` directly rather than reusing
+# `malachitebft_test::TestContext` (see that file's doc comment). Pinned to
+# the same git tag as the two deps above so Cargo unifies it with the copy
+# they already pull in transitively — mixing a git-only and crates.io copy of
+# this crate would give two distinct (incompatible) `Context` traits, per the
+# comment above. `serde` feature: our types round-trip through the consensus
+# codec (`edet_state::codec`) for
+# the Malachite proposal/vote wire shapes (`NilOrVal`/`Round`/`VoteType` only
+# derive `Serialize`/`Deserialize` behind it).
+malachitebft-core-types = { package = "informalsystems-malachitebft-core-types", git = "https://github.com/informalsystems/malachite", rev = "bcac2b2dbd369a6c29b9151fcd0889b133d7221a", features = ["serde"], optional = true }
+# Wire codec (`engine_codec.rs`): `sync::{ValueRequest, ValueResponse}` are not
+# re-exported through `malachitebft-app`/`app-channel`'s curated `types`
+# module (unlike `Status`/`Request`/`Response`/`RawDecidedValue`, which are),
+# so the sync request/response payload types need this crate directly. Same
+# git tag as every other malachite dep above, so Cargo unifies it with the
+# copy `app-channel` already pulls in transitively.
+malachitebft-sync = { package = "informalsystems-malachitebft-sync", git = "https://github.com/informalsystems/malachite", rev = "bcac2b2dbd369a6c29b9151fcd0889b133d7221a", optional = true }
+# `PeerId` (carried by `sync::Status`/`sync::Request`/`sync::Response`) only
+# implements `Serialize`/`Deserialize` behind this crate's own `serde`
+# feature, which nothing else in the dependency graph turns on by default
+# (`rand` is only for tests, to mint a `PeerId` without a real libp2p
+# keypair). Same git tag; Cargo unifies with the transitive copy.
+malachitebft-peer = { package = "informalsystems-malachitebft-peer", git = "https://github.com/informalsystems/malachite", rev = "bcac2b2dbd369a6c29b9151fcd0889b133d7221a", features = ["serde", "rand"], optional = true }
+# The signing provider trait, which upstream moved out of `core-types` into a
+# crate of its own; `engine_context.rs` implements it and the certificate
+# check in `engine_malachite.rs` calls it.
+malachitebft-signing = { package = "informalsystems-malachitebft-signing", git = "https://github.com/informalsystems/malachite", rev = "bcac2b2dbd369a6c29b9151fcd0889b133d7221a", optional = true }
+# `serde` feature: our JSON wire codec (`engine_codec.rs`) carries raw value
+# bytes (`sync::RawDecidedValue::value_bytes`) and `StreamId`'s inner bytes
+# through `serde`-derived Raw structs, both of which need `Bytes: Serialize +
+# Deserialize` — off by default.
+bytes = { version = "1", optional = true, features = ["serde"] }
+# The node bootstrap (`engine_node.rs`): `Node::start`/`run` return
+# `eyre::Result` (the `Node` trait's own signature, `crates/app/src/node.rs`
+# in the vendored tree) — a direct dependency because that crate's `eyre`
+# is not re-exported through `malachitebft-app`/`app-channel`.
+eyre = { version = "0.6", optional = true }
+# `EdetApp::load_config` parses the on-disk `config.toml`
+# (`malachitebft_app_channel::app::config::*` types are plain
+# `Serialize`/`Deserialize` structs, encoding-agnostic); TOML is the format
+# every vendored config file/example uses.
+toml = { version = "0.8", optional = true }
+# Operational logging for the engine binary: the Malachite crates emit
+# through `tracing`, and with no subscriber installed a validator runs blind.
+#
+# Not `informalsystems-malachitebft-test-cli`, which supplies both this and
+# the config/genesis/key file-path helpers: it is a TEST cli, and its
+# `toml >= 0.8.21` requirement is unsatisfiable alongside Tauri's GTK stack,
+# which transitively pins `toml_datetime = "=0.6.3"` — its mere presence in
+# the graph makes the desktop/mobile client unbuildable, which `tauri-deps`
+# is the gate for. The file helpers are edet's own; see
+# `engine_node::write_node_home`.
+tracing-subscriber = { version = "0.3", features = ["env-filter"], optional = true }
+# Peer addresses in `config.toml` are multiaddrs, and `EdetApp::load_config`
+# RESOLVES any DNS component in one before the transport ever sees it (see
+# `resolve_peer_names`). That needs the `Protocol` alphabet, which the
+# malachite config crate carries but does not re-export. Same version it
+# already resolves to, so Cargo unifies rather than linking two copies — two
+# `Multiaddr` types would not even compare.
+multiaddr = { version = "0.18", optional = true }
+# A peer id is the transport's identity, derived from a consensus key;
+# `split_by_dialer` orders a pair by it, `init` checks a configured id against
+# the genesis and `keygen` prints one. `multiaddr` re-exports `PeerId` but not
+# the key types it derives from. Same version the graph already resolves to.
+libp2p-identity = { version = "0.2", features = ["ed25519", "peerid"], optional = true }
+
+[features]
+# Experimental: compiles the engine driver against the pinned Malachite
+# release. Not part of default builds; CI does compile-check it as its own
+# step (git deps, so it's slow) — see engine_malachite.rs.
+malachite = [
+    # The engine drives the SAME shared `serve::Node` the IPC/read/submit
+    # layer uses, so the app runs on Malachite with the existing view/submit
+    # surface unchanged — hence `malachite` pulls in `serve`.
+    "serve",
+    "dep:malachitebft-app-channel",
+    "dep:malachitebft-test",
+    "dep:malachitebft-core-types",
+    "dep:malachitebft-sync",
+    "dep:malachitebft-peer",
+    "dep:malachitebft-signing",
+    "dep:futures",
+    "dep:tokio",
+    "dep:bytes",
+    # The wire codec (`engine_codec.rs`) is a serde_json codec, same as the
+    # vendored `malachitebft_test::codec::json` it's modeled on; shared with
+    # the `serve` feature's optional dep rather than duplicated.
+    "dep:serde_json",
+    # Node bootstrap (`engine_node.rs`) and its `--async_trait`-based `Node`
+    # impl; `async-trait` is shared with the `serve` feature's optional dep.
+    "dep:async-trait",
+    "dep:eyre",
+    "dep:toml",
+    "dep:tracing-subscriber",
+    "dep:multiaddr",
+    "dep:libp2p-identity",
+]
+
+# The client HTTP API + shared node handle (see the block comment above).
+serve = ["dep:tokio", "dep:axum", "dep:tower-http", "dep:reqwest", "dep:serde_json", "dep:async-trait", "dep:getrandom"]
+
+[dev-dependencies]
+# The conformance scenario (`tests/malachite_swarm.rs`): the swarm's own
+# adapter composes the envelopes a real node then commits, and the swarm's own
+# driver replays the node's blocks. **In-process application and a node's
+# committed blocks being the same transition function** is what every
+# in-process run in `edet-swarm` assumes, and this is the one place it is
+# checked rather than assumed.
+edet-swarm = { path = "../swarm" }
+
+[[bin]]
+name = "edet-node"
+path = "src/main.rs"
+
+# The client-view shape cross-pin (`scripts/view-shape.py`, `just
+# view-shape-check`). It reads `serve::views`, so it cannot build without the
+# feature that defines them — and without this line `cargo clippy
+# --all-targets` builds every example featureless and fails on it.
+[[example]]
+name = "view_shape"
+required-features = ["serve"]
+
+# The signing-digest cross-pin (`scripts/tx-digest-fixture.py`, `just
+# tx-digest-check`), which is what lets the wallet compute what it signs
+# instead of asking a node. Needs `serde_json` to emit each vector's
+# transaction in the client's own wire shape, so it takes the feature that
+# carries it — and without this line `cargo clippy --all-targets` builds every
+# example featureless and fails on it.
+[[example]]
+name = "tx_digest_fixture"
+required-features = ["serve"]

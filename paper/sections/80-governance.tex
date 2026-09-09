@@ -1,0 +1,268 @@
+\section{Governance and indexation}
+\label{sec:governance}
+
+\subsection{Three classes of constant}
+
+\paragraph{Genesis data.} Fixed when the community is created and never amendable: the
+chain id, the root salt, and the validator floor --- how few validators any removal may
+leave standing, $\kConstMinValidatorsRealChain$ for a real chain and $\kConstMinValidators$
+for the harness one. Governing the first two would defeat what they establish: a chain id
+that could change would stop separating one network's signatures from another's, and a
+salt that could change would stop protecting the preimages already committed under it.
+The floor is the ceremony's because only the ceremony knows which kind of chain it is
+founding, and the ledger holds it afterwards, because a floor the ceremony alone held
+binds the founding and nothing after it: a four becomes a three on one validator's free
+exit, and a one after three, on no vote at all.
+
+Two \emph{sets} are also seeded at genesis, and neither is frozen: somebody has to be
+first. The validator set's initial composition is genesis data, but voting power is
+amendable at runtime by proposal, which is how a community replaces an institution that
+has left or misbehaved without starting a new chain. The initial underwriters are genesis
+data in the same sense: a supply rises thereafter only by an endorsed amendment
+(\S\ref{sec:seed-amendments}), and any member may lower one. A declaration confers
+nothing on the declarer and a coalition cannot underwrite itself
+(Corollary~\ref{cor:self-uw}); what it does is accept liability.
+
+\paragraph{Governed constants.} Amendable within static safe ranges by proposal and
+assent. There are six: the client-advisory risk midpoint, the visibility policy, the
+operation-bond fraction, the stake decay ratio, the seed-amendment rate $\beta$
+(\S\ref{sec:seed-amendments}), and the insured horizon --- how far past its acceptance a
+claim may mature and still hold a reservation (\S\ref{sec:recourse}). Every one is
+\emph{dimensionless}, which is what lets a static safe-range table stay exact across
+re-denomination: a denomination-valued constant would drift out of its own constitutional
+range the first time the unit was rescaled, while the range still read the same numbers.
+
+\paragraph{Frozen constants.} Amendable by nothing. The adoption threshold
+$\Theta_{\mathrm{adopt}}$, genesis $\kConstThetaAdopt$, is the mass an assenting coalition
+needs to enact an amendment --- including one targeting the threshold itself --- and
+$\Theta_{\mathrm{val}}$, genesis $\kConstThetaAdoptValidator$ --- two thirds, to the last
+bit a double carries --- is the mass it needs to change who orders the ledger.
+
+\subsection{Amendments and adoption}
+
+\paragraph{Assenting mass.} The weight of an assenting coalition is its share of the
+community's \emph{external} seed:
+\[
+  \mathrm{mass}(A) \;=\; \frac{\sum_{u \in A} \mathrm{ext}(u)}{\sum_{u} \mathrm{ext}(u)},
+\]
+where $\mathrm{ext}(u)$ is the part of $u$'s declared supply that arrived through a
+ceremony --- genesis, or a seed amendment the community endorsed. Every other candidate
+was measured and failed: a headcount is a count of free signatures, and a cut over the
+assenters counts internal declarations at face value and measures who the seed
+\emph{reaches} rather than who put it up --- a founder who declares the whole seed and
+backs one member for all of it has capacity zero, and that member alone carries the vote.
+The external seed is the one quantity in this system that a signature cannot manufacture,
+Assumption~\ref{ass:free-signatures} applied to votes instead of to credit. Members may
+propose --- the floor is only that the proposer has something to lose --- and an assent
+from outside the electorate is refused rather than recorded at zero. Mass is monotone in
+$A$ by construction, so assenting can only ever help.
+
+Members assent; when assenting mass reaches the threshold for its kind, the proposal
+enacts. There are six kinds and one measure, and two thresholds:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item a \textbf{parameter change}, naming one governed constant and a value;
+  \item a \textbf{re-denomination}, the atomic change of unit below;
+  \item \textbf{suspension} and \textbf{reinstatement} of a member --- the only sanction
+        the community votes on, as against the arithmetic one of
+        Property~\ref{prop:forfeit}. It revokes \emph{origination}, not standing: a
+        suspended member may still discharge what they owe, be paid, net a sale against
+        debts they already carry, extend an existing obligation with the creditor's own
+        signature, accept relief from a supporter, lower a declared supply, and register
+        guardians or rotate keys --- none of those is a new obligation, shutting the first
+        would be a debtors' prison, closing the supply door would make the sanctioned a
+        permanent involuntary insurer, and closing the last would let a sanction about
+        conduct strand a member with a stolen key. One proposal stays open to a suspended
+        member, to write and to vote on: reinstatement, and nothing else, so that an
+        electorate cannot sanction itself out of existence (below). What suspension does
+        close, beyond origination, is the member's own write budget: a non-active account
+        confers as before but has no headroom of its own, so what remains open to it is
+        paid for by whoever else signs;
+  \item a \textbf{validator power}, which sets one member's voting power and removes them
+        at zero;
+  \item a \textbf{seed amendment} (\S\ref{sec:seed-amendments}).
+\end{itemize}
+
+\paragraph{Changing who orders the ledger takes two thirds.} A validator power, and a
+suspension or reinstatement whose target currently holds voting power, need
+$\Theta_{\mathrm{val}}$ rather than $\Theta_{\mathrm{adopt}}$. The distinction is
+recoverability: a constant moved too far is moved back through the same door, and every
+value inside a constitutional range is one the ledger keeps working at, while a coalition
+that holds the validator set decides which blocks exist, including the ones that would
+undo it. At one threshold for every kind, a coalition holding half the seed removes every
+other validator down to the ledger's floor and suspends whoever objects, alone and in one
+epoch. Two thirds is the bar the consensus below already uses: a quorum is $2f+1$ of
+$3f+1$, so a set changeable by less than two thirds is changeable by a minority the
+protocol already tolerates as faulty. Whether the higher bar applies is read off the
+target's current voting power rather than off the proposal's kind, because suspension
+removes a validator too and a rule keyed on the word would leave the same door open one
+name over; the reading is a function of committed state, so every node agrees which bar
+applies.
+
+The first two kinds carry a cooldown of $\kConstGovCooldownEpochs$ epochs --- per constant
+for a parameter change, one for re-denomination --- which bounds how fast a dial can be
+walked. It is checked before the enacting assent is recorded, because the state machine
+has no rollback: a refusal that had already banked the assent would let a later one enact
+on a support set including somebody who had been told they were refused.
+
+One measure decides all six because there is almost nothing to leave on a lighter tier.
+A bond fraction at its ceiling is censorship by arithmetic; a stake decay at either end of
+its range is a credit freeze enacted as a rounding rule; an insured horizon at its floor
+is the same freeze enacted as a term; $\beta$ governs how fast the electorate itself may
+grow; and the visibility policy, flipped, unseals every amount in a community that had
+chosen to seal them. Five of the six governed constants take something from members who
+did not vote; the sixth is a client-side score constant no consensus rule reads, and a
+second measure for that one constant would be two rules for one act, in exchange for
+keeping alive a measure the paragraph above rules out.
+
+\begin{property}[Safe-range soundness]
+\label{prop:saferange}
+A value outside a constant's safe range cannot be enacted, whatever mass supports it.
+The state machine refuses it at application, so the range is a property of the ledger
+rather than of the proposers' restraint.
+\end{property}
+
+The ranges are bounded on \emph{both} sides, and for the bond fraction and the decay
+ratio the ceiling is the load-bearing half, for the reasons above: a hostile amendment
+must be loud and attributable rather than economic.
+
+\subsection{The constitutional freeze}
+
+\begin{property}[The door cannot amend its own guard]
+\label{prop:freeze}
+No governed constant is $\Theta_{\mathrm{adopt}}$, and no amendment can write to it. The
+freeze is enforced by omission: the key space of amendable constants has no variant
+naming it, so no proposal can be constructed that targets it.
+\end{property}
+
+Without this, a coalition holding the threshold could lower it and then adopt anything at
+the lowered bar, so the guarantee that amendment requires broad assent would be exactly
+one amendment deep.
+
+\subsection{Seed amendments}
+\label{sec:seed-amendments}
+
+A supply is written by a ceremony and by nothing else (\S\ref{sec:standing}), which keeps
+a free identity from declaring a billion --- and, with genesis the only ceremony, would
+close the ledger's external-commitment door for everybody: a founder could never raise
+their supply, a newcomer bringing backing from outside would have no transition to arrive
+through, and a group forming on an established ledger in year three could never have
+underwriters at all. Genesis fixes two sets, the validator half is amendable at runtime,
+and the credit half must be too.
+
+No set of signatures can prove externality (Assumption~\ref{ass:free-signatures}), so
+there is nothing to verify: genesis was never a verification but a \emph{ceremony} the
+ledger recorded, humans checking each other out of band with the file as the record. The
+repair is to make the ceremony repeatable, and a \emph{seed amendment} is that: an
+ordinary proposal, carried by ordinary assent, whose effect is to add its amount to the
+proposer's declared supply outside the capacity cap. Three properties make it safe to
+have at all.
+
+\paragraph{The proposer is the beneficiary, structurally.} A supply is a standing consent
+to inherit the debts of those the community's stakes reach through the underwriter
+(\S\ref{sec:recourse}), so an amendment naming somebody \emph{else} would volunteer a
+member to underwrite, and every discharge here is authorised by the party who loses if it
+is wrong. The proposal kind carries no beneficiary field: its beneficiary is its author,
+so the consent is the author's own signature and cannot be omitted. The author may not
+assent their own amendment, because assenting mass is a share of the external seed and an
+amendment adds external seed to its author: without the exclusion, an underwriter would
+vote their own raise through on the strength of the very quantity the raise enlarges, each
+one carrying the next more easily.
+
+\paragraph{The rate is bounded, and bounded on the right base.} Amendments enacted in one
+epoch may add at most $\beta$ times the seed the epoch opened with, and the headroom does
+not carry over between epochs. Every unit of every supply arrived through a ceremony
+(\S\ref{sec:standing}), so the roll \emph{is} that seed; a rule that admitted
+declarations against conferred capacity would give the base an inflatable second half and
+turn the same multiple into amendment headroom (\S\ref{sec:standing} measures it).
+
+\paragraph{Zero stays absorbing.} A community that underwrote nothing at genesis has an
+external seed of zero, and $\beta$ times zero is zero, so no amendment can ever be
+admitted --- and it has no assenting denominator either, since the denominator \emph{is}
+the external seed, so no proposal of any kind can be enacted.
+Assumption~\ref{ass:free-signatures} is untouched: a repeatable ceremony still needs a
+seed to be a fraction of.
+
+The bound changes the \emph{shape} of the residual risk without removing it. A coalition
+holding $\Theta_{\mathrm{adopt}}$ of the external seed can still assent to a commitment
+that does not exist; no rule prevents a community from lying to itself, and none ever
+will. The bound turns that from an explosion into a slow, public, attributable leak ---
+measured at $4.3\times$ over thirty epochs with $\beta$ pinned to its constitutional
+ceiling and every amendment the community could pass being passed --- during which the
+only parties at risk are lenders, who must still choose to deliver real goods against the
+inflated figure, and who can simply stop. The same humans were trusted absolutely at
+genesis; the mechanism adds no trust assumption, it makes the existing one repeatable and
+auditable.
+
+\paragraph{What making the seed the electorate exposes.} Three things, recorded rather
+than mitigated. Ordinary members have no vote: that is the decision itself --- the premise
+given up is that credit trust implies a governance mandate, and the scene above is why
+there is no sound capacity-based member vote to keep instead; a community that wants to
+widen its electorate does it the way it grants credit, by endorsing a real commitment.
+The electorate is a specific, listed set of accounts, so the constitution's soft underbelly
+is the \emph{guardian sets of the external underwriters}: key recovery
+(\S\ref{sec:implementation}) is opt-in, self-declared and veto-windowed, but a threshold
+of an underwriter's own guardians seizes a vote along with an account, and narrowing that
+would be a rule about who may be trusted with a key, which is not a rule this design knows
+how to write. And suspension silences a voter without removing their weight from the
+seed, so a coalition at the ordinary bar could suspend everyone else and withdraw, leaving
+an electorate in which nothing could ever be enacted again --- the argument that a
+constant is recoverable through its door assumes the electorate survives its own
+sanctions. So the sanctioned keep one vote, on reinstatement: a majority of the seed cannot
+be held suspended, which is what a majority of the seed means, and a minority still cannot
+reinstate itself.
+
+Finally, an amendment endorses something concrete: a substitution liability
+(\S\ref{sec:recourse}), enforceable, and failing in public if it was never real.
+Amendments without substitution would endorse nothing.
+
+\subsection{Re-denomination}
+
+Prices in the community unit drift against the outside economy. The response is
+\emph{re-denomination}: an atomic, governed change of unit by a factor $\pi$, bounded per
+event by $|\ln \pi| \le \kConstRedenomBandLn$.
+
+\begin{theorem}[Exactness up to the minor unit]
+\label{thm:redenominate}
+Re-denomination by $\pi$ multiplies every denomination-valued quantity --- outstanding
+amounts, stakes, reservations, bond encumbrances, the reference denomination --- by $\pi$
+simultaneously, and leaves every dimensionless quantity unchanged. Consequently every
+member's capacity and every ratio of capacity to debt are preserved exactly in the reals.
+\end{theorem}
+
+\begin{proof}
+Capacity is a maximum flow over $\free = \stake - \res$. Scaling every $\stake$ and
+$\res$ by $\pi$ scales every cut by $\pi$, hence the minimum cut by $\pi$, hence
+capacity by $\pi$. Outstanding amounts scale identically, so each comparison of amount
+against capacity has both sides scaled by the same positive factor and its outcome is
+unchanged.
+\end{proof}
+
+The theorem is why stakes and reservations must be in the rescale set: a re-denomination
+that moved the constants and the debts but not the stake graph would silently reprice
+every credit limit in the community while appearing to be a change of unit.
+
+\paragraph{What ``exactly'' cannot mean at the minor unit.} The capacity path is
+integer --- every stake, supply and reserved arc is a whole number of minor units --- and
+$\pi$ is rational rather than integral, so the products are not. Every one is rounded
+\emph{down}, the only safe direction, since rounding a stake up would let a reservation
+claim standing that nothing carries. Three consequences follow, and the implementation
+states them where the rounding happens.
+
+An insured obligation \emph{owes exactly what it holds}: its amount is re-derived from
+its re-denominated arcs rather than scaled on its own, so it rounds down by at most one
+minor unit per arc. Scaling the amount independently would put $\lfloor \sum \rfloor$
+against $\sum \lfloor\,\rfloor$, and \S\ref{sec:verification}'s reservation invariant
+asks for equality, not closeness.
+
+The reservations are a \emph{flow}, not a list, and one supply arc may carry several
+paths. The supply side therefore rounds down once where the stake arcs beneath it round
+down separately, so after the flooring each debtor's supply claim is brought back to what
+their arcs can still deliver --- per debtor, because it is the union of a debtor's holds
+that is an augmentation, and a subrogated claim holds a share of each arc rather than a
+path of its own (\S\ref{sec:recourse}).
+
+An obligation smaller than one minor unit holds nothing, and an obligation that holds
+nothing is not insured, so a downward re-denomination can move a sub-minor claim into the
+uninsured tier. The debt itself is untouched; what it loses is a reservation that had
+already rounded to zero.

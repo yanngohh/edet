@@ -1,0 +1,222 @@
+name: android-release
+
+# **The signed mobile client, and the only thing that builds one.**
+#
+# `edet-<version>-release.apk` for sideloading and `edet-<version>-release.aab`
+# for Play, both signed with the release key, attached to a GitHub Release when
+# a version tag is pushed and downloadable as workflow artifacts otherwise.
+#
+# Separate from `ci` for the reason `android-custody` is: `ci.yaml` runs
+# `just ci` and nothing else, so that the gate list lives in one place and
+# cannot drift. This needs the Android SDK, the NDK, four Rust cross-targets
+# and the release key, none of which a ledger change has any use for, and its
+# red means "no installable build of this commit" rather than "the ledger is
+# wrong".
+#
+# **Four repository secrets**, Settings → Secrets and variables → Actions:
+#   ANDROID_KEYSTORE_BASE64    base64 of the release .jks
+#   ANDROID_KEYSTORE_PASSWORD  store password
+#   ANDROID_KEY_ALIAS          alias inside the store
+#   ANDROID_KEY_PASSWORD       key password (often the store password)
+# A missing one fails the job by name at the first step rather than producing
+# an unsigned artifact called "release": `app/build.gradle.kts` leaves
+# `release` unsigned when the environment is incomplete, which is right for a
+# local build and a lie in a published one.
+#
+# **The build is verified before it is published**, twice, because both
+# failures are silent. `apksigner verify` catches the unsigned artifact.
+# `dexdump` catches the shrunk one: `release` is `isMinifyEnabled = true`, and
+# the Rust side reaches both Kotlin plugins through
+# `register_android_plugin(package, "KeystorePlugin")` — a STRING, invisible to
+# R8 — so a build that dropped or renamed them would install, launch, and have
+# no device custody and no background mode, with nothing red anywhere, since
+# nothing in `just ci` runs the client.
+#
+# Today they survive because the `tauri` crate's AAR ships `-keep
+# @TauriPlugin public class *` as a consumer rule, so this asserts a property
+# we are GIVEN rather than one we configure — which is exactly why it is worth
+# asserting: the day an upgrade drops that rule, this is what says so.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The version is `src-tauri/tauri.conf.json`'s and nothing else's — it is
+      # what `versionName` in the APK comes from. On a tag push the tag must
+      # agree with it: a `v0.7.1` tag on a tree that still says 0.7.0 publishes
+      # a file whose name and whose manifest disagree, and the file is what
+      # somebody sideloads.
+      - name: The version, and the tag that must match it
+        id: version
+        run: |
+          set -euo pipefail
+          VERSION=$(jq -r .version src-tauri/tauri.conf.json)
+          [ -n "$VERSION" ] && [ "$VERSION" != "null" ] || { echo "no version in src-tauri/tauri.conf.json" >&2; exit 1; }
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "edet $VERSION"
+          if [ "${GITHUB_REF_TYPE:-}" = "tag" ] && [ "$GITHUB_REF_NAME" != "v$VERSION" ]; then
+            echo "tag $GITHUB_REF_NAME does not match tauri.conf.json version $VERSION" >&2
+            exit 1
+          fi
+
+      # Named individually, so the log says which one is missing rather than
+      # "keystore decode failed".
+      - name: The four signing secrets are present
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          MISSING=""
+          for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            [ -n "${!name:-}" ] || MISSING="$MISSING $name"
+          done
+          if [ -n "$MISSING" ]; then
+            echo "missing repository secret(s):$MISSING" >&2
+            exit 1
+          fi
+          echo "all four present"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: android-actions/setup-android@v3
+
+      # `beforeBuildCommand` in `tauri.conf.json` runs `npm --prefix ui run
+      # build`, so the frontend toolchain is part of an Android build.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      # `android init` below is run with `--skip-targets-install`, the same as
+      # `android-custody`'s regeneration job, so the four cross-targets are
+      # added here instead. All four: the artifacts are universal, and a
+      # missing ABI is a device that cannot install the file.
+      - name: Android cross-targets
+        run: rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+
+      - name: tauri-cli
+        run: cargo install tauri-cli --version '^2' --locked
+
+      - name: Frontend dependencies
+        run: npm ci --prefix ui
+
+      # The keystore lands outside the checkout, so no step can commit it and
+      # `git status` stays clean for anything that reads it.
+      - name: Decode the release keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/edet-release.jks"
+          keytool -list -keystore "$RUNNER_TEMP/edet-release.jks" \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" -noprompt > /dev/null
+          echo "keystore decoded and readable"
+
+      # Most of `gen/android` is gitignored; only the thirteen files that are
+      # ours are tracked. `init` creates the rest and overwrites nothing that
+      # exists, which is the property `android-custody`'s regeneration job
+      # asserts — so this restores the generated half without touching ours.
+      - name: Generate the Android project
+        run: cd src-tauri && cargo tauri android init --skip-targets-install --ci
+
+      - name: Build the signed APK and AAB
+        env:
+          ANDROID_STORE_FILE: ${{ runner.temp }}/edet-release.jks
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: cd src-tauri && cargo tauri android build --apk --aab
+
+      - name: Collect the artifacts
+        id: collect
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          OUT=src-tauri/gen/android/app/build/outputs
+          APK=$(find "$OUT" -name '*-release*.apk' ! -name '*unsigned*' | head -1)
+          AAB=$(find "$OUT" -name '*-release*.aab' | head -1)
+          if [ -z "$APK" ] || [ -z "$AAB" ]; then
+            echo "expected one release APK and one release AAB under $OUT, found:" >&2
+            find "$OUT" \( -name '*.apk' -o -name '*.aab' \) >&2 || true
+            exit 1
+          fi
+          cp "$APK" "edet-$VERSION-release.apk"
+          cp "$AAB" "edet-$VERSION-release.aab"
+          ls -l "edet-$VERSION-release.apk" "edet-$VERSION-release.aab"
+
+      # An unsigned artifact named "release" is the failure this catches: it
+      # builds, uploads and installs on nothing.
+      - name: The APK is signed
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          APKSIGNER=$(find -L "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --verbose "edet-$VERSION-release.apk"
+
+      # And the shrinker did not take custody with it. Both classes are reached
+      # by name from Rust, so their absence from the dex is the whole defect —
+      # see `app/proguard-edet.pro`.
+      - name: R8 kept both plugin classes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          DEXDUMP=$(find -L "$ANDROID_HOME/build-tools" -name dexdump | sort -V | tail -1)
+          CLASSES=$("$DEXDUMP" -f "edet-$VERSION-release.apk" | grep -o "Lorg/edet/client/[a-z]*/[A-Za-z]*Plugin;" | sort -u)
+          echo "$CLASSES"
+          for want in Lorg/edet/client/keystore/KeystorePlugin\; Lorg/edet/client/background/BackgroundPlugin\;; do
+            echo "$CLASSES" | grep -qx "$want" || { echo "R8 dropped or renamed $want — the release has no custody" >&2; exit 1; }
+          done
+          echo "both plugin classes survive minification"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: edet-${{ steps.version.outputs.version }}-release
+          path: |
+            edet-${{ steps.version.outputs.version }}-release.apk
+            edet-${{ steps.version.outputs.version }}-release.aab
+          if-no-files-found: error
+
+      # Only a tag publishes. A manual run leaves the artifacts on the run,
+      # which is what makes `workflow_dispatch` safe to use for a dry run.
+      - name: GitHub Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: edet ${{ steps.version.outputs.version }}
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            edet-${{ steps.version.outputs.version }}-release.apk
+            edet-${{ steps.version.outputs.version }}-release.aab
+          body: |
+            | file | for |
+            |---|---|
+            | `edet-${{ steps.version.outputs.version }}-release.apk` | sideloading on Android 7+ (`adb install`) |
+            | `edet-${{ steps.version.outputs.version }}-release.aab` | a Play submission |
+
+            The client is a signing wallet: it runs no node and no consensus,
+            and speaks HTTP to whichever node you select. **Not production
+            software** — no external audit, no custody of real obligations.

@@ -1,36 +1,32 @@
-[profile.dev]
-opt-level = "z"
-
-[profile.release]
-opt-level = "z"
-
 [workspace]
-members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*", "tests/sweettest"]
-# The Tauri shell is a desktop (native) crate; it has no wasm target and would
-# fail under the `RUSTFLAGS='--cfg getrandom_backend="custom"'` build used for
-# zomes. Exclude it from the workspace so `cargo build --target
-# wasm32-unknown-unknown --workspace` does not try to compile it.
-exclude = ["src-tauri"]
 resolver = "2"
+members = ["crates/kernel", "crates/state", "crates/node", "crates/swarm"]
+exclude = ["src-tauri", "ui"]
 
 [workspace.package]
-license = "AGPL-3.0"
+version = "0.7.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+
+# **A validator fails the same way in release as the harness does in debug.**
+# An overflowing add is a panic in both — a deterministic fail-stop every node
+# takes at the same height — and never a silent wrap, which is the outcome that
+# leaves a nonsense figure hashed into the state with both sides of the
+# conservation check wrapped identically and agreeing. The cost is a few
+# percent on integer arithmetic, re-measured by `just cost`.
+#
+# `src-tauri` is a separate workspace and does not inherit this. It is a
+# wallet: it holds no ledger and sums nothing.
+[profile.release]
+overflow-checks = true
 
 [workspace.dependencies]
-hdi = "=0.7.0"
-hdk = "=0.6.0"
-serde = "1.0"
-holochain_serialized_bytes = "=0.0.56"
-
-[workspace.dependencies.support]
-path = "dnas/edet/zomes/coordinator/support"
-
-[workspace.dependencies.support_integrity]
-path = "dnas/edet/zomes/integrity/support"
-
-[workspace.dependencies.transaction]
-path = "dnas/edet/zomes/coordinator/transaction"
-
-[workspace.dependencies.transaction_integrity]
-path = "dnas/edet/zomes/integrity/transaction"
-
+libm = "0.2"
+serde = { version = "1", features = ["derive"] }
+bincode = "1.3"
+serde_json = "1"
+sha2 = "0.10"
+# The state root hashes each section's record leaves across a pool. An
+# ORDERED collect over an indexed parallel iterator is what keeps that a
+# constant factor rather than a consensus fault — see `root::record_leaves`.
+rayon = "1"

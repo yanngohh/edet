@@ -1,4 +1,4 @@
-import { writable, get } from 'svelte/store';
+import { writable } from 'svelte/store';
 
 import { lsGet, lsSet } from './safeStorage';
 
@@ -36,10 +36,8 @@ function saveSettings(settings: LocalizationSettings) {
     lsSet('edet-localization', JSON.stringify(settings));
 }
 
-// Create the store
 export const localizationSettings = writable<LocalizationSettings>(loadSettings());
 
-// Subscribe to changes and save to localStorage
 localizationSettings.subscribe(settings => {
     saveSettings(settings);
 });
@@ -49,10 +47,8 @@ localizationSettings.subscribe(settings => {
  *
  * This is separate from whether the store has a value — on first run the
  * store is seeded with browser defaults so the rest of the UI can render,
- * but we still want to show a locale-setup step in onboarding so the user
- * gets to pick their language BEFORE the 12-word phrase is displayed.
- *
- * The flag persists across sessions in localStorage.
+ * but we still want a locale-setup step in onboarding so the user picks
+ * their language before anything else. The flag persists across sessions.
  */
 export function hasUserConfiguredLocale(): boolean {
     return lsGet(CONFIGURED_KEY) === '1';
@@ -62,7 +58,7 @@ export function markLocaleConfigured(): void {
     lsSet(CONFIGURED_KEY, '1');
 }
 
-// Helper to update a single setting
+/** Helper to update a single setting. */
 export function updateSetting<K extends keyof LocalizationSettings>(
     key: K,
     value: LocalizationSettings[K]

@@ -1,16 +1,23 @@
 [package]
 name = "edet-tauri"
-version = "0.2.2"
-description = "edet desktop shell"
-# edet is licensed under AGPL-3.0. See /LICENSE at the repo root.
-# Kept inline here because `src-tauri` is excluded from the workspace
-# (see ../Cargo.toml) and therefore cannot use `license.workspace = true`.
-license = "AGPL-3.0"
+version = "0.7.0"
 edition = "2021"
-rust-version = "1.77"
+description = "edet desktop/mobile client — signs locally, reads and submits over a node's HTTP API"
+license = "GPL-3.0-or-later"
 
-# Tauri v2 wants both library + binary targets; the library exposes the
-# `run()` entry point so desktop and mobile builds can share it.
+# Standalone: excluded from the workspace (Tauri pulls webkit/gtk and its own
+# build graph). Path-depends on the workspace crates.
+[workspace]
+
+# Debug builds ship to a phone over USB (`cargo tauri android build --debug`),
+# and with full DWARF the packaged .so pushes the APK toward a gigabyte —
+# large enough that the install itself becomes the unreliable step. Dropping
+# the debug info at link time keeps the symbol table (panic backtraces still
+# name functions) at a fraction of the size; a debugger session can rebuild
+# without the strip when one is actually wanted.
+[profile.dev]
+strip = "debuginfo"
+
 [lib]
 name = "edet_tauri_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
@@ -19,119 +26,46 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
-tauri-plugin-dialog = "2"
-tauri-plugin-fs = "2"
+# `tray-icon` because background mode turns the desktop window's close button
+# into a hide: an app with no window and no tray icon is an app the member
+# cannot get back to, and cannot quit (`lib.rs::background_arm`).
+tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-shell = "2"
-
-# The embedded Holochain runtime — direct dependency, no plugin wrapper.
-# Features (verified against holochain 0.6.0 Cargo.toml):
-#   wasmer_sys           — wasm execution via wasmer (native)
-#   datachannel-vendored — libdatachannel-based P2P transport (includes backend-libdatachannel)
-#   schema               — conductor config JSON-schema validation
-#   sqlite-encrypted     — sqlcipher-encrypted conductor databases at rest
-# Note: default features also include `metrics_influxive`; we omit it to
-# keep the binary smaller. Add it back if metrics reporting is needed.
-holochain = { version = "=0.6.0", default-features = false, features = [
-    "wasmer_sys",
-    "datachannel-vendored",
-    "schema",
-    "sqlite-encrypted",
-] }
-holochain_types = "=0.6.0"
-
-# Lair keystore with bundled sqlcipher (matches holochain's sqlite-encrypted).
-lair_keystore = { version = "0.6", features = [
-    "rusqlite-bundled-sqlcipher-vendored-openssl",
-] }
-
-# Local foreground service plugin — no-op on desktop, starts an Android
-# Foreground Service on mobile so the conductor stays alive when backgrounded.
-tauri-plugin-conductor-service = { path = "plugins/tauri-plugin-conductor-service" }
-
+# One notification plugin for every platform this client runs on — Linux,
+# Windows, macOS and Android — rather than the Android service posting its own
+# and the desktop growing a second path. What it carries is the one thing a
+# member who is not looking at the app needs to be told: their acceptance rule
+# signed a purchase in their name.
+tauri-plugin-notification = "2"
+# No `edet-node`. The client used to depend on the whole node — engine,
+# store, consensus — to serve its own reads in-process. It reads over HTTP
+# now, so the ledger crates are not in this build graph at all; what is left
+# is a WebView, custody, and the shell plugin. (This is also most of the APK:
+# the packaged .so was ~48 MB of it.)
+# `serde` only, and only for `android_keystore`'s two plugin payloads. The
+# node's view types were what needed `serde_json` here; they are the node's
+# business now.
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-# `process` / `time` features are retained only for the short-lived
-# async patterns in commands.rs; if that ends up unused we can trim
-# them later.
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "fs", "sync", "io-util", "time"] }
-anyhow = "1"
-thiserror = "1"
+# OS keychain for the identity-vault device key: macOS/iOS Keychain, Windows
+# Credential Manager, Linux freedesktop Secret Service (zbus, pure Rust — no
+# libdbus at build time). NOT compiled for Android: keyring has no Android
+# Keystore backend and would silently fall back to a non-persistent mock
+# store — the keychain commands refuse there and the UI uses the app-sandbox
+# storage path instead. Real Android custody needs a small Tauri mobile
+# plugin (Kotlin + Android Keystore); tracked as the follow-up.
+[target.'cfg(not(target_os = "android"))'.dependencies]
+keyring = { version = "3", features = ["apple-native", "windows-native", "async-secret-service", "tokio", "crypto-rust"] }
 
-# rustls with aws_lc_rs backend — required on Android where there is no
-# system-wide TLS crypto provider. We call install_default() before the
-# conductor boot so all TLS connections (bootstrap, signal) work correctly.
-rustls = { version = "0.23", default-features = false, features = ["aws-lc-rs"] }
-aws-lc-rs = "1"
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-hex = "0.4"
+# Linux only, and the same version Tauri itself links: wry wires NO WebKit
+# permission handling on this platform, so getUserMedia — the QR scanner —
+# is refused before anyone is asked. The setup hook reaches the raw WebView
+# to enable media streams and allow camera requests (see lib.rs).
+[target.'cfg(target_os = "linux")'.dependencies]
+webkit2gtk = "2.0"
 
-# `url2` matches the plugin's declared dependency; used for bootstrap /
-# signal server URL construction in NetworkConfig.
-url2 = "0.0.6"
-
-# Cross-platform app data directory resolution. Works on Linux, macOS,
-# Windows, and Android (via JNI internally). Replaces the manual
-# `dirs::data_local_dir()` approach that does not produce Android-
-# correct paths.
-app_dirs2 = "2.5"
-
-# `getrandom` provides portable CSPRNG; replaces the direct
-# `/dev/urandom` read in the old `lib.rs::ensure_lair_passphrase`.
-getrandom = "0.2"
-
-# Direct zome-level types we still manipulate in `commands.rs` when
-# translating between `OpaqueRecord` and `Record`. These are re-exported
-# by the plugin via `pub use holochain_types::prelude::*`, so we could
-# drop these in principle; kept for explicit type resolution.
-#
-# Versions relaxed to `0.6` (stable) to match the plugin's declared
-# `^0.6` constraint. Our earlier `=0.6.1-rc.8` pins were a holdover
-# from the subprocess-era when we drove lair + holochain directly; the
-# plugin targets stable 0.6.x and won't resolve with pre-release pins.
-holo_hash = "0.6"
-holochain_zome_types = "0.6"
-# `FullStateDump` is only in `holochain_conductor_api`; the plugin re-
-# exports `NetworkConfig` and `ZomeCallParamsSigned` but not the dump
-# type. Keep this direct dep so `conductor::records_from_full_state_dump`
-# can accept it.
-holochain_conductor_api = "0.6"
-
-# lair-keystore client API. Needed for the crypto_box envelope logic
-# we keep in `src/seed.rs` that implements `LairClient::import_seed`
-# for deterministic mnemonic recovery. The plugin re-exports
-# `lair_keystore_api` but we pin explicitly for type resolution.
-# `0.6` matches the plugin's `^0.6` constraint.
-lair_keystore_api = "0.6"
-
-# sodoken: `LockedArray` for passphrase handling. Also re-exported by
-# the plugin; explicit pin matches lair's own dep.
-sodoken = "0.1"
-
-# NaCl-compatible crypto_box for the X25519 seed encryption envelope
-# expected by lair's `import_seed` wire format.
-crypto_box = { version = "0.9", features = ["std"] }
-
-# Cross-platform camera capture. `input-native` selects v4l2 on Linux,
-# AVFoundation on macOS, and Media Foundation on Windows.
-nokhwa = { version = "0.10", features = ["input-native", "output-threaded"] }
-
-# Image encoding for JPEG preview frames streamed to the UI.
-image = { version = "0.25", default-features = false, features = ["jpeg"] }
-
-# Base64 encoding for IPC-efficient JPEG frame transport.
-base64 = "0.22"
-
-[target.'cfg(target_os = "android")'.dependencies]
-# Required for writing/reading Android content:// URIs (Storage Access
-# Framework) returned by the system file picker on Android.  Rust's
-# std::fs / tokio::fs cannot open content:// URIs — we must go through
-# Android's ContentResolver via JNI.
-jni = { version = "0.21", default-features = false }
-ndk-context = "0.1"
-
-[features]
-# The default Tauri profile. Kept minimal so `cargo check` in CI is fast.
-default = ["custom-protocol"]
-custom-protocol = ["tauri/custom-protocol"]
+# There was a `[patch.crates-io]` here pinning a vendored `libp2p-dns`:
+# Android has no /etc/resolv.conf, libp2p's DNS transport read it at swarm
+# construction, and the network actor died at startup before consensus ever
+# ran. The client builds no libp2p at all now — it runs no consensus — so the
+# patch applied to nothing and cargo said so on every build. Whoever needs it
+# next is the NODE, which is not this crate.

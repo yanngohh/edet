@@ -1,0 +1,15 @@
+include ':app'
+
+// edet: the committed plugin modules (with this file, `app/build.gradle.kts`
+// and `MainActivity.kt`, the only pieces of gen/android under version control
+// — see src-tauri/.gitignore).
+//
+//   edet-keystore    Android Keystore custody of the identity vault's key
+//   edet-background  the foreground service that keeps the WebView, and so
+//                    the acceptance rule, running in the background
+include ':edet-keystore'
+project(':edet-keystore').projectDir = new File('edet-keystore')
+include ':edet-background'
+project(':edet-background').projectDir = new File('edet-background')
+
+apply from: 'tauri.settings.gradle'

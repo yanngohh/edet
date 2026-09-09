@@ -1,0 +1,79 @@
+\section{Stability and containment}
+\label{sec:stability}
+
+A credit community fails in one of two ways: it underwrites more than it can absorb, or
+one member's failure propagates until many fail. The mechanism of \S\ref{sec:standing}
+does most of the work against both.
+
+\subsection{Aggregate exposure is bounded by construction}
+
+The total insured credit a community can extend is not a quantity anybody sets. By
+Corollary~\ref{cor:uw-bound} it is bounded by the sum of the supplies its underwriters
+have declared, a figure the community explicitly committed to. That sum is a bound and
+not a measure: what a community can carry is what its underwriters can pay from outside
+the set being measured, and the two diverge sharply once members declare against standing
+the community itself conferred (\S\ref{sec:standing}). Nor can the community over-issue
+by increments: every unit of insured credit is backed by a reservation on a specific chain
+of stakes running to an underwriter, and when those are exhausted the next acceptance is
+uninsured --- visibly, at the point of decision, to the creditor who would bear it. No
+aggregate silently inflates.
+
+\subsection{No separate macroprudential brake}
+
+This design has no brake: no system-wide multiplier that throttles new credit when
+measured exposure rises. A brake is an exception to the credit rule, applied on a
+different measurement on a different schedule --- a second answer to "how much may this
+member owe", the question this design exists to have exactly one answer to --- and as a
+global multiplier it reprices every member's capacity for conditions none of them created,
+squeezing hardest the members with the least to do with the exposure that triggered it.
+What a brake was for is achieved structurally: exposure cannot rise without reservations
+rising, reservations cannot rise beyond the cut, and stakes decay continuously unless
+renewed, so a community whose trade slows sees its aggregate capacity fall without anybody
+measuring anything.
+
+\subsection{Where a loss lands}
+\label{sec:loss-lands}
+
+A default on an insured obligation is absorbed by the underwriters whose supply carried
+it, and by nobody else (\S\ref{sec:substitution}). The loss does \emph{not} travel along
+the chain of stakes the reservation ran through: intermediate stakes on a reserved path
+are conduits of evidence, not of liability. A stake is placed mechanically at settlement
+--- a member who honours a debt thereby records that their creditor stood behind them ---
+so liability along the path would be an externality nobody signed, attached to the act of
+trading honestly, chilling exactly the trade that builds the graph and most for the members
+with the most trade behind them. The sanction therefore lives where the consent lives: at
+the source arc, whose owner declared a supply and thereby consented to inherit debts up to
+it (Property~\ref{prop:uw-consent}). A member in the middle of a path loses nothing when a
+debtor two hops away fails, and owes nothing on their account.
+
+\subsection{What the cascade couples, and what it does not}
+
+The support cascade (\S\ref{sec:medium}) is the one mechanism that couples members'
+fortunes, and \textbf{it couples production, not failure}. When a supporter sells, the
+proceeds discharge a listed beneficiary's obligations rather than the supporter's own.
+What the supporter gives up is that clearing --- the debts of theirs that would otherwise
+have closed, or the claim on the buyer they would otherwise have held --- and nothing
+attaches to them afterwards. If the beneficiary later fails, the loss falls where
+\S\ref{sec:loss-lands} says every loss falls: on the underwriters whose supply carried the
+obligation, or on the creditor alone if it was uninsured. \textbf{No mechanism in this
+ledger makes a beneficiary's failure a supporter's}, and there is no record for one to be
+built on: the cascade writes no attribution at all (\S\ref{sec:medium}).
+
+Three bounds sit on the coupling that does exist. The recursion is capped at depth
+$\kConstMaxCascadeDepth$. Each edge is capped at $\kConstNuDrain$ times what that pair has
+staked in one another --- zero for a pair that has never settled anything, so a stranger
+who lists you drains nothing whether you approved them or not. And both declarations are
+required (Property~\ref{prop:benef}), so no member is drawn in without having said so.
+The residual exposure is therefore explicit and belongs to the \emph{supporter}: the set
+of beneficiaries they have \emph{listed}, visible in their own client, revocable by them,
+and bounded above by what they choose to sell, while what the beneficiary gives up by
+approving is standing, not money (Property~\ref{prop:benef}). This is a smaller guarantee
+than a system-wide containment bound: coupling that members opt into cannot be bounded by
+the protocol without overriding the choice they made.
+
+\subsection{Decay as the withdrawal mechanism}
+
+Decay (\S\ref{sec:standing}) is how a community withdraws backing without any member
+having to act: standing given once would otherwise be given for ever, and a relationship
+nobody currently has would go on being underwritten. Its floor at the live reservation is
+what stops the same mechanism dissolving collateral out from under a debt still owed.

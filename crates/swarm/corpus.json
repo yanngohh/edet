@@ -1,0 +1,2115 @@
+[
+  {
+    "name": "honest",
+    "run": {
+      "seed": 1,
+      "population": "honest",
+      "ticks": 120,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 120,
+      "members_final": 15,
+      "seated": 0,
+      "rows_accepted": 344,
+      "accepted_minor": 3423498,
+      "insured_minor": 936318,
+      "committed_final": 325657,
+      "external_seed": 750000,
+      "refused": {
+        "ET-CTR-005": 23
+      },
+      "declined": 270,
+      "unbuilt": 0,
+      "expired_rows": 0,
+      "open_default_final": 0,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 4,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 350,
+        "p90": 350,
+        "max": 3204,
+        "top_decile": [
+          3204,
+          7754
+        ],
+        "zero_share": [
+          1,
+          15
+        ],
+        "non_conferrer_share": [
+          0,
+          7754
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "honest": {
+          "agents": 15,
+          "emitted": 860,
+          "applied": 567,
+          "refused": {
+            "ET-CTR-005": 23
+          },
+          "declined": 270,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "12 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        }
+      },
+      "state_root": "81dd50ee897a273db7608350ad3d1cc8404f6da531a6f17a11f9fa86091f29e9"
+    }
+  },
+  {
+    "name": "deadbeats",
+    "run": {
+      "seed": 2,
+      "population": "deadbeats",
+      "ticks": 120,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 120,
+      "members_final": 12,
+      "seated": 0,
+      "rows_accepted": 301,
+      "accepted_minor": 3434028,
+      "insured_minor": 619960,
+      "committed_final": 225515,
+      "external_seed": 500000,
+      "refused": {
+        "ET-CTR-005": 7
+      },
+      "declined": 286,
+      "unbuilt": 0,
+      "expired_rows": 51,
+      "open_default_final": 757969,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 5,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 0,
+        "p90": 0,
+        "max": 0,
+        "top_decile": [
+          0,
+          0
+        ],
+        "zero_share": [
+          12,
+          12
+        ],
+        "non_conferrer_share": [
+          0,
+          0
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "deadbeat": {
+          "agents": 2,
+          "emitted": 141,
+          "applied": 44,
+          "refused": {},
+          "declined": 97,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "a row it owes reaches Expired through the sweep, the hold is kept, and its own budget closes",
+          "probe_detail": "25 of its rows expired, committed flow released at an expiry: false, open default 378279, allowance 0, substitution leg: true"
+        },
+        "honest": {
+          "agents": 10,
+          "emitted": 606,
+          "applied": 410,
+          "refused": {
+            "ET-CTR-005": 7
+          },
+          "declined": 189,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "15 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        }
+      },
+      "state_root": "67c00be43f3b3560a947dcde2cfb9faecded9d1c5bff73e398506ed927e72287"
+    }
+  },
+  {
+    "name": "wash-ring",
+    "run": {
+      "seed": 3,
+      "population": "wash-ring",
+      "ticks": 120,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 120,
+      "members_final": 11,
+      "seated": 0,
+      "rows_accepted": 625,
+      "accepted_minor": 11326352,
+      "insured_minor": 2166303,
+      "committed_final": 128164,
+      "external_seed": 500000,
+      "refused": {
+        "ET-BND-001": 93,
+        "ET-CTR-005": 12,
+        "ET-UWR-001": 470
+      },
+      "declined": 530,
+      "unbuilt": 0,
+      "expired_rows": 0,
+      "open_default_final": 0,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 0,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 617,
+        "p90": 617,
+        "max": 2304,
+        "top_decile": [
+          2304,
+          7240
+        ],
+        "zero_share": [
+          2,
+          11
+        ],
+        "non_conferrer_share": [
+          0,
+          7240
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "honest": {
+          "agents": 6,
+          "emitted": 280,
+          "applied": 158,
+          "refused": {
+            "ET-CTR-005": 12
+          },
+          "declined": 110,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "4 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        },
+        "wash-ring": {
+          "agents": 5,
+          "emitted": 2025,
+          "applied": 1042,
+          "refused": {
+            "ET-BND-001": 93,
+            "ET-UWR-001": 470
+          },
+          "declined": 420,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "a raise is refused ET-UWR-001, and the ring's insured credit as a SET stays inside its own cut",
+          "probe_detail": "120 raises refused and 0 admitted; peak insured to the set 95556 against a gross cut of 98378; headroom within seed reach: true"
+        }
+      },
+      "state_root": "6094133c6d5f09a7ca105bc37ca080e37a0ac7c16f6415733d3b7d0b549e3eec"
+    }
+  },
+  {
+    "name": "sybil-farm",
+    "run": {
+      "seed": 4,
+      "population": "sybil-farm",
+      "ticks": 5,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 5,
+      "members_final": 25,
+      "seated": 23,
+      "rows_accepted": 25,
+      "accepted_minor": 255882,
+      "insured_minor": 13053,
+      "committed_final": 13053,
+      "external_seed": 250000,
+      "refused": {
+        "ET-BND-006": 233,
+        "ET-CTR-001": 85
+      },
+      "declined": 1,
+      "unbuilt": 0,
+      "expired_rows": 0,
+      "open_default_final": 0,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 2,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 9325,
+        "p90": 9545,
+        "max": 31454,
+        "top_decile": [
+          40999,
+          247469
+        ],
+        "zero_share": [
+          1,
+          25
+        ],
+        "non_conferrer_share": [
+          216015,
+          247469
+        ]
+      },
+      "seat_committed_final": 46000,
+      "archetypes": {
+        "honest": {
+          "agents": 1,
+          "emitted": 3,
+          "applied": 2,
+          "refused": {},
+          "declined": 1,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "0 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        },
+        "sybil-farm": {
+          "agents": 1,
+          "emitted": 364,
+          "applied": 46,
+          "refused": {
+            "ET-BND-006": 233,
+            "ET-CTR-001": 85
+          },
+          "declined": 0,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "the rows it seats stay inside the cut behind its set, and the ceiling it stops at is that cut",
+          "probe_detail": "rows per tick [17, 24, 24, 24, 24]; of those seated by a trade [16, 23, 23, 23, 23]; bound per tick [24, 24, 24, 24, 24]; worst 0 against 0 at tick 0; 233 seats refused for want of reach; 24 established; the farm's gross cut as a SET is 44507 minor"
+        }
+      },
+      "state_root": "703bcd59f0af16c409ce3c0a185e93694b35e40417dc4bc9754f8d612887fd90"
+    }
+  },
+  {
+    "name": "sybil-farm-x10",
+    "run": {
+      "seed": 14,
+      "population": "sybil-farm-x10",
+      "ticks": 8,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 8,
+      "members_final": 245,
+      "seated": 243,
+      "rows_accepted": 244,
+      "accepted_minor": 2441797,
+      "insured_minor": 0,
+      "committed_final": 0,
+      "external_seed": 2500000,
+      "refused": {
+        "ET-BND-006": 5908,
+        "ET-CTR-001": 1701
+      },
+      "declined": 1,
+      "unbuilt": 0,
+      "expired_rows": 0,
+      "open_default_final": 0,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 6,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 8695,
+        "p90": 8695,
+        "max": 415072,
+        "top_decile": [
+          615057,
+          2527957
+        ],
+        "zero_share": [
+          1,
+          245
+        ],
+        "non_conferrer_share": [
+          2112885,
+          2527957
+        ]
+      },
+      "seat_committed_final": 486000,
+      "archetypes": {
+        "honest": {
+          "agents": 1,
+          "emitted": 2,
+          "applied": 1,
+          "refused": {},
+          "declined": 1,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "0 discharges applied, 0 of its own rows expired, insured as creditor: false"
+        },
+        "sybil-farm": {
+          "agents": 1,
+          "emitted": 8095,
+          "applied": 486,
+          "refused": {
+            "ET-BND-006": 5908,
+            "ET-CTR-001": 1701
+          },
+          "declined": 0,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "the rows it seats stay inside the cut behind its set, and the ceiling it stops at is that cut",
+          "probe_detail": "rows per tick [244, 244, 244, 244, 244, 244, 244, 244]; of those seated by a trade [243, 243, 243, 243, 243, 243, 243, 243]; bound per tick [244, 244, 244, 244, 244, 244, 244, 244]; worst 0 against 0 at tick 0; 5908 seats refused for want of reach; 244 established; the farm's gross cut as a SET is 415072 minor"
+        }
+      },
+      "state_root": "2121729e612da737ddb7f9655eb76f27514ccbc5e91050d66b8c632e75b84318"
+    }
+  },
+  {
+    "name": "sybil-farm-long",
+    "run": {
+      "seed": 15,
+      "population": "sybil-farm-long",
+      "ticks": 300,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 300,
+      "members_final": 25,
+      "seated": 23,
+      "rows_accepted": 77,
+      "accepted_minor": 746570,
+      "insured_minor": 11357,
+      "committed_final": 11357,
+      "external_seed": 250000,
+      "refused": {
+        "ET-BND-001": 5582,
+        "ET-BND-006": 2653,
+        "ET-CTR-001": 1295
+      },
+      "declined": 55,
+      "unbuilt": 0,
+      "expired_rows": 45,
+      "open_default_final": 427451,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 23,
+      "deadlocked_ticks": 188,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 0,
+        "p90": 0,
+        "max": 0,
+        "top_decile": [
+          0,
+          0
+        ],
+        "zero_share": [
+          25,
+          25
+        ],
+        "non_conferrer_share": [
+          0,
+          0
+        ]
+      },
+      "seat_committed_final": 46000,
+      "archetypes": {
+        "honest": {
+          "agents": 1,
+          "emitted": 109,
+          "applied": 54,
+          "refused": {},
+          "declined": 55,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "0 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        },
+        "sybil-farm": {
+          "agents": 1,
+          "emitted": 9576,
+          "applied": 46,
+          "refused": {
+            "ET-BND-001": 5582,
+            "ET-BND-006": 2653,
+            "ET-CTR-001": 1295
+          },
+          "declined": 0,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "the rows it seats stay inside the cut behind its set, and the ceiling it stops at is that cut",
+          "probe_detail": "rows per tick [24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24]; of those seated by a trade [23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23]; bound per tick [24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24]; worst 0 against 0 at tick 0; 2653 seats refused for want of reach; 3 established; the farm's gross cut as a SET is 11357 minor"
+        }
+      },
+      "state_root": "9568af3e3b8c908016390bad36df698301f2ef1245bfa791662a2202ff5e116e"
+    }
+  },
+  {
+    "name": "honest-open",
+    "run": {
+      "seed": 16,
+      "population": "honest-open",
+      "ticks": 120,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 120,
+      "members_final": 128,
+      "seated": 113,
+      "rows_accepted": 464,
+      "accepted_minor": 4027444,
+      "insured_minor": 524903,
+      "committed_final": 111994,
+      "external_seed": 750000,
+      "refused": {
+        "ET-BND-001": 54,
+        "ET-BND-006": 2,
+        "ET-CTR-005": 6
+      },
+      "declined": 287,
+      "unbuilt": 0,
+      "expired_rows": 208,
+      "open_default_final": 1717474,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 1,
+      "deadlocked_ticks": 2,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 0,
+        "p90": 1136,
+        "max": 13251,
+        "top_decile": [
+          98829,
+          100207
+        ],
+        "zero_share": [
+          114,
+          128
+        ],
+        "non_conferrer_share": [
+          0,
+          100207
+        ]
+      },
+      "seat_committed_final": 226000,
+      "archetypes": {
+        "honest": {
+          "agents": 15,
+          "emitted": 917,
+          "applied": 568,
+          "refused": {
+            "ET-BND-001": 54,
+            "ET-BND-006": 2,
+            "ET-CTR-005": 6
+          },
+          "declined": 287,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "7 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        }
+      },
+      "state_root": "9663f59becc0c417916c527903e06fc4d85b63f87c5329b6982538b02b9dd1b4"
+    }
+  },
+  {
+    "name": "honest-full",
+    "run": {
+      "seed": 17,
+      "population": "honest-full",
+      "ticks": 120,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 120,
+      "members_final": 390,
+      "seated": 375,
+      "rows_accepted": 756,
+      "accepted_minor": 5699232,
+      "insured_minor": 220309,
+      "committed_final": 14680,
+      "external_seed": 750000,
+      "refused": {
+        "ET-BND-001": 483,
+        "ET-BND-006": 943,
+        "ET-CTR-005": 19
+      },
+      "declined": 224,
+      "unbuilt": 0,
+      "expired_rows": 556,
+      "open_default_final": 3724782,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 4,
+      "deadlocked_ticks": 1,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 0,
+        "p90": 0,
+        "max": 15210,
+        "top_decile": [
+          72812,
+          72812
+        ],
+        "zero_share": [
+          377,
+          390
+        ],
+        "non_conferrer_share": [
+          29635,
+          72812
+        ]
+      },
+      "seat_committed_final": 750000,
+      "archetypes": {
+        "honest": {
+          "agents": 15,
+          "emitted": 2507,
+          "applied": 838,
+          "refused": {
+            "ET-BND-001": 483,
+            "ET-BND-006": 943,
+            "ET-CTR-005": 19
+          },
+          "declined": 224,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "8 discharges applied, 0 of its own rows expired, insured as creditor: false"
+        }
+      },
+      "state_root": "035272812e13d7be2efb7f770e39e1f2abc151cc543fc06ab459fffbad0f0dc0"
+    }
+  },
+  {
+    "name": "griefer",
+    "run": {
+      "seed": 5,
+      "population": "griefer",
+      "ticks": 60,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 60,
+      "members_final": 7,
+      "seated": 0,
+      "rows_accepted": 61,
+      "accepted_minor": 600430,
+      "insured_minor": 141626,
+      "committed_final": 67392,
+      "external_seed": 500000,
+      "refused": {
+        "ET-BND-001": 2556,
+        "ET-CTR-001": 1421,
+        "ET-CTR-002": 49,
+        "ET-CTR-004": 7,
+        "ET-CTR-005": 2,
+        "ET-MEM-003": 7,
+        "ET-TX-001": 42
+      },
+      "declined": 104,
+      "unbuilt": 0,
+      "expired_rows": 1,
+      "open_default_final": 5000,
+      "forfeited_final": 46000,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 1,
+      "deadlocked_ticks": 13,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 3691,
+        "p90": 7362,
+        "max": 7362,
+        "top_decile": [
+          0,
+          28930
+        ],
+        "zero_share": [
+          0,
+          7
+        ],
+        "non_conferrer_share": [
+          9941,
+          28930
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "griefer": {
+          "agents": 1,
+          "emitted": 4169,
+          "applied": 43,
+          "refused": {
+            "ET-BND-001": 2556,
+            "ET-CTR-001": 1421,
+            "ET-CTR-002": 49,
+            "ET-CTR-004": 7,
+            "ET-MEM-003": 7,
+            "ET-TX-001": 42
+          },
+          "declined": 44,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "the gate denies it, a stripped envelope is unbilled and re-appliable, a replay is refused, a crank that found nothing spends no id",
+          "probe_detail": "denied: true, stripped unbilled: true, the strip billed its signer: false, the restored transaction applied: true, a durable write applied: true, replay refused: true, crank left no id: true, forfeited 46000 minor"
+        },
+        "honest": {
+          "agents": 6,
+          "emitted": 142,
+          "applied": 80,
+          "refused": {
+            "ET-CTR-005": 2
+          },
+          "declined": 60,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "6 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        }
+      },
+      "state_root": "c41ee3b0ee1f3d652c9c203ea80fc0fc312056f86d707e372a342be14ffd9255"
+    }
+  },
+  {
+    "name": "coalition-third",
+    "run": {
+      "seed": 6,
+      "population": "coalition-third",
+      "ticks": 30,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 30,
+      "members_final": 10,
+      "seated": 0,
+      "rows_accepted": 39,
+      "accepted_minor": 396965,
+      "insured_minor": 154425,
+      "committed_final": 154425,
+      "external_seed": 600000,
+      "refused": {
+        "ET-CTR-005": 1,
+        "ET-GOV-007": 232
+      },
+      "declined": 22,
+      "unbuilt": 0,
+      "expired_rows": 0,
+      "open_default_final": 0,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 5,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 0,
+        "p90": 6319,
+        "max": 6319,
+        "top_decile": [
+          6319,
+          10150
+        ],
+        "zero_share": [
+          7,
+          10
+        ],
+        "non_conferrer_share": [
+          10150,
+          10150
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "coalition": {
+          "agents": 4,
+          "emitted": 245,
+          "applied": 13,
+          "refused": {
+            "ET-GOV-007": 232
+          },
+          "declined": 0,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "each proposal enacts exactly at the threshold its TARGET puts it in",
+          "probe_detail": "a parameter: expected false, enacted false; suspending a member with no power: expected false, enacted false; a seat in the validator set: expected false, enacted false; suspending a sitting validator: expected false, enacted false"
+        },
+        "honest": {
+          "agents": 6,
+          "emitted": 62,
+          "applied": 39,
+          "refused": {
+            "ET-CTR-005": 1
+          },
+          "declined": 22,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "0 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        }
+      },
+      "state_root": "5e0b1d7a9f9ac8b858cc39c09eec054d058ec83d033edec6fc2e9a2b263a799f"
+    }
+  },
+  {
+    "name": "coalition-half",
+    "run": {
+      "seed": 7,
+      "population": "coalition-half",
+      "ticks": 30,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 30,
+      "members_final": 10,
+      "seated": 0,
+      "rows_accepted": 36,
+      "accepted_minor": 360056,
+      "insured_minor": 128582,
+      "committed_final": 128582,
+      "external_seed": 600000,
+      "refused": {
+        "ET-CTR-005": 3,
+        "ET-GOV-007": 120
+      },
+      "declined": 26,
+      "unbuilt": 0,
+      "expired_rows": 0,
+      "open_default_final": 0,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 2,
+      "denied_members": 0,
+      "deadlocked_ticks": 3,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 0,
+        "p90": 11240,
+        "max": 11240,
+        "top_decile": [
+          11240,
+          28622
+        ],
+        "zero_share": [
+          6,
+          10
+        ],
+        "non_conferrer_share": [
+          28622,
+          28622
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "coalition": {
+          "agents": 4,
+          "emitted": 133,
+          "applied": 13,
+          "refused": {
+            "ET-GOV-007": 120
+          },
+          "declined": 0,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "each proposal enacts exactly at the threshold its TARGET puts it in",
+          "probe_detail": "a parameter: expected true, enacted true; suspending a member with no power: expected true, enacted true; a seat in the validator set: expected false, enacted false; suspending a sitting validator: expected false, enacted false"
+        },
+        "honest": {
+          "agents": 6,
+          "emitted": 65,
+          "applied": 36,
+          "refused": {
+            "ET-CTR-005": 3
+          },
+          "declined": 26,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "0 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        }
+      },
+      "state_root": "74bd40c9afaa8a7b0acca35a903c2331fccf718010a7a11ad7039e893cf93ad1"
+    }
+  },
+  {
+    "name": "coalition-two-thirds",
+    "run": {
+      "seed": 8,
+      "population": "coalition-two-thirds",
+      "ticks": 30,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 30,
+      "members_final": 10,
+      "seated": 0,
+      "rows_accepted": 28,
+      "accepted_minor": 288115,
+      "insured_minor": 138664,
+      "committed_final": 138664,
+      "external_seed": 600000,
+      "refused": {
+        "ET-CTR-005": 3,
+        "ET-GOV-007": 8
+      },
+      "declined": 26,
+      "unbuilt": 0,
+      "expired_rows": 0,
+      "open_default_final": 0,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 4,
+      "denied_members": 0,
+      "deadlocked_ticks": 9,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 0,
+        "p90": 6255,
+        "max": 6255,
+        "top_decile": [
+          6255,
+          20186
+        ],
+        "zero_share": [
+          6,
+          10
+        ],
+        "non_conferrer_share": [
+          20186,
+          20186
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "coalition": {
+          "agents": 4,
+          "emitted": 21,
+          "applied": 13,
+          "refused": {
+            "ET-GOV-007": 8
+          },
+          "declined": 0,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "each proposal enacts exactly at the threshold its TARGET puts it in",
+          "probe_detail": "a parameter: expected true, enacted true; suspending a member with no power: expected true, enacted true; a seat in the validator set: expected true, enacted true; suspending a sitting validator: expected true, enacted true"
+        },
+        "honest": {
+          "agents": 6,
+          "emitted": 57,
+          "applied": 28,
+          "refused": {
+            "ET-CTR-005": 3
+          },
+          "declined": 26,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "0 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        }
+      },
+      "state_root": "ca931d1c69690a15650cc7c2cb231cd4f4d9c5a0222189cfc9ef885a2672c72c"
+    }
+  },
+  {
+    "name": "exit-under-suspension",
+    "run": {
+      "seed": 9,
+      "population": "exit-under-suspension",
+      "ticks": 30,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 30,
+      "members_final": 3,
+      "seated": 0,
+      "rows_accepted": 1,
+      "accepted_minor": 10706,
+      "insured_minor": 0,
+      "committed_final": 0,
+      "external_seed": 500000,
+      "refused": {
+        "ET-MEM-002": 20
+      },
+      "declined": 20,
+      "unbuilt": 0,
+      "expired_rows": 0,
+      "open_default_final": 0,
+      "forfeited_final": 0,
+      "exits": 1,
+      "enacted": 2,
+      "denied_members": 0,
+      "deadlocked_ticks": 20,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 0,
+        "p90": 24865,
+        "max": 24865,
+        "top_decile": [
+          0,
+          24865
+        ],
+        "zero_share": [
+          2,
+          3
+        ],
+        "non_conferrer_share": [
+          24865,
+          24865
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "coalition": {
+          "agents": 2,
+          "emitted": 4,
+          "applied": 4,
+          "refused": {},
+          "declined": 0,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "each proposal enacts exactly at the threshold its TARGET puts it in",
+          "probe_detail": "a parameter: expected true, enacted true; suspending a member with no power: expected true, enacted true"
+        },
+        "exiter": {
+          "agents": 1,
+          "emitted": 42,
+          "applied": 2,
+          "refused": {
+            "ET-MEM-002": 20
+          },
+          "declined": 20,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it exits once, every later write is refused, and the stakes on it stay in the graph",
+          "probe_detail": "exited: true, 20 refused and 0 admitted after it, 1 incident edges left standing"
+        }
+      },
+      "state_root": "0ec9cd06a7d6d82f2146a48a55eb12c0d3caa87d80f25b2aaf39d9edc6fec29b"
+    }
+  },
+  {
+    "name": "late-defaulter",
+    "run": {
+      "seed": 10,
+      "population": "late-defaulter",
+      "ticks": 150,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 150,
+      "members_final": 11,
+      "seated": 0,
+      "rows_accepted": 210,
+      "accepted_minor": 2118223,
+      "insured_minor": 413732,
+      "committed_final": 91623,
+      "external_seed": 500000,
+      "refused": {
+        "ET-CTR-005": 9
+      },
+      "declined": 200,
+      "unbuilt": 0,
+      "expired_rows": 50,
+      "open_default_final": 509314,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 21,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 3623,
+        "p90": 11453,
+        "max": 18389,
+        "top_decile": [
+          18389,
+          60940
+        ],
+        "zero_share": [
+          3,
+          11
+        ],
+        "non_conferrer_share": [
+          0,
+          60940
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "honest": {
+          "agents": 8,
+          "emitted": 537,
+          "applied": 330,
+          "refused": {
+            "ET-CTR-005": 9
+          },
+          "declined": 198,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "16 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        },
+        "late-defaulter": {
+          "agents": 3,
+          "emitted": 5,
+          "applied": 3,
+          "refused": {},
+          "declined": 2,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "the award waits for the window to close, and then mints the median of what the window received",
+          "probe_detail": "booked: true, awarded before the close: false, awarded at the close: true, 5 of a panel of 5 attested, the median of them capped is 0, and 0 was minted"
+        }
+      },
+      "state_root": "147b00b284e0e6a3d681f1fbabdef204ee4a124a5d5cd343d4b96b62bde64711"
+    }
+  },
+  {
+    "name": "hoarders",
+    "run": {
+      "seed": 11,
+      "population": "hoarders",
+      "ticks": 120,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 120,
+      "members_final": 12,
+      "seated": 0,
+      "rows_accepted": 180,
+      "accepted_minor": 1743043,
+      "insured_minor": 496743,
+      "committed_final": 129389,
+      "external_seed": 500000,
+      "refused": {
+        "ET-CTR-005": 11
+      },
+      "declined": 308,
+      "unbuilt": 0,
+      "expired_rows": 0,
+      "open_default_final": 0,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 18,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 2550,
+        "p90": 15164,
+        "max": 21043,
+        "top_decile": [
+          21043,
+          60481
+        ],
+        "zero_share": [
+          2,
+          12
+        ],
+        "non_conferrer_share": [
+          39235,
+          60481
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "hoarder": {
+          "agents": 4,
+          "emitted": 206,
+          "applied": 48,
+          "refused": {},
+          "declined": 158,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it settles, the community has put standing behind it, and it has conferred none of it",
+          "probe_detail": "13 settlements, out-degree 0, gross cut 35058 minor"
+        },
+        "honest": {
+          "agents": 8,
+          "emitted": 411,
+          "applied": 250,
+          "refused": {
+            "ET-CTR-005": 11
+          },
+          "declined": 150,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "10 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        }
+      },
+      "state_root": "99529609b4ae79a32adb33ebc1fc917844f685095b3b178aeb615dd2b29a3da7"
+    }
+  },
+  {
+    "name": "everything",
+    "run": {
+      "seed": 12,
+      "population": "everything",
+      "ticks": 200,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 200,
+      "members_final": 148,
+      "seated": 109,
+      "rows_accepted": 1549,
+      "accepted_minor": 21005461,
+      "insured_minor": 6100989,
+      "committed_final": 221637,
+      "external_seed": 850000,
+      "refused": {
+        "ET-BND-001": 14080,
+        "ET-BND-005": 43,
+        "ET-BND-006": 294,
+        "ET-CTR-001": 2415,
+        "ET-CTR-002": 144,
+        "ET-CTR-004": 2,
+        "ET-CTR-005": 42,
+        "ET-GOV-007": 796,
+        "ET-MEM-002": 180,
+        "ET-MEM-003": 14,
+        "ET-TX-001": 71,
+        "ET-UWR-001": 600
+      },
+      "declined": 1936,
+      "unbuilt": 0,
+      "expired_rows": 548,
+      "open_default_final": 5243068,
+      "forfeited_final": 46000,
+      "exits": 1,
+      "enacted": 0,
+      "denied_members": 24,
+      "deadlocked_ticks": 0,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 0,
+        "p90": 4124,
+        "max": 20859,
+        "top_decile": [
+          125759,
+          148231
+        ],
+        "zero_share": [
+          120,
+          148
+        ],
+        "non_conferrer_share": [
+          26362,
+          148231
+        ]
+      },
+      "seat_committed_final": 218000,
+      "archetypes": {
+        "coalition": {
+          "agents": 2,
+          "emitted": 805,
+          "applied": 9,
+          "refused": {
+            "ET-GOV-007": 796
+          },
+          "declined": 0,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "each proposal enacts exactly at the threshold its TARGET puts it in",
+          "probe_detail": "a parameter: expected false, enacted false; suspending a member with no power: expected false, enacted false; a seat in the validator set: expected false, enacted false; suspending a sitting validator: expected false, enacted false"
+        },
+        "deadbeat": {
+          "agents": 2,
+          "emitted": 221,
+          "applied": 20,
+          "refused": {
+            "ET-BND-001": 46
+          },
+          "declined": 155,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "a row it owes reaches Expired through the sweep, the hold is kept, and its own budget closes",
+          "probe_detail": "18 of its rows expired, committed flow released at an expiry: false, open default 293370, allowance 0, substitution leg: true"
+        },
+        "exiter": {
+          "agents": 1,
+          "emitted": 345,
+          "applied": 9,
+          "refused": {
+            "ET-BND-005": 43,
+            "ET-MEM-002": 180
+          },
+          "declined": 113,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it exits once, every later write is refused, and the stakes on it stay in the graph",
+          "probe_detail": "exited: true, 223 refused and 0 admitted after it, 5 incident edges left standing"
+        },
+        "griefer": {
+          "agents": 1,
+          "emitted": 12223,
+          "applied": 71,
+          "refused": {
+            "ET-BND-001": 9336,
+            "ET-CTR-001": 2415,
+            "ET-CTR-002": 144,
+            "ET-CTR-004": 2,
+            "ET-MEM-003": 14,
+            "ET-TX-001": 71
+          },
+          "declined": 170,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "the gate denies it, a stripped envelope is unbilled and re-appliable, a replay is refused, a crank that found nothing spends no id",
+          "probe_detail": "denied: true, stripped unbilled: true, the strip billed its signer: false, the restored transaction applied: false, a durable write applied: true, replay refused: true, crank left no id: true, forfeited 46000 minor"
+        },
+        "hoarder": {
+          "agents": 2,
+          "emitted": 165,
+          "applied": 22,
+          "refused": {},
+          "declined": 143,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it settles, the community has put standing behind it, and it has conferred none of it",
+          "probe_detail": "8 settlements, out-degree 0, gross cut 8209 minor"
+        },
+        "honest": {
+          "agents": 22,
+          "emitted": 2024,
+          "applied": 1084,
+          "refused": {
+            "ET-BND-001": 121,
+            "ET-BND-006": 29,
+            "ET-CTR-005": 41
+          },
+          "declined": 749,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "14 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        },
+        "late-defaulter": {
+          "agents": 3,
+          "emitted": 3,
+          "applied": 3,
+          "refused": {},
+          "declined": 0,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "the award waits for the window to close, and then mints the median of what the window received",
+          "probe_detail": "booked: true, awarded before the close: false, awarded at the close: true, 4 of a panel of 5 attested, the median of them capped is 25000, and 25000 was minted"
+        },
+        "sleeper": {
+          "agents": 2,
+          "emitted": 25,
+          "applied": 14,
+          "refused": {
+            "ET-CTR-005": 1
+          },
+          "declined": 10,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "what it extracts is bounded by the cut in front of it at defection, whatever E was",
+          "probe_detail": "defected at tick 40, insured held 0 against a gross cut of 0 at defection, 0 discharges after it, declared 250000, 95482 expired and owed"
+        },
+        "sybil-farm": {
+          "agents": 1,
+          "emitted": 4888,
+          "applied": 46,
+          "refused": {
+            "ET-BND-001": 4577,
+            "ET-BND-006": 265
+          },
+          "declined": 0,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "the rows it seats stay inside the cut behind its set, and the ceiling it stops at is that cut",
+          "probe_detail": "rows per tick [24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24]; of those seated by a trade [23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23]; bound per tick [24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24]; worst 0 against 0 at tick 0; 265 seats refused for want of reach; 1 established; the farm's gross cut as a SET is 16203 minor"
+        },
+        "wash-ring": {
+          "agents": 3,
+          "emitted": 2414,
+          "applied": 1218,
+          "refused": {
+            "ET-UWR-001": 600
+          },
+          "declined": 596,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "a raise is refused ET-UWR-001, and the ring's insured credit as a SET stays inside its own cut",
+          "probe_detail": "200 raises refused and 0 admitted; peak insured to the set 100223 against a gross cut of 112215; headroom within seed reach: true"
+        }
+      },
+      "state_root": "ff0244ec57501ec144d811a61813012d43b0868556af3514df33cfca21e2fc06"
+    }
+  },
+  {
+    "name": "sleeper-debtor-30",
+    "run": {
+      "seed": 20,
+      "population": "sleeper-debtor-30",
+      "ticks": 90,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 90,
+      "members_final": 11,
+      "seated": 0,
+      "rows_accepted": 182,
+      "accepted_minor": 1837686,
+      "insured_minor": 449993,
+      "committed_final": 177722,
+      "external_seed": 500000,
+      "refused": {
+        "ET-CTR-005": 5
+      },
+      "declined": 135,
+      "unbuilt": 0,
+      "expired_rows": 10,
+      "open_default_final": 95565,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 8,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 4807,
+        "p90": 4807,
+        "max": 5294,
+        "top_decile": [
+          5294,
+          40381
+        ],
+        "zero_share": [
+          1,
+          11
+        ],
+        "non_conferrer_share": [
+          0,
+          40381
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "honest": {
+          "agents": 10,
+          "emitted": 411,
+          "applied": 276,
+          "refused": {
+            "ET-CTR-005": 4
+          },
+          "declined": 131,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "10 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        },
+        "sleeper": {
+          "agents": 1,
+          "emitted": 10,
+          "applied": 5,
+          "refused": {
+            "ET-CTR-005": 1
+          },
+          "declined": 4,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "what it extracts is bounded by the cut in front of it at defection, whatever E was",
+          "probe_detail": "defected at tick 30, insured held 26447 against a gross cut of 26447 at defection, 0 discharges after it, declared 0, 95565 expired and owed"
+        }
+      },
+      "state_root": "233e5d3db3a9e2a8e61f6dc29c195a938cf2da3ded7d3122337b8305348ebefd"
+    }
+  },
+  {
+    "name": "sleeper-underwriter-30",
+    "run": {
+      "seed": 30,
+      "population": "sleeper-underwriter-30",
+      "ticks": 90,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 90,
+      "members_final": 10,
+      "seated": 0,
+      "rows_accepted": 180,
+      "accepted_minor": 1788834,
+      "insured_minor": 415194,
+      "committed_final": 188325,
+      "external_seed": 500000,
+      "refused": {
+        "ET-CTR-005": 7
+      },
+      "declined": 109,
+      "unbuilt": 0,
+      "expired_rows": 5,
+      "open_default_final": 43721,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 5,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 7520,
+        "p90": 25016,
+        "max": 25016,
+        "top_decile": [
+          25016,
+          93095
+        ],
+        "zero_share": [
+          1,
+          10
+        ],
+        "non_conferrer_share": [
+          0,
+          93095
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "honest": {
+          "agents": 9,
+          "emitted": 383,
+          "applied": 269,
+          "refused": {
+            "ET-CTR-005": 7
+          },
+          "declined": 107,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "6 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        },
+        "sleeper": {
+          "agents": 1,
+          "emitted": 9,
+          "applied": 7,
+          "refused": {},
+          "declined": 2,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "what it extracts is bounded by the cut in front of it at defection, whatever E was",
+          "probe_detail": "defected at tick 30, insured held 0 against a gross cut of 0 at defection, 0 discharges after it, declared 250000, 43721 expired and owed"
+        }
+      },
+      "state_root": "48c930d8f80f2bdeffaa9c8f114d5ff2d0140cdaacc3b77b7e96e111d238c97e"
+    }
+  },
+  {
+    "name": "sleeper-debtor-90",
+    "run": {
+      "seed": 21,
+      "population": "sleeper-debtor-90",
+      "ticks": 150,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 150,
+      "members_final": 11,
+      "seated": 0,
+      "rows_accepted": 301,
+      "accepted_minor": 2977111,
+      "insured_minor": 720450,
+      "committed_final": 181584,
+      "external_seed": 500000,
+      "refused": {
+        "ET-CTR-005": 24
+      },
+      "declined": 245,
+      "unbuilt": 0,
+      "expired_rows": 10,
+      "open_default_final": 88170,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 11,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 5817,
+        "p90": 10867,
+        "max": 13511,
+        "top_decile": [
+          13511,
+          69628
+        ],
+        "zero_share": [
+          0,
+          11
+        ],
+        "non_conferrer_share": [
+          0,
+          69628
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "honest": {
+          "agents": 10,
+          "emitted": 737,
+          "applied": 485,
+          "refused": {
+            "ET-CTR-005": 23
+          },
+          "declined": 229,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "24 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        },
+        "sleeper": {
+          "agents": 1,
+          "emitted": 42,
+          "applied": 25,
+          "refused": {
+            "ET-CTR-005": 1
+          },
+          "declined": 16,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "what it extracts is bounded by the cut in front of it at defection, whatever E was",
+          "probe_detail": "defected at tick 90, insured held 25837 against a gross cut of 37045 at defection, 0 discharges after it, declared 0, 88170 expired and owed"
+        }
+      },
+      "state_root": "5c9c126eee0837154a4f6c46fa0ab5b6a88bd62b14d5a6946a10489df799f1cb"
+    }
+  },
+  {
+    "name": "sleeper-underwriter-90",
+    "run": {
+      "seed": 31,
+      "population": "sleeper-underwriter-90",
+      "ticks": 150,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 150,
+      "members_final": 10,
+      "seated": 0,
+      "rows_accepted": 271,
+      "accepted_minor": 2665914,
+      "insured_minor": 730376,
+      "committed_final": 184026,
+      "external_seed": 500000,
+      "refused": {
+        "ET-CTR-005": 12
+      },
+      "declined": 217,
+      "unbuilt": 0,
+      "expired_rows": 19,
+      "open_default_final": 192855,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 10,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 9528,
+        "p90": 13084,
+        "max": 13084,
+        "top_decile": [
+          13084,
+          85850
+        ],
+        "zero_share": [
+          0,
+          10
+        ],
+        "non_conferrer_share": [
+          0,
+          85850
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "honest": {
+          "agents": 9,
+          "emitted": 672,
+          "applied": 452,
+          "refused": {
+            "ET-CTR-005": 12
+          },
+          "declined": 208,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "24 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        },
+        "sleeper": {
+          "agents": 1,
+          "emitted": 35,
+          "applied": 26,
+          "refused": {},
+          "declined": 9,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "what it extracts is bounded by the cut in front of it at defection, whatever E was",
+          "probe_detail": "defected at tick 90, insured held 15877 against a gross cut of 29181 at defection, 0 discharges after it, declared 250000, 192855 expired and owed"
+        }
+      },
+      "state_root": "25a7942dbda41d5fc881e12571db369fe44bef509129825beca37b0a22d4f527"
+    }
+  },
+  {
+    "name": "sleeper-debtor-180",
+    "run": {
+      "seed": 22,
+      "population": "sleeper-debtor-180",
+      "ticks": 240,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 240,
+      "members_final": 11,
+      "seated": 0,
+      "rows_accepted": 469,
+      "accepted_minor": 4790434,
+      "insured_minor": 1131878,
+      "committed_final": 185926,
+      "external_seed": 500000,
+      "refused": {
+        "ET-CTR-005": 25
+      },
+      "declined": 399,
+      "unbuilt": 0,
+      "expired_rows": 10,
+      "open_default_final": 80766,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 20,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 3532,
+        "p90": 4751,
+        "max": 4751,
+        "top_decile": [
+          4751,
+          32260
+        ],
+        "zero_share": [
+          2,
+          11
+        ],
+        "non_conferrer_share": [
+          0,
+          32260
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "honest": {
+          "agents": 10,
+          "emitted": 1222,
+          "applied": 831,
+          "refused": {
+            "ET-CTR-005": 25
+          },
+          "declined": 366,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "41 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        },
+        "sleeper": {
+          "agents": 1,
+          "emitted": 75,
+          "applied": 42,
+          "refused": {},
+          "declined": 33,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "what it extracts is bounded by the cut in front of it at defection, whatever E was",
+          "probe_detail": "defected at tick 180, insured held 17074 against a gross cut of 38059 at defection, 0 discharges after it, declared 0, 80766 expired and owed"
+        }
+      },
+      "state_root": "858d244d8337e92aaf283649f2c17280511f8885974817468b1398b8af82bade"
+    }
+  },
+  {
+    "name": "sleeper-underwriter-180",
+    "run": {
+      "seed": 32,
+      "population": "sleeper-underwriter-180",
+      "ticks": 240,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 240,
+      "members_final": 10,
+      "seated": 0,
+      "rows_accepted": 466,
+      "accepted_minor": 4543693,
+      "insured_minor": 1064902,
+      "committed_final": 156590,
+      "external_seed": 500000,
+      "refused": {
+        "ET-CTR-005": 27
+      },
+      "declined": 360,
+      "unbuilt": 0,
+      "expired_rows": 15,
+      "open_default_final": 153246,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 17,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 11544,
+        "p90": 11544,
+        "max": 11544,
+        "top_decile": [
+          11544,
+          88841
+        ],
+        "zero_share": [
+          0,
+          10
+        ],
+        "non_conferrer_share": [
+          0,
+          88841
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "honest": {
+          "agents": 9,
+          "emitted": 1148,
+          "applied": 792,
+          "refused": {
+            "ET-CTR-005": 24
+          },
+          "declined": 332,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "49 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        },
+        "sleeper": {
+          "agents": 1,
+          "emitted": 106,
+          "applied": 75,
+          "refused": {
+            "ET-CTR-005": 3
+          },
+          "declined": 28,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "what it extracts is bounded by the cut in front of it at defection, whatever E was",
+          "probe_detail": "defected at tick 180, insured held 31724 against a gross cut of 46086 at defection, 0 discharges after it, declared 250000, 153246 expired and owed"
+        }
+      },
+      "state_root": "83946f277663a68caa70eaf51dddfdf7604975d45b1c3dd2e4944ab2628ce88e"
+    }
+  },
+  {
+    "name": "sleeper-debtor-365",
+    "run": {
+      "seed": 23,
+      "population": "sleeper-debtor-365",
+      "ticks": 425,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 425,
+      "members_final": 11,
+      "seated": 0,
+      "rows_accepted": 857,
+      "accepted_minor": 8634398,
+      "insured_minor": 1851632,
+      "committed_final": 143724,
+      "external_seed": 500000,
+      "refused": {
+        "ET-CTR-005": 56
+      },
+      "declined": 727,
+      "unbuilt": 0,
+      "expired_rows": 16,
+      "open_default_final": 136672,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 28,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 0,
+        "p90": 2872,
+        "max": 3906,
+        "top_decile": [
+          3906,
+          6778
+        ],
+        "zero_share": [
+          9,
+          11
+        ],
+        "non_conferrer_share": [
+          0,
+          6778
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "honest": {
+          "agents": 10,
+          "emitted": 2232,
+          "applied": 1511,
+          "refused": {
+            "ET-CTR-005": 50
+          },
+          "declined": 671,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "72 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        },
+        "sleeper": {
+          "agents": 1,
+          "emitted": 183,
+          "applied": 121,
+          "refused": {
+            "ET-CTR-005": 6
+          },
+          "declined": 56,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "what it extracts is bounded by the cut in front of it at defection, whatever E was",
+          "probe_detail": "defected at tick 365, insured held 24190 against a gross cut of 41722 at defection, 0 discharges after it, declared 0, 136672 expired and owed"
+        }
+      },
+      "state_root": "dd1ce421965c822ce58f585a12313f591f3efe5999a07569e2d280f1140e6a17"
+    }
+  },
+  {
+    "name": "sleeper-underwriter-365",
+    "run": {
+      "seed": 33,
+      "population": "sleeper-underwriter-365",
+      "ticks": 425,
+      "audit": "EveryTransition",
+      "metrics_every": 30,
+      "measure_ceiling": false
+    },
+    "expect": {
+      "format_version": 2,
+      "ticks": 425,
+      "members_final": 10,
+      "seated": 0,
+      "rows_accepted": 779,
+      "accepted_minor": 7705214,
+      "insured_minor": 1527353,
+      "committed_final": 132358,
+      "external_seed": 500000,
+      "refused": {
+        "ET-CTR-005": 31
+      },
+      "declined": 669,
+      "unbuilt": 0,
+      "expired_rows": 13,
+      "open_default_final": 131252,
+      "forfeited_final": 0,
+      "exits": 0,
+      "enacted": 0,
+      "denied_members": 0,
+      "deadlocked_ticks": 51,
+      "ceiling_uninsured": 0,
+      "capacity": {
+        "p50": 1184,
+        "p90": 2411,
+        "max": 2411,
+        "top_decile": [
+          2411,
+          12247
+        ],
+        "zero_share": [
+          0,
+          10
+        ],
+        "non_conferrer_share": [
+          0,
+          12247
+        ]
+      },
+      "seat_committed_final": 0,
+      "archetypes": {
+        "honest": {
+          "agents": 9,
+          "emitted": 1998,
+          "applied": 1350,
+          "refused": {
+            "ET-CTR-005": 31
+          },
+          "declined": 617,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "it discharges every obligation it owes before the sweep can expire it",
+          "probe_detail": "80 discharges applied, 0 of its own rows expired, insured as creditor: true"
+        },
+        "sleeper": {
+          "agents": 1,
+          "emitted": 199,
+          "applied": 147,
+          "refused": {},
+          "declined": 52,
+          "unbuilt": 0,
+          "over_budget": 0,
+          "probe_reached": true,
+          "probe_what": "what it extracts is bounded by the cut in front of it at defection, whatever E was",
+          "probe_detail": "defected at tick 365, insured held 24688 against a gross cut of 29272 at defection, 0 discharges after it, declared 250000, 131252 expired and owed"
+        }
+      },
+      "state_root": "ab26db366afb534627df594324cadb766c1e5d8a0cd7bb7b0768ffed9ac0709a"
+    }
+  }
+]

@@ -1,0 +1,75 @@
+\section{Intertemporal provision}
+\label{sec:provision}
+
+A medium that cannot be held must still let a member provide for later. Two instruments
+answer, both already on the ledger: the claim, and capacity. What is not offered is a
+third, an undated, counterparty-free stock --- a \emph{balance}. A balance is a claim with
+the debtor's name erased, and every mechanism here consumes the name: insurance is a
+reserved path from named underwriters, recourse is substitution onto them, discharge is a
+named debtor's delivery. Erasing the name removes not the risk a claim carries but the
+parties who priced it (Property~\ref{prop:no-hoard}).
+
+\subsection{The claim: provision to a date}
+
+A claim is dated, and the date is a term of the trade: a maturity between
+$\kConstMinMaturityEpochs$ and $\kConstMaxHorizonEpochs$ epochs --- decades, at the
+genesis epoch length --- movable only forward, by extension on both signatures
+(\S\ref{sec:medium}). Its amount does not decay: decay is a property of stakes, and the
+reservation behind an insured claim floors the edges it runs over (\S\ref{sec:standing}).
+Insured, within the horizon below, it survives its debtor: substitution makes the holder
+whole in claims on the underwriters, one layer and no further (\S\ref{sec:recourse}).
+Nothing bounds what a member may be owed --- the capacity gate sits on the debtor, because
+debt spends the community's underwriting and being owed spends nothing --- so a creditor
+position of any size is expressible. The ledger keeps the claims themselves, never a
+signed net position.
+
+Provision to a date is therefore available, and priced. For the life of the claim the
+debtor's capacity stays reserved and the underwriters' supply stays drawn
+(Rem.~\ref{rem:uw-duration}); the holder pays nothing while the two parties not holding
+pay continuously, so a long maturity is a real concession, and its price has a place to
+live, the face amount agreed at acceptance. The underwriters are asked once, collectively
+and in advance: a claim is insured only within the \emph{insured horizon} of its
+acceptance --- $\kConstInsuredHorizonEpochs$ epochs at genesis, a governed constant between
+the maturity floor and the maximum horizon (\S\ref{sec:governance}) --- and a claim booked
+or extended past it is the creditor's own, on the creditor's own signature. A claim meant
+to run for decades is held as a series, settled and re-accepted at each horizon, each
+acceptance priced against the community's backing at that time, which is where the
+underwriters are asked again. At community scale the same fact is a budget: every
+long-dated insured claim occupies flow current trade would otherwise be insured by, so
+provision and trade compete for the same cut, visibly rather than through an aggregate
+that silently inflates. A saver draws down the way anything is paid here: by buying from
+their debtors, which nets first (\S\ref{sec:sale}); by their claims following trade, as
+debtors' own sales route obligations onward (\S\ref{sec:medium}); by delivery, which
+settles.
+
+\subsection{Capacity: provision across seasons}
+
+Capacity is the other instrument, and the partial one: a member who borrows and honours
+accumulates standing that lets them draw on the community later with nothing in hand. It
+decays unless renewed, so it provides across seasons rather than decades; it is not
+transferable, so it cannot be given to a child or left in a will; and it is a claim on a
+community's willingness, not on a stock of anything.
+
+\subsection{The net saver's ledger}
+
+A member who produces more than they consume accumulates claims --- others' obligations
+to them --- and only claims: selling confers no standing (Rem.~\ref{rem:owed-not-sold}),
+so their capacity grows only on the side where they buy and honour. That makes visible
+what a currency balance conceals: one person's savings are other people's obligations,
+worth what those people deliver. The risk is allocated as everywhere else --- an insured
+claim is covered up to what each underwriter declared and no further, an uninsured one is
+the creditor's own (Rem.~\ref{rem:uninsured-alone}).
+
+\subsection{The horizon, and institutions}
+
+No claim outlives the graph that prices it. At a horizon of decades the residual risk is
+not the mechanism but the world: the debtor, the one layer of underwriters behind them
+and the community itself must still be there, trading, at the date. That risk is
+irreducible in any closed credit system, and a balance would carry it identically, with
+the names, the insurance and the price removed. Provision across decades --- pensions,
+illness --- therefore belongs to institutions: a pension society or mutual fund is a
+member like any other, holding an account, declaring a supply and so standing behind
+credit with a liability the ledger enforces, nameable as arbiter or beneficiary, measured
+by the same cut. The protocol supplies that substrate; creating such institutions belongs
+to the community, which should plan to serve this horizon with them and with assets held
+outside the medium.

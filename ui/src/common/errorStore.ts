@@ -15,10 +15,10 @@ export const errorStore = {
     pushError: (message: string, type: 'error' | 'warning' = 'error') => {
         const id = ++errorId;
         update(errors => [...errors, { message, type, id }]);
-        
-        // Auto-dismiss after 10 seconds (increased from 5s — error messages with
-        // protocol error codes like "EC200019: You already have an open trial..." need
-        // more reading time, especially for non-native speakers using localised text).
+
+        // Auto-dismiss after 10 seconds — messages carrying protocol error
+        // codes (e.g. "ET-CAP-001: …") need reading time, especially in
+        // localised text.
         setTimeout(() => {
             errorStore.removeError(id);
         }, 10000);

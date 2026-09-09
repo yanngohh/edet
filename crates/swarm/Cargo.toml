@@ -1,0 +1,21 @@
+[package]
+name = "edet-swarm"
+description = "A population of behaving agents over the real transition function, judged by the real audit"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+edet-kernel = { path = "../kernel" }
+edet-state = { path = "../state" }
+serde = { workspace = true }
+# The corpus is a pinned `Summary` per entry, read and written as JSON.
+serde_json = { workspace = true }
+# The search runs one seed per thread. Runs are independent by construction —
+# every RNG stream is derived from the seed and nothing is shared — so the
+# only thing parallelism can change is wall clock.
+rayon = { workspace = true }
+
+[[bin]]
+name = "edet-swarm"
+path = "src/main.rs"

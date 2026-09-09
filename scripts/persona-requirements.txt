@@ -1,0 +1,22 @@
+# The persona layer's clients, ONE PER FAMILY. Deliberately separate from
+# `sim/requirements.txt`, which `just ci` installs: nothing in `ci` may make a
+# model call, and a requirements file the gate installs is a dependency the
+# gate carries.
+#
+# Install by hand:  python3 -m pip install -r scripts/persona-requirements.txt
+#
+# The first family is Anthropic's, at the package's current major.
+anthropic>=1.3,<2
+
+# The other families. **At least two are required and the driver refuses one**:
+# a distillation of a family IS that family, so what matters is independent
+# pretraining lineage rather than a brand, and two draws of one buy repetition
+# rather than a second opinion. More than two is strictly better for the same
+# reason two beats one.
+#
+# Each speaks through its OWN official client, never a compatibility shim for
+# another — a shim makes the second family's output a function of the first
+# family's API surface, which is one more thing they share.
+google-genai>=1,<2
+mistralai>=1,<2
+openai>=2,<3

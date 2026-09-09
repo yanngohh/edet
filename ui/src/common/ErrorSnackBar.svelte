@@ -28,9 +28,7 @@
 
 <!-- The live region is outside the Snackbar so it is always in the DOM.
      When an error appears, screen readers using assertive (role="alert") will
-     interrupt the current announcement; polite is used for info/warning.
-     SMUI Snackbar may use role="status" internally, which is polite-only.
-     This explicit live region guarantees errors are announced immediately. -->
+     interrupt the current announcement; polite is used for info/warning. -->
 <div
     role={currentType === 'error' ? 'alert' : 'status'}
     aria-live={currentType === 'error' ? 'assertive' : 'polite'}
@@ -47,8 +45,7 @@
 </Snackbar>
 
 <style>
-    /* Visually hidden live region — content announced by screen readers but invisible.
-       Using clip-path instead of display:none so the element stays in accessibility tree. */
+    /* Visually hidden live region — announced by screen readers, invisible. */
     .sr-live-region {
         position: absolute;
         width: 1px;

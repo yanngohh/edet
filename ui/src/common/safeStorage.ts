@@ -7,9 +7,7 @@
  * the app degrades to a "per-session" behaviour rather than crashing.
  *
  * The first access probes availability once; subsequent calls are
- * zero-overhead. Callers that actually need durable storage should use
- * `backupStorage` / `deviceKey` (IndexedDB via localforage), which has its
- * own, sturdier in-memory fallback.
+ * zero-overhead.
  */
 
 let cachedAvailable: boolean | null = null;
@@ -57,8 +55,7 @@ export function lsSet(key: string, value: string): void {
     try {
         window.localStorage.setItem(key, value);
     } catch {
-        // QuotaExceeded or similar. Best-effort only; callers should never
-        // rely on lsSet as a durable persistence layer.
+        // QuotaExceeded or similar. Best-effort only.
     }
 }
 

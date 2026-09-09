@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  edet's mark, as a notification icon.
+
+  **A status-bar icon cannot be the launcher icon**, and this is the whole
+  reason this file exists rather than a `setSmallIcon(applicationInfo.icon)`.
+  Android masks a small icon to its ALPHA and tints the result: an adaptive
+  launcher icon, whose square is opaque edge to edge, renders as a solid white
+  block. So the mark is redrawn here as the silhouette the platform can show —
+  the same mesh geometry as `icon.svg`, in white on transparent — and the
+  coloured icon goes on the notification's LARGE icon, where it is drawn as it
+  is (`AcceptanceService.build`).
+
+  One stroke width for every edge, where the source varies them between 2.8 and
+  4.3: this is rendered at 24dp, where that difference is below a pixel.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M42,50 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0 Z M64.8,38 a5.2,5.2 0 1,0 10.4,0 a5.2,5.2 0 1,0 -10.4,0 Z M80.5,57 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0 Z M33.3,13 a6.7,6.7 0 1,0 13.4,0 a6.7,6.7 0 1,0 -13.4,0 Z M64.2,62 a5.8,5.8 0 1,0 11.6,0 a5.8,5.8 0 1,0 -11.6,0 Z M45.7,72 a4.3,4.3 0 1,0 8.6,0 a4.3,4.3 0 1,0 -8.6,0 Z M21.5,83 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0 Z M12.2,57 a2.8,2.8 0 1,0 5.6,0 a2.8,2.8 0 1,0 -5.6,0 Z M16.5,38 a3.5,3.5 0 1,0 7,0 a3.5,3.5 0 1,0 -7,0 Z" />
+    <path
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M50,50 L70,38 M50,50 L70,62 M50,50 L50,72 M50,50 L15,57 M50,50 L20,38 M85,57 L70,38 M70,38 L40,13 M85,57 L70,62 M25,83 L50,72 M15,57 L25,83 M40,13 L20,38" />
+</vector>

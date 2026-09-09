@@ -1,34 +1,37 @@
 {
-    "$schema": "https://schema.tauri.app/config/2.0.0",
-    "productName": "edet",
-    "version": "0.2.2",
-    "identifier": "org.edet",
-    "build": {
-        "beforeDevCommand": "npm run start -w ui",
-        "beforeBuildCommand": "npm run build -w ui",
-        "devUrl": "http://localhost:8888",
-        "frontendDist": "../ui/dist"
-    },
-    "app": {
-        "windows": [],
-        "security": {
-            "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' ipc://localhost ws://localhost:* wss://localhost:* ws://127.0.0.1:* wss://127.0.0.1:*; img-src 'self' data: blob:; media-src 'self' blob: mediastream:;",
-            "capabilities": ["default"]
-        }
-    },
-    "bundle": {
-        "active": true,
-        "targets": ["deb", "rpm", "dmg", "msi"],
-        "resources": ["../workdir/edet.happ"],
-        "icon": [
-            "icons/32x32.png",
-            "icons/128x128.png",
-            "icons/128x128@2x.png",
-            "icons/icon.icns",
-            "icons/icon.ico"
-        ],
-        "category": "Finance",
-        "shortDescription": "Decentralized mutual credit",
-        "longDescription": "edet is a decentralized mutual credit protocol on Holochain. Every transaction creates a debt obligation; your credit capacity reflects your reputation in the network."
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "edet",
+  "version": "0.7.0",
+  "identifier": "org.edet.client",
+  "build": {
+    "frontendDist": "../ui/dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm --prefix ui run dev",
+    "beforeBuildCommand": "npm --prefix ui run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "edet",
+        "width": 1100,
+        "height": 820,
+        "minWidth": 720,
+        "minHeight": 480
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src *; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'"
     }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ]
+  }
 }

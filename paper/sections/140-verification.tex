@@ -1,0 +1,457 @@
+\section{Verification programme}
+\label{sec:verification}
+
+\subsection{Layers}
+
+\paragraph{Proved.} The results of \S\ref{sec:security} are proved from
+Definitions~\ref{def:stake}--\ref{def:reservation} and max-flow/min-cut, and they are
+short: a bound re-argued per attack is a bound that will eventually be re-argued wrongly.
+
+\paragraph{Enforced.} Seven invariants are audited over the whole state on the commit path
+rather than in tests --- after every committed block on a validator, and after every
+transition in the harnesses --- so a violation halts the chain rather than propagating;
+what that costs per block is \S\ref{sec:implementation}:
+
+\begin{enumerate}[leftmargin=1.6em]
+  \item the \textbf{cut bound} (Invariant~\ref{inv:capacity}), evaluated over \emph{sets}
+        and never only singletons --- all insured debtors together, and, per underwriter,
+        everyone drawing through them. Two details are load-bearing: the cut is measured
+        on a pristine residual, and only supply reaching the set from \emph{outside} it
+        counts on the left, as the network construction drops the source arc of any
+        underwriter inside the measured set; both are exercised by probes that fail when
+        the clause they hold is removed, not only by fixtures in which the audit is
+        expected to pass;
+  \item \textbf{reservation conservation} (Invariant~\ref{inv:res-conservation}), exactly,
+        in integer minor units;
+  \item the \textbf{stake bound}. What an edge may carry is what its creditor could confer
+        \emph{at the height it was written} --- at settlement, not at acceptance ---
+        enforced where it is written rather than re-derived here, because a creditor's
+        own backing legitimately moves afterwards and an audit flagging an edge above its
+        creditor's present capacity would halt a healthy chain; the stored graph is held
+        to every edge naming real accounts and carrying something;
+  \item the \textbf{decay floor}: no edge sits below its live reservation;
+  \item the \textbf{supply floor}: no underwriter's declaration sits below the flow
+        committed through it;
+  \item \textbf{determinism}: capacity recomputed from committed state reproduces the
+        value the block was validated against, bit for bit;
+  \item \textbf{seat conservation}: the seat reservation maps are exactly the sum of what
+        the live seats hold, every seat is a flow from the source to its sponsor, and a
+        sponsor is a member --- which the sweep keeps true by never retiring a row that
+        sponsors a live seat. It claims conservation and nothing else: a seat is
+        deliberately \emph{not} floored against decay or against the declaration it draws
+        through (Property~\ref{prop:seat}), and a seat's \emph{size} is compared to
+        nothing in either direction, because both bounds are properties of the write --- a
+        seat takes one bond unit at the unit then in force, a re-denomination floors it,
+        and an amendment of the unit leaves it where it is; a clause comparing a standing
+        seat against the live unit halts every node on the first downward amendment of the
+        one dial the design offers for the seat count.
+\end{enumerate}
+
+The same audit checks obligation conservation (Invariant~\ref{inv:conservation}) --- each
+account's cached debt against a recount of the book, and the two totals against each
+other, as exact integer equality --- and the structural facts no cut expresses: no contract
+names one member on both sides, a validator is an active member, arbitration attestations
+come only from the panel both parties pinned, and the key index round-trips in both
+directions. Non-negativity needs no check: every stored amount is an unsigned integer, so
+the type carries the floor.
+
+\paragraph{Searched.} A population of behaving agents --- honest traders, a deadbeat, a
+wash ring, a sybil farm, a griefer, a governance coalition, a panic exiter, an
+honest-then-evil sleeper, a late defaulter and a hoarder --- runs over the same transition
+function, and every transition it emits is judged by the same audit. The programme is
+split three ways on purpose. \emph{Does the mechanism hold under adversarial play} is a
+search, answered by deterministic strategies over the alphabet. \emph{Does it produce a
+working economy under plausible behaviour} is distributional, answered by seeded
+populations against a control that is the same seed with every treatment seat replaced
+by an honest trader and aged the same number of epochs --- advancing an epoch decays every
+stake, so a control that has not advanced the same number is not one. \emph{Would people
+join, and what would they try} is generative, and the only part a language model touches:
+it produces narratives, which are hypotheses, which the two halves above judge. No figure
+a persona produced appears in this paper, because a generator whose behavioural variance
+is two orders of magnitude below the phenomenon's would be describing itself.
+
+Each run is one seed and replays bit-identically, so a violated invariant is reported
+with the seed, the tick, the agent, the intent, the transaction and the command that
+reproduces it. Twenty-four scenes are pinned as a gate; a strategy that bites is promoted by
+hand into a named regression test rather than by replaying its seed, so the regression
+does not depend on the strategy code that found it.
+
+\paragraph{Measured.} Each claim has an adversarial test that fails if the property
+regresses --- gates, not illustrations. Every row below names a probe in the tree: a
+claim's \emph{measurement} must exist, not only its wording.
+
+\subsection{What has been measured}
+
+Two independent implementations answer the capacity question --- the kernel that ships,
+and a reference over \texttt{scipy}'s maximum flow written by people who had never heard
+of this design --- and the fixtures demand bit-identical agreement rather than closeness.
+Both readings are pinned: the credit one, which excludes a target's own declaration, and
+the write one, which includes it. The reference states the seat bound too, and reaches the
+same count from one edge of $500$ that the kernel does. The rows are grouped by the
+result each gates.
+
+\paragraph{The cut bound and its corollaries.}
+
+\begin{longtable}{@{}p{0.44\textwidth}p{0.48\textwidth}@{}}
+\toprule
+\textbf{Claim} & \textbf{Result} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Claim} & \textbf{Result} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\footnotesize\emph{continued overleaf}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+Identities are free and worthless (Cor.~\ref{cor:sybil})
+  & Sixty fresh keys, measured together as a set: capacity $0$ \\
+Fabricated trade confers nothing (Cor.~\ref{cor:wash})
+  & $2{,}000$ settlement cycles between two accounts nobody backs, each claiming an
+    unbounded amount: capacity $0$ \\
+A colluder passes on what they hold (Cor.~\ref{cor:collusion})
+  & One honest trade of $300$ behind the colluder; forty accounts then pump each other
+    for eight rounds at whatever each may confer: region capacity $300$, with and without
+    the colluder in the set \\
+A coalition cannot underwrite itself (Cor.~\ref{cor:self-uw})
+  & Eight rounds of self-appointment: pinned at what backs the coalition from outside \\
+An underwriter's exposure is their supply (Cor.~\ref{cor:uw-bound})
+  & Backing twenty-one accounts: region capacity $2{,}500$, not $52{,}500$. Twenty sybils,
+    fifty rounds, with back-staking: $2{,}500$ \\
+Attack costs what participation costs (Cor.~\ref{cor:linear})
+  & $1$ to $20$ genuine relationships spread over five keys: capacity $=$ stake, ratio
+    $1.00$ at every $k$ \\
+Conferring above your own inflow is a no-op
+  & A grant of $10^{6}$ from a member holding $1{,}000$: the newcomer gets $1{,}000$ \\
+Selling confers nothing on the seller (Rem.~\ref{rem:owed-not-sold})
+  & $2{,}000$ settled sales to twenty backed members: capacity $0$; one honoured purchase
+    confers standing at once \\
+Usage cannot seed insured credit (Ass.~\ref{ass:free-signatures})
+  & $1{,}000$ settled trades with no underwriters: no stake written, cut $0$, and no
+    supply is declarable \\
+A pool funded from inside re-labels the seed (\S\ref{sec:no-pool})
+  & $10{,}000$ levied settlements: founderless pool $0$; seeded, members $\cup$ pool
+    $=$ the seed exactly \\
+One ledger hosts many communities (\S\ref{sec:model})
+  & Two co-ops, one chain, one underwriter each: $2{,}500$ apiece and $5{,}000$ together;
+    one trade across joins them, with no transition involved \\
+\end{longtable}
+
+\paragraph{Reservation, decay and the reserve path.}
+
+\begin{longtable}{@{}p{0.44\textwidth}p{0.48\textwidth}@{}}
+\toprule
+\textbf{Claim} & \textbf{Result} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Claim} & \textbf{Result} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\footnotesize\emph{continued overleaf}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+No double-draw across creditors
+  & Fifty creditors lending to one debtor in turn: total equals the cut, not a multiple
+    of it \\
+One supply is lent once (Rem.~\ref{rem:charge-supply})
+  & One underwriter of $2{,}500$ backing $k$ debtors, $k = 2, 5, 20, 100$: each looks
+    fully backed and together they lend $2{,}500$ \\
+Settlement returns the whole path
+  & A multi-hop reservation released in full, both hops and the supply arc; and $4{,}000$
+    steps of mixed traffic drain to zero reserved and zero committed \\
+The bound holds under traffic that presses it
+  & $4{,}000$ reserve and release steps over a two-hop graph, on the independent
+    implementation: zero violations across $6{,}054$ set checks at both quantifiers, peak
+    outstanding $12{,}800$ against a ceiling of $15{,}000$, a third of the reservations
+    refused \\
+A supply cannot be withdrawn under live credit
+  & Withdrawal to the committed floor holds the bound; one step below it, $15{,}000$
+    outstanding against a capacity of $12{,}500$ \\
+Decay cannot release live collateral
+  & $24$ epochs at $80\%$ reserved: the bound held every epoch, and a fully reserved
+    stake does not decay at all \\
+Capacity is reproducible (\S\ref{sec:implementation})
+  & Integer maximum flow identical across input permutations, and bit-identical to the
+    independent implementation on every fixture \\
+A community starts from zero
+  & First trade of $400$ uninsured; it settles; capacity $400$; the second trade of $400$
+    is insured and holds all of it \\
+\end{longtable}
+
+\paragraph{The transitions around the model.}
+
+\begin{longtable}{@{}p{0.44\textwidth}p{0.48\textwidth}@{}}
+\toprule
+\textbf{Claim} & \textbf{Result} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Claim} & \textbf{Result} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r@{}}{\footnotesize\emph{continued overleaf}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+A routed claim is never downgraded (Prop.~\ref{prop:no-downgrade})
+  & $400$ randomised sale scenes, over $100$ of them with an insured claim to lose and
+    more than $10$ splitting one across buyer and seller: no creditor's insured total ever
+    fell \\
+A debtor swap stakes nothing (Rem.~\ref{rem:only-settlement})
+  & A ring of $k$ members passing one accepted claim: $\sum\stake$ from the original
+    creditor is $0$, where a rule that stakes the swap measures linear in $k$ ---
+    $3{,}000$ across ten members from one acceptance of $300$ \\
+A drain relieves and does not rebuild (Prop.~\ref{prop:benef})
+  & An obligation of $80$ cleared by a supporter writes $0$ of stake where the debtor
+    paying the same $80$ writes all of it; clearing your own debts through a sale writes
+    $0$ where netting the same debt against your creditor writes $80$; and three loans of
+    $60$ carried leave a member at capacity $200$, against $380$ honoured \\
+A loss lands on the arcs that carried it (\S\ref{sec:substitution})
+  & The claim splits across underwriters by exactly what each arc held; the debt subrogates
+    to them; the defaulter's standing stays consumed; curing every piece makes each whole
+    and frees exactly what it held \\
+An absorbed loss throttles the declaration (Rem.~\ref{rem:uw-duration})
+  & $114$ randomised scenes with $204$ partial cures, on both acts that reach the re-hold:
+    no throttle ever moved off the underwriter that was substituted \\
+The write floor is the seed's reach (Prop.~\ref{prop:write-floor})
+  & Read from the declared supply, a coalition's write headroom doubled per accomplice ---
+    $614{,}400$ at twelve against a real cut of $300$. Read from the seed's reach, $k$
+    colluding accounts hold exactly what $k$ honestly-backed members hold at
+    $k \in \{3,7,12\}$, while a founder and an honest member are unchanged \\
+And it is gross of live credit (Prop.~\ref{prop:write-floor})
+  & Read on the residual graph the floor falls for everybody else's borrowing and twice
+    for the member's own: reach $500$ and a loan of $200$ give headroom $100$ against the
+    $300$ the property states, at $20\%$ utilisation a member who has borrowed nothing
+    loses a full allowance and its whole floor, and a community at its ceiling refuses an
+    ordinary trade, a sale and a newcomer's first trade alike. Gross, the ceiling withholds
+    insurance and nothing else, the $k \in \{3,7,12\}$ parity above is unchanged, and a
+    declarable rule runs the coalition's declarations to $171\times$ the floor \\
+Every write has a payer with standing
+  & $2{,}000$ trades attempted by keys with no standing seat nothing and censor nobody,
+    while an honest newcomer's first trade is admitted in the same epoch \\
+A row is a stock priced in the cut (Cor.~\ref{cor:seats})
+  & $25$ rows behind one edge of $500$ and $250$ behind $5{,}000$, unchanged over $400$
+    epochs of daily renewal, $+25$ for a second backer of $500$ and $+5$ for raising the
+    first by $100$. The honest preset's seed of $7{,}500$ seats $375$ rows and then nobody
+    until a ceremony; a farm behind one honest edge holds $23$ rows over $5$ ticks and the
+    same $23$ over $300$; and an honest population with a newcomer stream is refused
+    nothing by the seed --- $113$ rows over $120$ ticks against a ceiling of $375$ \\
+A list-writing transition carries its own bound
+  & A rotation is refused one key over the ceiling and admitted at it. The vector is
+    whatever the transaction carries, so the bound belongs to the transition that writes
+    the list: without it, $100{,}000$ keys are written for a headroom spend of zero \\
+A forfeiture is a reservation that never returns (Prop.~\ref{prop:forfeit})
+  & Sustained exhaustion forfeits once and the headroom does not come back; an intermittent
+    burst never reaches the sanction; a forfeited member can still discharge what it owes \\
+Governance answers to the ceremony (\S\ref{sec:governance})
+  & Seven accomplices, whose declarations would reach $34{,}200$ against a $15{,}000$ seed
+    and are refused, enact \emph{nothing} --- and neither does a member the founders
+    genuinely backed for $2{,}500$; a founder who holds the whole seed and backs one
+    member for all of it enacts alone, while that member enacts nothing; enacting sets
+    are upward-closed over all $32$ subsets of five unequal founders \\
+Who orders the ledger takes two thirds (\S\ref{sec:governance})
+  & Three of six founders --- $\Theta$ exactly --- move a governed constant and move
+    neither the validator set nor the suspension of a validator; the fourth carries both.
+    A member holding no voting power is suspended at the ordinary bar \\
+A validator signs with a key that is not its member key
+  & Voting power is refused for a member with no registered consensus key, and the key
+    cannot be retired while the power stands; the key resolves to nobody as a transaction
+    signer \\
+An amendment answers to the seed (\S\ref{sec:seed-amendments})
+  & Six joiners whose capacity would carry $64\times$ the seed are refused a declaration,
+    a vote and a unit of amendment headroom alike; an endorsed supply of $100$ behind
+    three members is worth $100$ each and $100$ together; $\beta$ at its ceiling with
+    every passable amendment passed reaches $4.3\times$ the seed in thirty epochs \\
+A coalition cannot insure the accounts it backs (Rem.~\ref{rem:self-uw-limits})
+  & Twelve joiners wash-backing each other behind a seed of $100$ issue at most the seed
+    in insured credit to the accounts they back, and lose at most the seed when they all
+    default --- against $204{,}800$ under a rule that lets a member declare against
+    conferred capacity \\
+A panel decides, not the first quorum to sign (\S\ref{sec:recourse})
+  & Five of sixteen arbiters attesting the maximum first do not carry the award: the
+    remaining eleven are still heard, and the median over all sixteen is what mints at
+    the window's close \\
+A block costs what somebody paid for
+  & A block over the proposer's own batch is refused before it is applied, and so is one
+    carrying an envelope no required signer signed --- which is otherwise refunded,
+    unbilled and re-appliable without limit \\
+The fail-stop survives a restart
+  & A block that breaks an invariant is not written to the log, a store the invariants
+    refuse is not resumed from, and the node that refused it commits nothing further and
+    answers every read with the height it stopped at \\
+The incremental commitment is the definition
+  & The pure full build and the patched tree computed side by side after every transition
+    and every epoch crank, and held equal; with the write record dropped from one edge
+    map the two diverge on the first settlement \\
+Re-denomination preserves every real position (Thm.~\ref{thm:redenominate})
+  & Every two-decimal amount from $0.02$ to $1{,}000.00$ through all four discharge paths
+    under the full audit, at each governed factor; a fully drawn community re-denominates
+    and audits clean \\
+No transition breaks an invariant
+  & $300$ randomly generated transitions over nine kinds, with all seven invariants audited
+    after every one \\
+The memoised cut never changes a verdict
+  & Cold and cached audits driven side by side after every transition in the tree, and
+    held to the same verdict. With the monotonicity guard removed the cached audit
+    \emph{passes} a state the cold one rejects --- a narrowed funnel, $5.00$ drawn
+    against a cut of $4.00$, with invariants 2, 4 and 5 clean --- so the probe fails
+    exactly when the clause it gates is gone \\
+And a block that changed nothing costs nothing
+  & $20{,}000$ accounts, $U = 200$: \textbf{$0$} cuts over sixteen audits of an unchanged
+    state. A draw that outgrows a standing bound still costs its query \\
+Every outstanding hold is a conserved flow
+  & Checked after every transition and every epoch crank in every suite, and not implied
+    by the other six: splitting a partially cured subrogated claim by proportion instead
+    of by route leaves $71{,}429$ exiting an account with an inflow of zero with all six
+    green, because a proportional split of each arc gives a piece arcs its own supply never
+    reached \\
+And the audit verifies it instead of recomputing the family
+  & $20{,}000$ accounts, $U = 200$, both arms on one state: the definition computes all
+    $201$ sets in $2.13$\,s where the commit path computes $2$ in $28.4$\,ms. The $2$ are
+    invariant 6's determinism pair; the cut bound computes none. A hold that is not a flow
+    is refused the shortcut --- the narrowed-funnel fixture states a supply arc it never
+    records, so the cut is computed and the violation still fires \\
+A binding ceiling rations insurance in whole rows
+  & With $2.00$ of a supply arc free, one row of $3.00$ insures nothing where three rows
+    of $1.00$ insure $2.00$: first-come, and smaller first if you split \\
+An uninsured default leaves the creditor's standing alone
+  & Measured against the counterfactual rather than before-and-after, since standing
+    decays on its own: two identical communities walked the same $31$ epochs, one with a
+    free key defaulting on $250$ of uninsured credit, and the creditor's capacity is
+    equal in both \\
+A sponsor stays seated while a row it seated lives (\S\ref{sec:standing})
+  & A member who seats one newcomer and trades nothing for eight hundred epochs is present
+    at every boundary; retired at the boundary after the row it seated, never the same one;
+    a sponsor of five rows stays while the last one lives. Retired earlier, the seat is
+    orphaned and the sweep's own block fails the audit on every node \\
+The seat unit moves without touching a standing seat (invariant 7)
+  & The bond fraction $0.02 \to 0.01 \to 0.02$ with a seat standing audits clean at each
+    step; the old seat holds $20.00$ beside a new one at $10.00$; a re-denomination with
+    seats standing is clean too \\
+A refused free class is priced or leaves nothing (\S\ref{sec:implementation})
+  & Sixty-four keyless \textsc{RotateFinalize} refusals record nothing; a debtor's refused
+    exits spend one allowance slot each, and past the allowance nothing durable is written;
+    a contract, proposal or member id the ledger has not issued is kept out of a mempool \\
+A partial payment is at least a $\kConstMaxInstallments$th of the original
+  & $0.01$ and $781.24$ against $100{,}000.00$ refused, $127$ installments of the floor
+    admitted and a closing payment of any size; without the floor, $3{,}000$ payments of
+    one minor unit for one allowance slot with $9{,}997{,}000$ to go \\
+A partial payment shrinks the hold where it is (\S\ref{sec:medium})
+  & D insured by $U_b$ alone, $U_a$ reaching D since, a payment of $100$: the hold reads
+    $\{U_b: 200\}$ where a re-solve read $\{U_a: 200\}$; measured on a re-solve, $0.7$\,ms per
+    payment at $2{,}000$ accounts and $2.3$ at $10{,}000$ against a microsecond \\
+A routed claim keeps the earlier of its dates (Prop.~\ref{prop:no-downgrade})
+  & A $30$-epoch claim routed through a $10{,}000$-epoch sale matures at $30$; a
+    $100$-epoch claim through a $30$-epoch sale at $30$; two claims from one creditor on two
+    dates become two rows on their own dates \\
+Standing is the peak over cumulative repayment (Def.~\ref{def:stake})
+  & $1{,}000$ honoured in two halves stakes $500$ after the first and $1{,}000$ after the
+    second, equal to $1{,}000$ paid at once; repeating the obligation raises nothing \\
+The panel survives substitution (\S\ref{sec:substitution})
+  & An insured claim with a panel defaults; the row becomes the underwriter's, the terms
+    still name buyer, seller and $300$; the arbiter attests and the award is minted from
+    seller to buyer at the window's close, never against the underwriter \\
+A suspended underwriter lowers and leaves (\S\ref{sec:governance})
+  & To the committed floor while a claim runs through them, to zero once it settles, then
+    exits; a raise is refused as for everyone \\
+A creditor's guardians discharge (\S\ref{sec:recourse})
+  & Two of two cure a $600$ uninsured default the silent creditor cannot sign, and the
+    debtor's allowance returns; one is under the threshold; a debtor's own guardians pay
+    nothing \\
+The sanctioned vote on reinstatement (\S\ref{sec:governance})
+  & Half the seed suspends the rest and withdraws; three fifths of what is left, suspended,
+    carries its own reinstatement, two fifths cannot, and neither may propose anything else \\
+The validator floor holds every removal path (\S\ref{sec:governance})
+  & At a floor of four, the exit of a validator, a power of zero and a suspension of a
+    validator are each refused; a fifth validator's exit is admitted \\
+A unit that would round to nothing is refused
+  & A bond fraction or a re-denomination under which the unit is under one minor unit is
+    refused when proposed and, when the base moved since, when enacted \\
+\end{longtable}
+
+\subsection{Negative results}
+
+Five designs were measured and rejected; the reasons constrain any future revision.
+
+\emph{Local approximation of trust does not localize.} On a graph with overlapping
+community membership, a neighbourhood-truncated computation is accurate only once the
+neighbourhood has grown to most of the graph: at two hops the capacity error is tens of
+percent, at three the ball covers $67$--$100\%$ of the accounts. The ball is a constant
+\emph{fraction} of the graph, not a constant size, so cost independent of network size is
+unattainable by truncation; bounding the community, not the walk, is what works.
+
+\emph{Flow cannot originate everywhere, and direction alone does not fix it.} With every
+account an unbounded source, a colluder's honest $300$ compounds to $10{,}000{,}300$ in
+three rounds, and directional stakes do not prevent it; supply must be bounded, which
+Definition~\ref{def:underwriter} does.
+
+\emph{Unbounded supply makes an underwriter an unbounded trust point.} With infinite
+supply, one underwriter backing $21$ accounts confers $52{,}500$ rather than the $2{,}500$
+they could confer on any one of them; bounding supply bounds the aggregate.
+
+\emph{Settled volume is not a sound measure}: it is fabricable by two signatures
+(Remark~\ref{rem:not-volume}).
+
+\emph{Independent evaluation leaks by the number of evaluators}: $200\times$ with two
+hundred creditors, which forces reservation and, with it, a serialization point
+(Remark~\ref{rem:order}).
+
+\subsection{Status}
+
+The model is specified and built. The kernel computes capacity as an integer maximum
+flow and is cross-pinned against an independent implementation; the state layer drives
+the whole alphabet of twenty transitions and audits all seven invariants after every one
+of them, on the commit path rather than in tests; the substrate runs --- consensus, block
+production and the state root with its inclusion proofs in one node binary, custody and
+signing in a wallet client. What has not happened is an external audit, and nothing here
+claims production readiness: the model has not run a pilot genesis, on-device custody has
+not been exercised end to end, and no party outside the project has reviewed any of it.
+
+What a green gate claims is read narrowly, because the loose readings fail silently.
+\textbf{A passing suite is a claim about what its tests assert}, and a test can assert a
+defect --- intended behaviour is a description a defect can wear through a release.
+\textbf{A passing invariant is not a claim about what it does not count}: all seven stay
+green while a discharge destroys a creditor's recourse, because obligation is conserved
+by that move and what dies is recourse, which no invariant counts ---
+Property~\ref{prop:no-downgrade} has its own probe for exactly that reason. And
+\textbf{a green build is a claim about the gates that exist}: no gate in this tree reads
+a document.
+
+\subsection{Method}
+
+Four rules produce most of what the sections above assert; a fifth --- that a claim's
+measurement must exist and name its probe --- is what the tables above are.
+
+\paragraph{Test at the quantifier the theorem uses.} The characteristic defect of this
+class of model is a bound asserted over \emph{sets} and tested over \emph{singletons}:
+one underwriter's supply drawn by several debtors, a reservation held along several
+hops, a supply withdrawn while several obligations stand on it, a write channel measured
+on one member of a chain. A per-account check passes in every one, and in the last it
+leaves a whole theorem vacuous --- the quantity is a growth rate, and a single point on it
+looks like a constant.
+
+\paragraph{Measure against the counterfactual, not against before-and-after.} Standing
+decays on its own, so walking thirty-one epochs to reach a default and then comparing
+the creditor's capacity with what it was credits the default with the decay. The
+uninsured-loss probe is therefore two identical communities, the same epochs walked in
+each, and the only difference the thing under test.
+
+\paragraph{A premise worth measuring may turn out to be structural.} The cut memo rests
+on ``most blocks decrease nothing'', which reads as a hope about workloads. It is not
+empirical: Definition~\ref{def:stake} is a peak rule and settlement is the graph's only
+writer, so no ordinary traffic can lower an edge, and the complete list of what can is
+three transitions. Checking the sentence turns a hope about workloads into a property of
+the model --- the paragraph above, run in the other direction.
+
+\paragraph{When the code and the document disagree, find out which one is coherent.}
+Neither is the specification by default. The arbitral award runs from creditor to debtor
+because it is the buyer's remedy for non-delivery, which a document can state backwards
+in perfect confidence; the underwriter who cannot leave is the throttle working, which a
+document can as confidently call a defect. A comment or a paragraph is the one part of a
+tree no gate reads, which is where a superseded model survives longest.

@@ -1,0 +1,37 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+A credit community must decide how much to stand behind each of its members, and every
+mechanism for deciding this tends toward the same failure: the decision becomes a
+process, the process accumulates rules, and the rules accumulate exceptions until nobody
+can say what the system guarantees.
+
+This design makes the decision an equation. Capacity is the maximum flow from a
+community's underwriters to an account, over directed stakes that creditors have placed
+and that nobody can place beyond what they may confer, with outstanding credit reserving
+the flow that justified it, and an underwriter is any member who has declared a liability
+they will stand behind. Admission, reputation, credit limits and Sybil resistance are that
+one quantity, and the security results follow from max-flow/min-cut rather than from a
+policy anybody has to enforce: identities are free and worthless, fabricated trade is
+arithmetically void rather than detected, a colluding member passes on exactly what they
+hold, and no configuration of identities, volumes, timing or collusion converts real
+commitment into more credit than it is worth, so attacking costs what participating costs
+(\S\ref{sec:security}).
+
+What it costs: a newcomer needs somebody willing to take a first uninsured risk, and no
+mechanism supplies that willingness; capacity can fall through no fault of its holder,
+being a claim on others' present willingness rather than a possession; allocation under
+contention is first-come-first-served, so the total is bounded correctly while who gets it
+is decided by ordering; and the medium is not money --- not accepted by strangers, not a
+store of value across decades, not saveable by anybody acting alone.
+
+The boundary this design does not cross is economic, and narrower than the one usually
+drawn here. It guarantees that a community's medium cannot be inflated by an adversary,
+that its books balance, that its losses are bounded by what its members agreed to bear,
+and that its unit can be re-denominated without disturbing a single real position. It does
+not have to make anybody want to \emph{hold} the medium, because nobody holds it: a sale
+discharges before it creates, so a member who owes is paid by ceasing to owe. What it
+cannot supply is the condition that makes this true --- enough of what a community buys
+being available from within it --- a fact about the community, knowable before anybody
+founds anything. Nor can it seed a community that underwrote nothing at genesis: zero is
+absorbing, and the ceremony is the only door.

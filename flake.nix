@@ -1,283 +1,173 @@
 {
-  description = "Flake for Holochain app development";
+  description = "edet — a non-hoardable clearing medium on a community-federated ledger";
 
   inputs = {
-    holonix.url = "github:holochain/holonix?ref=main-0.6";
-
-    nixpkgs.follows = "holonix/nixpkgs";
-    flake-parts.follows = "holonix/flake-parts";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = inputs@{ flake-parts, ... }: flake-parts.lib.mkFlake { inherit inputs; } {
-    systems = builtins.attrNames inputs.holonix.devShells;
-    perSystem = { inputs', system, ... }:
+  outputs = { self, nixpkgs, rust-overlay, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import inputs.nixpkgs {
+        pkgs = import nixpkgs {
           inherit system;
-          config.allowUnfree = true;
-          # Allow androidenv to install the SDK
-          config.android_sdk.accept_license = true;
+          overlays = [ (import rust-overlay) ];
         };
 
-        # Android SDK composition via nixpkgs androidenv.
-        # NDK 26.1.10909125 matches the ABI level edet targets and the
-        # clang version required for Rust cross-compilation to Android.
-        androidSdk = pkgs.androidenv.composeAndroidPackages {
-          cmdLineToolsVersion  = "8.0";
-          platformVersions     = [ "34" ];
-          buildToolsVersions   = [ "34.0.0" ];
-          includeNDK           = true;
-          ndkVersions          = [ "26.1.10909125" ];
-          includeEmulator      = false;
-          includeSources       = false;
-          includeSystemImages  = false;
+        # Pinned Rust toolchain. >=1.87 is required (int is_multiple_of).
+        rust = pkgs.rust-bin.stable."1.90.0".default.override {
+          extensions = [ "rust-src" "rustfmt" "clippy" "rust-analyzer" ];
         };
 
-        # Convenience: the path where the NDK lands inside the SDK directory.
-        ndkHome = "${androidSdk.androidsdk}/libexec/android-sdk/ndk/26.1.10909125";
+        # Native deps the workspace + the M3 engine (protobuf) will want.
+        buildInputs = with pkgs; [ openssl ];
+        nativeBuildInputs = with pkgs; [ pkg-config protobuf ];
 
+        python = pkgs.python312.withPackages (ps: with ps; [ numpy scipy ]);
+
+        # Android SDK/NDK for the mobile client (T3, on-device custody).
+        # A second, scoped nixpkgs import so the SDK's unfree license
+        # acceptance never leaks into the main `pkgs`.
+        androidPkgs = import nixpkgs {
+          inherit system;
+          config = {
+            allowUnfree = true;
+            android_sdk.accept_license = true;
+          };
+        };
+        # Matched to the tauri 2.11.4 android template (AGP 8.11, gradle
+        # 8.14.3, JDK 21): the app compiles against SDK 36, the committed
+        # edet-keystore plugin module against 34.
+        # The emulator and one x86_64 system image are included because
+        # `just android-keystore-test` is the only thing that RUNS Android
+        # custody: a Keystore key and a file under `noBackupFilesDir` exist on
+        # a device or an emulator and nowhere else, so without an image that
+        # path is reasoning rather than a gate. `google_apis` rather than the
+        # bare AOSP image because the Play-services-flavoured one is what a
+        # handset runs.
+        androidComposition = androidPkgs.androidenv.composeAndroidPackages {
+          platformVersions = [ "34" "36" ];
+          buildToolsVersions = [ "34.0.0" "35.0.0" ];
+          includeNDK = true;
+          includeEmulator = true;
+          includeSystemImages = true;
+          systemImageTypes = [ "google_apis" ];
+          abiVersions = [ "x86_64" ];
+        };
+        androidSdkRoot = "${androidComposition.androidsdk}/libexec/android-sdk";
+
+        # The same pinned toolchain plus the four Android rust-std targets
+        # (`cargo tauri android build` defaults to building all four ABIs).
+        rustAndroid = pkgs.rust-bin.stable."1.90.0".default.override {
+          extensions = [ "rust-src" "rustfmt" "clippy" ];
+          targets = [
+            "aarch64-linux-android"
+            "armv7-linux-androideabi"
+            "i686-linux-android"
+            "x86_64-linux-android"
+          ];
+        };
       in
       {
-        formatter = pkgs.nixpkgs-fmt;
-
-        devShells = {
-          # ── Default shell ── Holochain SDK + desktop build tools ───────────
-          # Use for day-to-day zome development, unit tests, and desktop builds.
-          default = pkgs.mkShell {
-            inputsFrom = [ inputs'.holonix.devShells.default ];
-
-            packages = with pkgs; [
-              nodejs_22
-              binaryen
-              cargo-audit
-              cargo-nextest
-              pkg-config
-              cmake
-              openssl
-              zlib
-              # Tauri v2 desktop WebView dependencies (Linux)
-              webkitgtk_4_1
-              libsoup_3
-              gtk3
-              glib
-              cairo
-              pango
-              gdk-pixbuf
-              atk
-              librsvg
-              libayatana-appindicator
-              # Transitive link deps for AppImage bundling
-              fribidi
-              harfbuzz
-              freetype
-              fontconfig
-            ];
-
-            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (with pkgs; [
-              webkitgtk_4_1
-              libsoup_3
-              gtk3
-              glib
-              cairo
-              pango
-              gdk-pixbuf
-              atk
-              librsvg
-              libayatana-appindicator
-              fribidi
-              harfbuzz
-              freetype
-              fontconfig
-              openssl
-              zlib
-            ]);
-
-            shellHook = ''
-              export PS1='\[\033[1;34m\][holonix:\w]\$\[\033[0m\] '
-              export LAIR_KEYSTORE_DISABLE_MLOCK=1
-              ulimit -l unlimited 2>/dev/null || true
-            '';
-          };
-
-          # ── androidDev shell ── Android NDK + Rust cross targets ────────────
-          # Use for Android builds and CI.
-          #
-          # Self-contained using nixpkgs androidenv — no external flake inputs
-          # required beyond holonix.
-          #
-          # The tx5 Android 11+ networking fix (holochain/tx5#87) is handled
-          # automatically through the wlynxg/anet dependency in pion/webrtc/v4.
-          # No patched Go toolchain is required.
-          #
-          # NOTE: holonix is NOT included here. Its Rust toolchain does not
-          # have Android ABI targets baked in and would shadow the targets
-          # we install below via rustup in shellHook. CI must run
-          # `rustup target add` once before building.
-          #
-          # Use via:  nix develop .#androidDev
-          # Then:     rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
-          #           npm ci
-          #           npm run tauri android init -- --skip-targets-install
-          #           npm run tauri android build --apk
-          androidDev = pkgs.mkShell {
-            packages = with pkgs; [
-              # Android toolchain
-              androidSdk.androidsdk
-              jdk17
-              # Node / build tools
-              nodejs_22
-              cargo-audit
-              cargo-nextest
-              # Holochain CLI for happ bundle building
-              inputs'.holonix.packages.hc
-              inputs'.holonix.packages.lair-keystore
-              # Misc
-              pkg-config
-              openssl
-              zlib
-              # libclang for bindgen (datachannel-sys)
-              llvmPackages.libclang
-            ];
-
-            ANDROID_NDK_HOME = ndkHome;
-            NDK_HOME = ndkHome;
-            JAVA_HOME = "${pkgs.jdk17}";
-
-            shellHook = ''
-              export PS1='\[\033[1;34m\][androidDev:\w]\$\[\033[0m\] '
-              export LAIR_KEYSTORE_DISABLE_MLOCK=1
-              export LIBCLANG_PATH="${pkgs.llvmPackages.libclang.lib}/lib"
-
-              # Create a local mutable Android SDK directory to satisfy Tauri's 
-              # expectation of cmdline-tools/latest and read-write permissions.
-              export ANDROID_HOME="$PWD/.android-sdk"
-              export ANDROID_SDK_ROOT="$ANDROID_HOME"
-              export ANDROID_NDK_HOME="$NDK_HOME"
-              export ANDROID_NDK_ROOT="$NDK_HOME"
-              export ANDROID_NDK="$NDK_HOME"
-              
-              mkdir -p "$ANDROID_HOME/cmdline-tools"
-              for f in "${androidSdk.androidsdk}/libexec/android-sdk/"*; do
-                  basename_f=$(basename "$f")
-                  if [ "$basename_f" != "cmdline-tools" ] && [ "$basename_f" != "ndk" ] && [ "$basename_f" != "ndk-bundle" ]; then
-                      if [ -d "$f" ]; then
-                          mkdir -p "$ANDROID_HOME/$basename_f"
-                          for subf in "$f"/*; do
-                              if [ -e "$subf" ]; then
-                                  ln -sfn "$subf" "$ANDROID_HOME/$basename_f/$(basename "$subf")"
-                              fi
-                          done
-                      else
-                          ln -sfn "$f" "$ANDROID_HOME/$basename_f"
-                      fi
-                  fi
-              done
-              
-              # Symlink cmdline-tools to 'latest'
-              if [ -d "${androidSdk.androidsdk}/libexec/android-sdk/cmdline-tools" ]; then
-                  # Get the first versioned directory (e.g., 8.0)
-                  version_dir=$(ls -1 "${androidSdk.androidsdk}/libexec/android-sdk/cmdline-tools" | head -n 1)
-                  if [ -n "$version_dir" ]; then
-                      ln -sfn "${androidSdk.androidsdk}/libexec/android-sdk/cmdline-tools/$version_dir" "$ANDROID_HOME/cmdline-tools/latest"
-                  fi
-              fi
-              
-              # Ensure NDK is visible in the SDK path Tauri expects
-              if [ -d "$NDK_HOME" ]; then
-                  mkdir -p "$ANDROID_HOME/ndk"
-                  ln -sfn "$NDK_HOME" "$ANDROID_HOME/ndk/26.1.10909125"
-                  ln -sfn "$NDK_HOME" "$ANDROID_HOME/ndk-bundle"
-              fi
-
-              # wasm32 getrandom must use the custom backend in zome builds
-              export CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS='--cfg getrandom_backend="custom"'
-
-              # Rust linkers for Android ABI cross-compilation.
-              # These point to the clang wrappers in the NDK toolchain.
-              LLVM_BIN="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
-              export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="$LLVM_BIN/aarch64-linux-android24-clang"
-              export CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER="$LLVM_BIN/armv7a-linux-androideabi24-clang"
-              export CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER="$LLVM_BIN/x86_64-linux-android24-clang"
-              export CARGO_TARGET_I686_LINUX_ANDROID_LINKER="$LLVM_BIN/i686-linux-android24-clang"
-
-              # Bindgen needs to know the cross-compilation target and sysroot
-              # otherwise it falls back to host headers (and fails with stubs-32.h)
-              SYSROOT="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
-              export BINDGEN_EXTRA_CLANG_ARGS_aarch64_linux_android="--sysroot=$SYSROOT --target=aarch64-linux-android24"
-              export BINDGEN_EXTRA_CLANG_ARGS_armv7_linux_androideabi="--sysroot=$SYSROOT --target=armv7a-linux-androideabi24"
-              export BINDGEN_EXTRA_CLANG_ARGS_x86_64_linux_android="--sysroot=$SYSROOT --target=x86_64-linux-android24"
-              export BINDGEN_EXTRA_CLANG_ARGS_i686_linux_android="--sysroot=$SYSROOT --target=i686-linux-android24"
-
-              # Prevent Nix from injecting host C flags into Android cross builds.
-              # Nix sets NIX_CFLAGS_COMPILE and NIX_LDFLAGS for native host builds,
-              # which break Android cross-compilation when passed to the NDK clang.
-              unset NIX_CFLAGS_COMPILE
-              unset NIX_LDFLAGS
-
-              ulimit -l unlimited 2>/dev/null || true
-            '';
-          };
-
-          # ── holochainTauriDev shell ── Desktop Tauri + Holochain ─────────────
-          # Use for desktop `npm run tauri:dev` and `cargo check`.
-          # Extends the default holonix shell with libclang (needed by
-          # datachannel-sys bindgen) and GTK/WebKit deps.
-          holochainTauriDev = pkgs.mkShell {
-            inputsFrom = [ inputs'.holonix.devShells.default ];
-
-            packages = with pkgs; [
-              nodejs_22
-              cargo-audit
-              cargo-nextest
-              # libclang for bindgen (datachannel-sys and similar C-binding crates)
-              llvmPackages.libclang
-              cmake
-              pkg-config
-              openssl
-              zlib
-              webkitgtk_4_1
-              libsoup_3
-              gtk3
-              glib
-              cairo
-              pango
-              gdk-pixbuf
-              atk
-              librsvg
-              libayatana-appindicator
-              fribidi
-              harfbuzz
-              freetype
-              fontconfig
-            ];
-
-            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (with pkgs; [
-              webkitgtk_4_1
-              libsoup_3
-              gtk3
-              glib
-              cairo
-              pango
-              gdk-pixbuf
-              atk
-              librsvg
-              libayatana-appindicator
-              fribidi
-              harfbuzz
-              freetype
-              fontconfig
-              openssl
-              zlib
-            ]);
-
-            shellHook = ''
-              export PS1='\[\033[1;34m\][tauriDev:\w]\$\[\033[0m\] '
-              export LAIR_KEYSTORE_DISABLE_MLOCK=1
-              export LIBCLANG_PATH="${pkgs.llvmPackages.libclang.lib}/lib"
-              ulimit -l unlimited 2>/dev/null || true
-            '';
-          };
+        # `nix develop` — Rust build + test shell.
+        #
+        # `cargo-audit` is here because `just audit` FAILS without it (exit 2,
+        # "the checker could not run") rather than skipping itself green. A
+        # shell that cannot run a gate is a shell that reports on fewer gates
+        # than the reader thinks. `cargo-nextest` is here for the same reason
+        # and more sharply: `just test`, `engine-test`, `swarm`, `cost` and
+        # `size-seed` all invoke `cargo nextest run`, and without it in the
+        # shell every one of them fails at "no such subcommand" — the gate list
+        # does not run at all rather than running and reporting.
+        devShells.default = pkgs.mkShell {
+          inherit buildInputs nativeBuildInputs;
+          packages = [ rust python pkgs.cargo-audit pkgs.cargo-nextest ];
+          env.PROTOC = "${pkgs.protobuf}/bin/protoc";
+          shellHook = ''
+            echo "edet dev shell — rust $(rustc --version | cut -d' ' -f2), $(python3 --version)"
+            echo "  cargo nextest run --workspace   # rust suites"
+            echo "  python3 sim/run.py --fixtures   # sim suites + kernel cross-pin"
+          '';
         };
-      };
-  };
+
+        # `nix develop .#sim` — lighter Python-only shell for the simulation.
+        devShells.sim = pkgs.mkShell {
+          packages = [ python ];
+          shellHook = ''echo "edet sim shell — $(python3 --version) with numpy, scipy"'';
+        };
+
+        # `nix develop .#tauri` — Rust + the webkit/gtk stack the Tauri client
+        # bundle needs, plus the Tauri CLI. Heavier; only needed to build the
+        # desktop/Android app in `src-tauri`.
+        devShells.tauri = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            openssl
+            gtk3
+            webkitgtk_4_1
+            libsoup_3
+            librsvg
+          ];
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+            protobuf
+            wrapGAppsHook3
+            cargo-tauri
+            nodejs_22
+          ];
+          packages = [ rust ];
+          env.PROTOC = "${pkgs.protobuf}/bin/protoc";
+          shellHook = ''echo "edet tauri shell — rust + webkitgtk4.1 + cargo-tauri + node"'';
+        };
+
+        # `nix develop .#android` — the tauri shell plus the Android SDK/NDK
+        # and a Gradle-compatible JDK, for `cargo tauri android init/build`
+        # against a real device (see README, "What is left").
+        devShells.android = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            openssl
+            gtk3
+            webkitgtk_4_1
+            libsoup_3
+            librsvg
+          ];
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+            protobuf
+            wrapGAppsHook3
+            cargo-tauri
+            nodejs_22
+          ];
+          packages = [ rustAndroid androidComposition.androidsdk androidPkgs.jdk21 ];
+          env = {
+            PROTOC = "${pkgs.protobuf}/bin/protoc";
+            JAVA_HOME = "${androidPkgs.jdk21.home}";
+            ANDROID_HOME = androidSdkRoot;
+            ANDROID_SDK_ROOT = androidSdkRoot;
+            NDK_HOME = "${androidSdkRoot}/ndk-bundle";
+            ANDROID_NDK_ROOT = "${androidSdkRoot}/ndk-bundle";
+          };
+          shellHook = ''echo "edet android shell — tauri + android sdk/ndk + jdk21"'';
+        };
+
+        # `nix flake check` runs the workspace tests + the sim suites.
+        checks.tests = pkgs.stdenv.mkDerivation {
+          name = "edet-tests";
+          src = self;
+          inherit buildInputs;
+          nativeBuildInputs = nativeBuildInputs ++ [ rust python pkgs.cargo-nextest ];
+          PROTOC = "${pkgs.protobuf}/bin/protoc";
+          buildPhase = ''
+            export CARGO_HOME=$TMPDIR/cargo
+            cargo nextest run --workspace --offline || cargo nextest run --workspace
+            python3 sim/run.py --fixtures
+          '';
+          installPhase = "touch $out";
+        };
+
+        formatter = pkgs.nixpkgs-fmt;
+      });
 }

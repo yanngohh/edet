@@ -1,0 +1,431 @@
+\section{Implementation}
+\label{sec:implementation}
+
+\subsection{One node binary, and a wallet}
+
+A validator runs one program --- a Byzantine-fault-tolerant consensus engine, the
+replicated state machine, a write-ahead log and an HTTP surface for reads and submission,
+in a single binary with no sequencer, relay or indexer --- small enough for a community
+institution to run without specialists. Validators are the community's charter
+institutions rather than a market: the validator set drives both quorum and proposer
+selection, so a runtime change to it must reach the wire and not only the ledger.
+
+A member's device runs a \emph{wallet}. Keys and signing stay local; the client reads and
+submits over the HTTP surface of a node its member chose from a declared \emph{set} of
+node URLs rather than one, since a cross-check whose peer list comes from the party being
+checked is circular. The node publishes the state commitment, so a client can put the same
+question to several nodes and compare: a node can withhold or omit, and cannot forge. A
+handset is not asked to validate --- it sleeps, roams and is reclaimed at the operating
+system's pleasure, none of which a quorum should depend on.
+
+The client's own acceptance rule (\S\ref{sec:standing}) is signing, so it decides for
+exactly as long as the client is \emph{running}: in front of the member, or behind, where
+the client holds its page up against the platform's own attempt to pause it --- a tray the
+window hides into, and on Android a foreground service under a re-resumed view. For no
+longer than that. Nothing outside that page holds the key, so a closed app signs nothing,
+and neither the service nor the tray can decide anything on its own. A device left
+unplugged and stationary with its screen off has its network suspended by the system,
+which the client documents rather than fights: it acquires no wake lock, and the exemption
+is the member's to grant in their own settings.
+
+Consensus is \emph{more} necessary under this model than under a purely subjective one:
+capacity is a conserved budget over a shared graph, and the total order decides who lends
+(Remark~\ref{rem:order}).
+
+\subsection{Feeless writes}
+
+Writes are free at the point of use (Property~\ref{prop:no-rent}). A member has a
+per-epoch allowance of $\kConstBondFreeAllowance$ transitions; beyond it a transition
+encumbers a refundable bond of $\kConstBondUnitFraction \cdot \vbase$ against their own
+write headroom, released after $\kConstBondReleaseEpochs$ epoch
+(\S\ref{sec:recourse}). The allowance is not a per-key entitlement: it goes to accounts
+the community has put something behind, because keys are free and $N$ keys would
+otherwise carry $N$ allowances --- Assumption~\ref{ass:free-signatures} one layer below
+credit. A seated row does hold one self-act its seat paid for --- registering guardians,
+once, on its own key --- spent by the gate whether or not the write is accepted, and by a
+refusal alike; seats are bounded by the seed, so it is a stock and never a rate.
+
+\begin{property}[The write floor is measured against the seed's reach]
+\label{prop:write-floor}
+Write headroom is the maximum flow of \S\ref{sec:standing} computed with each
+underwriter's source arc carrying only the part a ceremony seated, plus the member's own
+such part, \emph{gross of outstanding credit}, net of what they owe and have already
+encumbered. It is \emph{not} the declared supply.
+\end{property}
+
+\paragraph{Gross of outstanding credit, and only the member's own debt nets.} A credit
+limit is netted because a unit of standing backs one obligation at a time
+(Def.~\ref{def:reservation}); a write floor is what a member has \emph{to lose}, and the
+only netting it needs is the subtraction the property names. Reading the reach on the
+residual graph subtracts the member's own debt twice --- their obligation reserves the
+arcs into them, and what they owe comes off again --- and everybody else's once: a member
+reached for $500$ who borrowed $200$ reads $100$ of headroom where the property says
+$300$, and at $20\%$ community utilisation a member who has borrowed nothing loses their
+whole floor and allowance because another member drew the underwriter that reaches them;
+drawn to its ceiling, such a community stops trading altogether, where a ceiling that
+binds withholds \emph{insurance} (\S\ref{sec:standing}) and the trade it refuses to insure
+is the trade that dissolves the bootstrap. The qualification the allowance turns on is the
+same reading taken gross --- what the community has put behind the account, not how much
+of it is unspent this afternoon --- with an open default holding the allowance until it is
+cured, since a default consuming the defaulter's standing is the sanction.
+
+The distinction from the declared supply is load-bearing. A declaration is a promise made
+on the strength of another promise (\S\ref{sec:standing}), so a chain of them inflates
+geometrically: measured on six founders at $2{,}500$ with a single honest $300$ trade
+behind the entire chain, write headroom read from declarations \textbf{doubles with every
+accomplice} --- $19{,}200$ at seven, $614{,}400$ at twelve --- while the real cut over the
+whole coalition is $300$ throughout; accounts being free, that is an unbounded channel
+rather than an amplification, and it makes the traffic bound vacuous. Read from the seed's
+reach, every member of that coalition holds exactly $300$, so $k$ colluding accounts hold
+what $k$ honestly-backed members hold: attacking the write surface costs what
+participating costs, the same standing this design claims everywhere
+(\S\ref{sec:security}).
+
+A supply \emph{reduction} is free, because a member must never be priced out of reducing
+what they stand behind; nobody may raise one (\S\ref{sec:standing}), and restating an
+unchanged supply is bonded like any transition that shrinks nothing. Every free class must
+answer ``how many can one member force in an epoch?'', since a free transition is
+unlimited and each admitted transaction is recorded against replay: a partial discharge or
+cure is at least a $\kConstMaxInstallments$th of the original, so a row is discharged in
+at most that many payments and the closing one --- an uninsured amount is bounded by
+nothing but the ingress ceiling, so without the floor one allowance slot buys $2^{51}$
+free payments of one minor unit, each a durable replay id and, on an insured row, a
+re-hold on every validator; transfer and exit close what they touch; the permissionless
+cranks are idempotent and forget the id of a call that found nothing to do; an assent or
+an arbiter's attestation is one per pair, the second refused.
+
+Refusal is a write too. A free class refused at dispatch is priced by one allowance slot
+of the first signer in canonical order who has one, and where nobody present has one it
+leaves nothing behind: the signed intents whose success is a matter of timing --- an exit
+while owing, a lowering below the floor --- keep their id where somebody could pay for it,
+so the identical bytes replayed once they would succeed are refused, while a refusal
+nobody can pay for is not a durable write. The three permissionless cranks carry no
+signature to defer and always leave nothing; they are one list, and the node's ingress
+asks the same list to decide what may arrive unsigned.
+
+What justifies a zero is whatever refuses the \emph{second} call, not what the first
+accomplishes: an \textsc{Exit} that returns success on an account that has already left is
+admitted $500$ of $500$ times with no allowance and no headroom. The replay record is why
+it matters. It is durable, committed state kept for a whole transaction lifetime, so
+\emph{recording one is itself a write}, and a write no bond prices is the attack the
+schedule exists to refuse. The gate's order is therefore load-bearing --- charge, then
+record, then dispatch: a transaction refused at the gate was never admitted and leaves
+nothing behind; one refused at dispatch has been attempted against the ledger's economic
+state, and spends its identifier so that a signature cannot be held until the same attempt
+would succeed.
+
+Account creation escapes the question by not being a transition. It cannot be bonded on
+its own --- a key that is not yet a member has no headroom to encumber, and a creation
+somebody had to pay for would be a creation somebody could refuse --- and an unbonded
+transition is bounded by nothing, so the most it could carry is a ledger-wide per-epoch
+cap, which is a censorship lever rather than a quota: whoever fills it first shuts
+onboarding for everyone until the boundary, at no cost. An account row is therefore seated
+by the first \emph{bonded trade} that names its key (\S\ref{sec:standing}). Creation stays
+unapprovable, because the trade decides whether the row appears and nobody else does, and
+it remains inert (Corollary~\ref{cor:sybil}), which is why nothing needs approving.
+
+\paragraph{A write budget bounds a rate; a row is a stock.} That the trade was bonded
+bounds how fast rows appear and not how many: a bond is reserved and released, so what it
+buys over time is unbounded, while a row is permanent and hashed into every state root.
+Measured, a row that can seat on its own headroom carries a farm behind a single honest
+edge of $500$ from $91$ rows after six epochs at a wash of $40$ to $1{,}120$ at $100$, and
+raising the establishment floor tenfold leaves every count identical: the floor withholds
+the \emph{allowance} a seated row would hold, never the row.
+
+\begin{property}[A row is a stock and holds its price]
+\label{prop:seat}
+Seating a row reserves one bond unit of flow from the community's seed to the sponsor,
+over the same stake graph credit runs on, on a second reservation map credit never reads
+--- the sponsor's own supply arc included --- and no transition releases it.
+\end{property}
+
+Both halves are load-bearing. Held per account, the price is the same backing read once
+per child, so a farm behind one edge compounds; held on the shared graph, a child's
+residual is the cut less what its parent and siblings already drew. Released on any
+schedule, the price is a rate again --- a seat shrinking with decay is renewed at $2.3\%$
+of the backing per epoch by an accomplice's free trades --- and never released, the count
+is bounded by backing alone (Cor.~\ref{cor:seats}). What it costs: $25$ rows behind one
+edge of $500$, $250$ behind $5{,}000$, unchanged over $400$ epochs of daily renewal, and
+$+25$ for a second backer of $500$. A community seats $\sum \supply$ over the bond unit
+and then nobody --- the honest preset's seed of $7{,}500$ carries $375$ rows --- until a
+ceremony raises the seed, which is the door every supply arc already comes through.
+
+The sponsor's own supply arc is in the query, the one place the write layer must not read
+credit's rule: a cut into an account excludes that account's own declaration, because
+nobody underwrites their own borrowing, so a founding underwriter's capacity is zero, and
+a community whose first members nobody could seat would not start.
+
+Three things bend, and are stated rather than worked around. The seat is the one bond no
+transition returns, because what it bought does not go away by a transition; only the
+sweep retiring an empty row returns it (\S\ref{sec:standing}), which keeps a community
+with ordinary churn from holding its dead at its ceiling. The ceiling is real: at
+$\sum \supply$ over the bond unit nobody seats until a ceremony, and a bound that never
+binds is not one. And the reservation does not reroute earlier seats, so a seat can be
+refused that a full re-solve would have fitted --- the first-come conservatism the insured
+tier already carries, and never a seat the bound forbids.
+
+Measured against the ordinary acceptance beside it, the seat adds about a fifth: the same
+trade naming a key that already has a row against one that does not reads $29.7$\,ms and
+$35.5$\,ms at $20{,}000$ accounts, $1.03$\,ms and $1.18$\,ms at $1{,}000$, both conditions
+interleaved in one sitting --- less than the two full queries its shape suggests, because
+both stop at one bond unit rather than computing a maximum.
+
+\subsection{Determinism}
+
+Capacity is consensus-critical: replicas that compute it differently disagree about
+whether a transaction is valid. Three commitments make it reproducible.
+
+\paragraph{Every amount is an integer.} Stakes, reservations, contract amounts, cached
+debt, bond encumbrance and arbitration attestations are held in minor units,
+$\kConstMinor$ per unit of denomination, and the maximum-flow computation is exact
+integer arithmetic. Floating point is \emph{structurally} unsafe here, not merely
+imprecise: in the flow search, two replicas comparing residual capacities against an
+epsilon can agree on the resulting value and still take different augmenting paths,
+leaving different reservations behind; in the book, a cached total maintained by addition
+and subtraction drifts from the same total recounted, so an audit comparing the two must
+either demand an exactness the quantities cannot deliver or admit a tolerance, and a
+tolerance is a claim that the cache and the book may legitimately differ, which they may
+not. Real numbers cross the boundary in exactly two places: a transaction's payload on the
+way in, and a served view on the way out.
+
+The boundary has a ceiling, and it sits where the crossing stops being exact rather than
+where the integer type gives out. A payload's amount is a float, so a view leaving and the
+payment that closes the row against it make the round trip twice --- two roundings, hence
+a discrepancy of at most $2^{-52}$ of the amount, under half a minor unit only below
+$2^{51}$; above that a debtor paying the exact figure the ledger served them is told they
+have over-paid. So an amount over $\kConstMaxAmountMinor$ minor units is refused at every
+ingress, and refused \emph{before} the conversion, since rounding a real number to an
+integer clamps at both ends and a clamp is not a refusal.
+
+\paragraph{Iteration order is a function of state.} The flow network is built from
+ordered maps in key order, so adjacency order depends on the ledger's contents and never
+on the order records arrived.
+
+\paragraph{The augmenting search is iterative.} A recursive walk is bounded only by the
+level graph's depth, which is bounded only by the account count, and a stack overflow
+inside block validation is a liveness fault, so the search maintains its own path stack.
+
+\subsection{Cost}
+
+There are two costs, and only one of them is a capacity query.
+
+\paragraph{Per acceptance.} Booking an obligation runs exactly one query, limit-capped:
+an acceptance asks whether room exists for one amount rather than for the maximum. It
+costs $0.17$\,ms at $1{,}000$ accounts, $2.9$\,ms at $10{,}000$, $7.1$\,ms at
+$20{,}000$ with $160{,}000$ stakes and $36$\,ms at $100{,}000$ with $800{,}000$; the
+read side --- an account's published capacity --- asks for the maximum, at $0.28$, $4.6$,
+$12$ and $104$\,ms. Early termination is worth $1.6$ to $2.9$ times, an implementation
+detail rather than a strategy.
+
+Most of an acceptance is the BUILD rather than the search --- two thirds at $1{,}000$
+accounts and nine tenths at $100{,}000$, since an early exit stops long before the search
+has seen the network the build had to write; of a full cut the build is a third. The
+residual network is constructed fresh on every query, so it holds no state that can drift
+from the ledger. A persistent adjacency beside the edge map is not taken, and not for
+determinism --- held in key order, a patched adjacency and a rebuilt one are one structure
+a probe can hold equal --- but for what it buys: a second structure every write to the
+edge map must keep equal to the first, in exchange for the build's share of an early-exit
+query on a term that bounds nothing, since an acceptance is paid per transaction and the
+full cuts, which gain a third at most, are the ones the memo below keeps off the block.
+What is taken is the constant factors that need no second structure: the adjacency is a
+compressed row rather than a vector per node and the node index is counted rather than
+sorted, together a factor of three on the same term, measured A/B on one machine; and the
+reservation on each edge is read by one walk of the reservation map in the edge map's own
+order rather than a lookup per edge, without which the build grows with how much of the
+graph is reserved --- from $4.4$ to $20$\,ms at $20{,}000$ accounts between no edge
+reserved and every edge reserved, and from $33$ to $81$\,ms at $100{,}000$, against $5.6$
+and $44$\,ms with every edge reserved once the map is walked.
+
+\paragraph{Per block.} Every validator re-audits the invariants of
+\S\ref{sec:verification} after every committed block, and the cut bound is evaluated over
+sets: all insured debtors together, and one set per underwriter carrying any of them.
+Computing that family costs $U + 3$ \emph{full} queries whatever the block contained,
+where $U$ is the number of underwriters with live insured debt --- $4$\,ms, $464$\,ms and
+$2.13$\,s for $1{,}000$, $10{,}000$ and $20{,}000$ accounts with $U = n/100$, two orders
+of magnitude above the acceptance query and, at the top of that range, more than a whole
+consensus round. That is what the definition costs. A validator does not pay it, for two
+separate reasons, and the second is the one that matters at an epoch boundary.
+
+\textbf{The invariant must hold over the whole family after every block; it does not
+follow that every set must be recomputed after every block.} A cut is a maximum flow over
+$\free$ with pristine reservations, so it is a pure function of the stake edges, the
+declared supplies and the id space, and monotone in all three: raising an edge, raising a
+supply or admitting more accounts can only raise a maximum flow. A cut this audit has
+already verified therefore stays a valid \emph{lower bound} until one of those three
+falls, and a draw within that bound closes the clause with no query at all; only a bound
+that fails to cover the draw costs a real one. What can lower them is a short structural
+list rather than a hope about traffic: Definition~\ref{def:stake} is a peak rule, so
+settlement --- the only writer of the graph --- can only raise an edge, and the whole of
+the other direction is decay at the epoch boundary, a governed re-denomination, and a
+supply reduction. So a block that changed nothing economic computes \textbf{no} cut at
+all, and a block drawing new insured credit through one underwriter computes \textbf{two}
+--- the set of all insured debtors, which gained a member, and that one underwriter's.
+
+That argument is worth exactly its premise, and the premise fails once a day.
+\textbf{Decay lowers every edge free to fall}, so the epoch-advance block finds the
+monotone argument gone and pays the whole family: $201$ cuts after decay against the
+$201$ a cold audit computes. The memo buys nothing on the one block that was already the
+odd one out.
+
+\paragraph{The second reason: an obligation is a witness.} Invariant~\ref{inv:capacity}
+asks whether a set's drawn credit is within its cut, and a cut is a \emph{maximum} flow,
+so a feasible flow of that value settles the clause without producing the maximum. Every
+insured obligation already stores one: exactly which arcs it drew and how much on each
+(Remark~\ref{rem:charge-supply}). Feasibility is three conditions, and the audit checks
+two of them anyway --- arc usage within the stake (invariant 4) and supply usage within
+the declaration (invariant 5); the third, that the stored hold is a \emph{flow} at all ---
+what arrives at a node leaves it --- is one pass over the arcs the obligations hold, with
+no query in it. \textbf{Decay cannot touch a witness}: invariant 4 floors every edge at its
+live reservation, so whatever the epoch did, the arcs the holds occupy are still there.
+The memo dies at the boundary and the witness does not, which is precisely where the cost
+was.
+
+Measured (\texttt{just cost}), both arms on the same state and adjacent in time --- the
+cold definition, which computes every set, against the commit path a validator runs:
+
+\begin{center}
+\begin{tabular}{rrrrr}
+\toprule
+accounts & $U$ & definition & commit path & sets, computed \\
+\midrule
+$1{,}000$  & $10$  & $4.2$\,ms   & $1.0$\,ms   & $11$ / $2$ \\
+$5{,}000$  & $50$  & $148.9$\,ms  & $6.0$\,ms  & $51$ / $2$ \\
+$10{,}000$ & $100$ & $544.3$\,ms & $13.3$\,ms & $101$ / $2$ \\
+$20{,}000$ & $200$ & $2{,}674.6$\,ms & $28.4$\,ms & $201$ / $2$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+$94\times$ at the top of the range, and the two cuts still computed are
+invariant~6's forward-and-reversed determinism pair rather than the cut bound, which
+computes none. The family has not shrunk --- the invariant still holds over all $201$ sets
+after every block --- and neither has the theorem; a stored proof settles it instead of a
+computation.
+
+\paragraph{The audit is not the only whole-ledger pass a block pays for.} A block also
+commits to the ledger, and a full build of that commitment re-encodes and re-hashes
+every row. The tree is incremental instead (the state root, below): a leaf's salt binds
+the EPOCH rather than the block, so an unchanged record keeps its leaf hash for an epoch
+and an ordinary block rehashes the rows it wrote and the paths above them. Measured as the
+pair in one sitting on one machine, over the shape a wash farm produces --- one account
+and one in-edge per seat --- the definition's full build against what a block costs
+through the incremental one: $1.1$\,ms against $0.007$\,ms at $1{,}000$ rows, $6.1$
+against $0.009$ at $10{,}000$, $30.6$ against $0.012$ at $50{,}000$, $73.6$ against
+$0.015$ at $100{,}000$. The definition is linear in the ledger and the block is flat in
+it; what the block scales with is the OUT-DEGREE of the accounts it wrote to, because a
+stake row is one leaf per creditor, so writing an edge re-encodes that creditor's own row
+and nothing else.
+
+One full build remains, at the epoch boundary, where every salt changes --- the block
+that already rewrites every member row, decays every stake and sweeps the contract book,
+so it costs nothing the boundary was not paying. What the epoch-bound salt buys is a
+bounded disclosure rather than none: within one epoch an unchanged record keeps its leaf
+hash, so a member holding two of their own proofs from that epoch learns from the sibling
+hashes whether the record adjacent to theirs in identifier order changed between the two
+heights; across epochs nothing links, and a proof is served only to its subject or to a
+validator, who holds the ledger anyway.
+
+No working copy is kept per block. The invariant audit is a fail-stop whose depth is the
+log append that happens after the audit: a refused block is not on disk, and the node that
+refused it stops, commits nothing further and answers every read with the height it
+stopped at and why. A copy to roll back to is a second whole-ledger pass per block for the
+window between the refusal and the process exiting --- $0.1$, $1.2$, $17.6$ and
+$19.0$\,ms across the same four sizes in the same sitting --- and what remains linear per
+block is the audit's own structural walks.
+
+The witness is the data and never a flag: the audit compares the present edges and
+supplies against its own snapshot element by element, because a transition that lowered an
+edge is exactly what the audit exists to catch. None of it can change a verdict --- it
+decides only whether a dominated computation runs --- so a validator resuming from a
+snapshot starts cold, does more work, and halts on exactly the states a warm one halts on.
+The order the two are consulted in is load-bearing: asked before the memo, the witness
+runs on every audit and an ordinary block pays for a pass it did not need ($27$\,ms
+against $67$\,ms at $20{,}000$ accounts); asked only where a set is about to cost a real
+query, it is free on exactly those blocks, and what it proves is banked as the entry's
+floor.
+
+Held at $20{,}000$ accounts and varied in $U$ instead, the \emph{definition's} cost is
+linear in the underwriter count --- $0.35$\,s at $U = 20$, $2.02$\,s at $200$, $3.14$\,s
+at $400$ --- and that linearity is what the witness removes: $4.2\times$ at $U = 10$
+against $94\times$ at $U = 200$ in the table above, because the arm that grows with $U$ is
+the one the commit path does not run. That matters because the underwriter role is open by
+design, and an underwriter seat carrying live insured debt is a stock: four priced writes
+seat it, on a young community inside the free allowance, and only settlement retires it
+--- an expired obligation holds its arc indefinitely, and a declaration is floored at the
+flow committed through it (Rem.~\ref{rem:uw-duration}). Three other shapes are available
+and none is taken, because each changes what the ledger means rather than what it
+computes: capping $U$ closes the role, a standing fee for a seat is rent
+(Property~\ref{prop:no-rent}), and moving the audit off the commit path changes what a
+commit guarantees.
+
+Measured, \texttt{just cost}, on an Intel Core i9-14900HX under
+\texttt{-{}-release} at a one-minute load average of $3.8$, which the harness prints
+beside every figure; the harnesses are \texttt{crates/kernel/tests/cost.rs} and
+\texttt{crates/state/tests/cost.rs}, and the community is $n/100$ founding underwriters
+with eight stakes per account. A wall-clock figure without its generator and its machine
+is not a measurement, and on a loaded box the same harness reads five times higher, which
+is why the table above measures both arms on one state adjacent in time: a ratio taken
+that way survives a box that is not idle, and a difference taken against a figure from
+another run does not.
+
+Both costs are bounded by \emph{community} size and never by network size, so a federation
+of any extent costs each community exactly what its own membership costs.
+
+\subsection{The state root}
+
+Every block commits to a salted Merkle root over the ledger, with inclusion proofs for
+any record. The ledger is divided into seven sections --- accounts, obligations,
+proposals, validators, one stake row per account, the replay window bucketed by expiry,
+and one scalar leaf for the rest. A stake row carries, per debtor, the arc's weight beside
+both reservations on it --- what outstanding credit holds and what the seats do --- because
+the two are facts about one arc and a section of their own would rehash a second tree for
+the same writes. Leaves are length-framed in every variable-length component, commit their
+own index, and use distinct leaf, inner and section domain separation; each section
+commits its own leaf COUNT, once, at its root; odd levels promote the last node rather
+than duplicating it.
+
+Each of these closes a specific forgery. Unframed concatenation is not injective, so the
+boundary between key and value can be slid and many distinct records share one preimage.
+Uncommitted position lets a valid path be replayed at another index. An uncommitted
+count lets a path be replayed against a tree of another size --- and it must be committed
+somewhere other than the leaf, because which side each sibling sits on is a function of
+the index alone, so a proof for leaf $0$ of a three-leaf section folds byte for byte to
+the root of a four-leaf claim. Shared leaf and inner preimages let an inner node be
+passed off as a leaf. Duplicate-last promotion makes two distinct trees share a root.
+Binding the count at the section root rather than inside every leaf is also what makes
+the tree incremental: a leaf survives its section growing, so seating an account rehashes
+one leaf and its path instead of its whole section.
+
+Leaves are salted from a per-chain secret fixed at genesis, so sibling hashes travelling
+inside somebody else's inclusion proof do not expose preimages --- amounts and identifiers
+occupy a small enough space to brute-force otherwise. The salt binds the record's value
+through its digest and the EPOCH the record is committed in, so a disclosed salt unblinds
+one epoch's value of one record and nothing else, no leaf hash survives an epoch boundary,
+and within an epoch it does, which is the disclosure the cost paragraph states.
+
+The commitment has two implementations held to each other: the definition is a pure
+function of the ledger that rebuilds every leaf; what a validator runs patches the rows a
+block wrote. The two are computed side by side after every transition in the state
+harness and in the population runs of \S\ref{sec:verification}, and a disagreement is a
+failure rather than a slower path --- the discipline the memoised audit is under, except
+that this one decides a consensus value.
+
+\subsection{Privacy model}
+
+On the ledger a member is a pseudonymous handle. Charter policy may seal precise amounts
+to the parties and validators, with other members seeing bucketed magnitudes. The
+capacity computation is \emph{public} in structure: any observer holding the ledger
+computes the same capacity a validator does, so the quantity is checkable rather than
+announced. The stake graph is therefore visible in shape even where amounts are sealed,
+and a community that regards its trading topology as sensitive should treat that as a
+known cost.
+
+\subsection{Workspace}
+
+The economic kernel is a small pure library --- capacity, cascade arithmetic, constants,
+an advisory risk score --- with no I/O, no clock and no state, so every function in it is
+a deterministic map of its arguments. The ledger crate holds the state machine and its
+invariants; the node crate holds consensus, storage and the network surfaces; the client
+is a separate application that signs locally and reads a node over HTTP. Genesis values
+live in the kernel and are cited above through generated macros, with a build gate that
+fails if the two ever disagree.

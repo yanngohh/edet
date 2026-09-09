@@ -1,0 +1,52 @@
+/target
+
+# `gen/` is `cargo tauri android init`'s output and almost all of it is
+# regenerated on demand: the wrapper, `buildSrc`, the res tree, the launcher
+# icons, wry's `generated/` sources, `tauri.settings.gradle`. Ignoring the lot
+# is right for those.
+#
+# **What is under `gen/android` and NOT generated is ours.** Two whole modules
+# (`edet-keystore`, `edet-background`), the `settings.gradle` that wires them
+# into the app, `app/build.gradle.kts`, and `MainActivity.kt` — which carries
+# the WebView re-resume that is the whole of background mode on Android.
+# `tauri android init` creates none of them, so nothing regenerates them on a
+# checkout that lacks them: they travel with the tree or they are gone.
+#
+# They were tracked with `git add -f` under a blanket `/gen`, and a file that
+# is tracked-but-ignored travels only through git history. A tree imported any
+# other way — a tarball unpacked into a fresh `git init && git add -A`, a
+# mirror populated from an export — silently drops every one of them, and what
+# that looks like is `:edet-keystore` resolving to a directory with no build
+# file: Gradle makes an empty project of it and the custody workflow fails
+# with "Cannot locate tasks that match
+# ':edet-keystore:assembleDebugAndroidTest'", while `regeneration` passes
+# vacuously, because `git status --porcelain src-tauri/gen` is empty when the
+# files are untracked AND ignored.
+#
+# So the ignore is a whitelist, and it is written along the ownership boundary
+# rather than file by file: an `edet-*` module is ours whole, and Kotlin under
+# the app that is not in wry's `generated/` is ours. A file added to either —
+# or a third `edet-*` module — is carried with no edit here.
+/gen/**
+# Directories back in, or git stops at `gen/android` and never reaches a file.
+!/gen/**/
+
+# Ours whole. The prefix is the boundary: tauri's own modules are `app` and
+# `buildSrc`, and every module we add is `edet-something`.
+!/gen/android/edet-*/**
+
+# The app project is tauri's, less the two build scripts that wire our modules
+# in and the Kotlin we write in it. `generated/` is wry's, written on every
+# Android build of the app.
+!/gen/android/settings.gradle
+!/gen/android/app/build.gradle.kts
+!/gen/android/app/src/main/java/**
+/gen/android/app/src/main/java/org/edet/client/generated/
+
+# Re-including every directory walks Gradle's output as well, which is tens of
+# thousands of files and is not a thing to walk. Back out, after the negations
+# above so these win — they are output under our modules too.
+/gen/**/build/
+/gen/**/.gradle/
+/gen/**/.kotlin/
+/gen/**/.cxx/

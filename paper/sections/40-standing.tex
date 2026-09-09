@@ -1,0 +1,345 @@
+\section{Standing}
+\label{sec:standing}
+
+A credit community must answer one question about each of its members: how much will it
+stand behind them. The answer here is a minimum cut --- not a figure the ledger stores,
+but one computed from the stakes and the outstanding obligations that it does.
+
+\subsection{Underwriters}
+
+\begin{definition}[Underwriter]
+\label{def:underwriter}
+An \emph{underwriter} is a member who has declared a \emph{supply}
+$\supply(u) \in \mathbb{N}$: the amount of the community's credit they are willing to
+stand behind. $\uw$ denotes the set of underwriters. Genesis seeds the first underwriters
+directly; thereafter a supply rises only by an endorsed amendment
+(\S\ref{sec:seed-amendments}). A member may lower one at any time, never below what they
+already stand behind, so restating an unchanged declaration is always admissible.
+\end{definition}
+
+Each half of that rule is load-bearing. Seating by ceremony stops a free key declaring a
+billion, for a reason no cap drawn from inside the community can supply: a commitment
+brought from outside cannot be expressed by any quantity the ledger confers, so the ledger
+asks the community instead. The floor at the current declaration keeps a founder ---
+whose own capacity is zero until somebody backs them --- from giving up a standing promise
+by restating it. An underwriter is not a rank and not a privilege but an accepted
+liability: a declaration that if the members this underwriter backs fail, this much of the
+loss is theirs (\S\ref{sec:recourse}).
+
+\paragraph{The community is not limited by its founders.} $\uw$ grows as the community
+endorses new underwriters, so its total underwriting is not fixed at genesis and does not
+die with the people who started it. Founders are simply the first underwriters.
+
+\paragraph{A declaration may not be made against capacity.} The obvious alternative ---
+let a member declare up to their own $\Capa$, since a key nobody backs then has nothing
+to declare --- reads correctly for one member at a time and issues hollow insurance in
+aggregate: capacity is what the community conferred, so such a declaration becomes a
+source arc feeding the next member's capacity, which becomes their declaration. Measured,
+one founder with a supply of $100$ and twelve joiners wash-backing each other, each
+declaring the maximum that rule allows, reach a declared total of $204{,}900$; each then
+backs one fresh account, and honest creditors lend those accounts $204{,}800$, every unit
+of it carrying the ledger's own \emph{insured} label, with every invariant in
+\S\ref{sec:verification} satisfied throughout. That the twelve measured \emph{together}
+can owe exactly $100$ is Corollary~\ref{cor:self-uw}, a statement about the twelve; the
+credit went to the accounts they back, which are not in that set. So a supply has one
+source, and $\sum_{u\in\uw}\supply(u)$ is the community's insured credit rather than an
+upper bound on it.
+
+\paragraph{A supply may not be withdrawn out from under live credit.} Any member may
+reduce a declaration, but only down to the flow currently committed through them: the
+decay floor below, applied to a source arc instead of an edge, because the debt did not
+shrink when the underwriter changed their mind. Without it withdrawal breaks
+Theorem~\ref{thm:cut} directly --- measured, one of six underwriters leaving a fully drawn
+community leaves capacity $12{,}500$ against $15{,}000$ outstanding.
+
+\paragraph{An underwriter's failure is bounded.} Supply bounds not only what an
+underwriter may confer on any one member but the total they may confer on everybody, so
+the worst an underwriter can do --- by folly, by malice, or by backing a coalition of
+identities they control --- is lose their declared supply.
+
+\subsection{The stake graph}
+
+\begin{definition}[Stake]
+\label{def:stake}
+$\stake(c,d)\in\mathbb{N}$ is the \emph{stake} of creditor $c$ on debtor $d$: directed,
+denominated in minor units, updated only by discharge. When $d$ has repaid $R$ of an
+obligation of $A$ from $d$ to $c$ --- at every payment, with $R$ the obligation's
+cumulative repayment, so $R = A$ when it settles ---
+\[
+  \stake(c,d) \;\longleftarrow\; \max\!\big(\stake(c,d),\; \min(R,\ \Gamma(c))\big),
+\]
+where $\Gamma(c)$ is what $c$ may confer: $\supply(c)$ if $c\in\uw$, and $\Capa(c)$
+otherwise. Read over the installment rather than over the obligation, a member who honoured
+$1{,}000$ in two halves would hold $500$ beside one who paid at once and held $1{,}000$,
+for the same evidence; the peak over cumulative repayment equals the rule at settlement
+and counts the installments on the way.
+\end{definition}
+
+Three properties of Definition~\ref{def:stake} carry the security argument.
+
+\paragraph{It is directed.} That $c$ is willing to carry $d$ says nothing about whether
+anyone is willing to carry $c$. Held symmetrically, extending credit would raise the
+\emph{lender's} own limit --- a member could grow their capacity by lending, which is
+backwards, and which a symmetric graph cannot express its way out of.
+
+\paragraph{It is a peak, not a sum.} Running the same cycle of obligations between one
+pair a thousand times raises $\stake$ exactly as high as running it once, so a wash loop
+cannot accumulate however patient its operators are.
+
+\paragraph{It is capped by what the creditor may confer.} Nobody can pass on more
+standing than they hold. Between two accounts that may confer nothing, every settlement
+stakes $\min(A,0)=0$, so no volume of traffic creates an edge at all.
+
+$\Gamma$ is read live at \emph{settlement}, not at acceptance. For a non-underwriter that
+is $\Capa(c)$ as Definition~\ref{def:capacity} gives it, net of the credit already
+standing on $c$, whose own outstanding insured debt has reserved the very edges the query
+runs over --- so a creditor drawn to their own ceiling passes on nothing when a debtor
+repays them: what they may confer is what the community currently carries them for, and
+they are already using it. The two readings differ only when the creditor's own backing
+moved while the obligation was outstanding, and then the present figure is the true one.
+
+\begin{remark}[Why stake and not volume]
+\label{rem:not-volume}
+Letting $\stake$ record settled volume, the obvious measure of a trading relationship,
+is unsound: settlement requires two signatures and no delivery, so volume is free to
+fabricate, and two cooperating accounts can sign arbitrarily large settlements having
+moved nothing. A stake is not free, because it is capped by a quantity the fabricator
+had to earn.
+\end{remark}
+
+\begin{remark}[What standing measures]
+\label{rem:owed-not-sold}
+Because flow runs creditor to debtor, standing is evidence of having \emph{owed and
+paid}. Selling earns none of it: measured, $2000$ settled sales to twenty well-backed
+members leave the seller's capacity at zero, while one honoured purchase confers standing
+at once. Capacity asks whether the community will carry your debt, and the evidence for
+that is a debt you carried; producing value is different evidence about a different
+question, and the asymmetry is real.
+
+It cannot be relaxed within the model. Crediting the selling side by a fraction $\varphi$
+of what the buyer may confer is not a dial: every $\varphi>0$ reaches the same fixed
+point, the community ceiling, differing only in rate, because the fraction is applied to
+a quantity the fraction itself grows and Definition~\ref{def:stake}'s peak rule makes it a
+ratchet. Nor can selling raise some other quantity instead: granting a member whose
+capacity is $1000$ the right to confer $10^{6}$ leaves the newcomer they back at $1000$,
+and a seller with capacity zero granting $10^{6}$ to each of twenty accounts leaves every
+one of them at zero. A flow network holds exactly two things, source arcs and edge
+weights; selling can only touch edge weights, and an edge carries only what reaches its
+tail. To make selling create anything the seller must become a source, and by
+Assumption~\ref{ass:free-signatures} a source is an external commitment. What is left for
+a trading history lies outside the flow model: rationing when the ceiling binds, and
+evidence for the uninsured tier, where the creditor bears the risk and may weigh whatever
+they like.
+\end{remark}
+
+\subsection{Capacity}
+
+\begin{definition}[Capacity]
+\label{def:capacity}
+For a set of accounts $T$, the \emph{gross} capacity $\Capa^{0}(T)$ is the maximum flow
+into $T$ over the stake graph, where each underwriter $u \notin T$ supplies its whole
+declared supply:
+\[
+  \Capa^{0}(T) \;=\; \mathrm{maxflow}\Big(\textstyle\sum_{u\in\uw\setminus T}\supply(u)
+  \;\longrightarrow\; T\Big).
+\]
+Let $\res(c,d)$ be flow reserved against outstanding insured credit,
+$\free(c,d) = \stake(c,d) - \res(c,d)$, and $\mathrm{com}(u)$ the flow already committed
+through underwriter $u$. The \emph{residual} capacity $\Capa(T)$ is the same maximum
+taken over what is left:
+\[
+  \Capa(T) \;=\; \mathrm{maxflow}\Big(\textstyle\sum_{u\in\uw\setminus T}
+  \big(\supply(u)-\mathrm{com}(u)\big)
+  \;\longrightarrow\; T\Big).
+\]
+\end{definition}
+
+\begin{remark}[Which one a sentence means]
+\label{rem:two-capacities}
+The two answer different questions and are not interchangeable. $\Capa(T)$ is
+\emph{how much more} $T$ may borrow, so it is what a transaction consults and what a
+member is shown, and it reads zero exactly when the ceiling is legitimately full.
+$\Capa^{0}(T)$ is \emph{how much the community stands behind} $T$ altogether, so it is
+what a bound on outstanding credit must be stated against --- comparing credit already
+drawn against $\Capa(T)$ compares a quantity with itself subtracted out. Every claim
+below says which it means.
+\end{remark}
+
+Both subtractions are one statement made on the two halves of a path, and neither is
+optional (Remark~\ref{rem:charge-supply}): $\free$ nets what the stake edges are already
+carrying, $\supply-\mathrm{com}$ what the source arc is. A supply arc read at its full
+declared value lets every debtor of one underwriter draw the whole supply --- the
+difference between a bound and a suggestion.
+
+Underwriters \emph{inside} $T$ supply nothing to it. This clause is what makes a
+coalition unable to underwrite itself: appointing your own accomplices as underwriters
+adds nothing to what your coalition can borrow, because the measurement excludes them
+along with the rest of the coalition. The set form is the security statement and the
+singleton $\Capa(x)$ is what a transaction consults; because capacity is a cut, the bound
+applies to any coalition as a whole, and splitting across identities gains nothing, since
+stakes internal to a set never cross its own boundary.
+
+\subsection{Capacity is generative, not scarce}
+
+Definition~\ref{def:capacity} does not divide a fixed pot, and the difference decides
+whether a community can grow. Backing somebody costs the backer nothing: $\Gamma$ caps
+what a member \emph{may} confer, it is not a balance they spend, and a member who backs
+twenty people has exactly the capacity they started with. Standing also propagates
+undiminished --- a member backed at $2500$ may back another at $2500$, and so on outward,
+so capacity reaches strangers along chains of ordinary trade. What is bounded is
+\emph{simultaneous use}: limits propagate freely, while the credit actually outstanding
+at any moment must cross a cut and is therefore bounded by Theorem~\ref{thm:cut}.
+
+A community's working credit is not the sum of its underwriters' supplies. That sum is an
+upper bound rather than a measure (Corollary~\ref{cor:uw-bound}): it rises whenever
+anybody declares, and a declaration made against standing the community itself conferred
+adds nothing the community can carry in aggregate. Working credit rises when somebody
+accepts a liability the community was not already carrying --- an underwriter who can pay
+from \emph{outside} the set being measured --- and \S\ref{sec:seed-amendments} is the only
+door to that.
+
+\subsection{Reservation}
+
+\begin{definition}[Reservation]
+\label{def:reservation}
+Accepting an insured obligation of $A$ for debtor $d$ computes an augmenting flow of
+exactly $A$ into $d$ and adds the flow it used to $\res$. Settlement or discharge
+releases it.
+\end{definition}
+
+Reservation states that a unit of standing backs one obligation at a time, and it is what
+holds the bound across \emph{independent} creditors. Without it each creditor evaluates a
+pristine graph and lends against the same edges, and aggregate exposure overshoots the
+true cut by the number of creditors --- measured at $200\times$ with two hundred of them.
+The overshoot is unbounded, not a constant factor.
+
+\begin{remark}[What reservation must charge]
+\label{rem:charge-supply}
+Definition~\ref{def:reservation} says \emph{the flow it used}, and the augmenting path
+runs from an underwriter's supply arc through stake edges to the debtor. Both are charged,
+and an obligation records exactly what it took, so settlement returns exactly that.
+Charging only the stake edges leaves the supply arc at its full declared value on the next
+query, so two debtors backed by the same underwriter each draw the whole supply and the
+overshoot is the number of debtors that underwriter backs --- measured with the supply arc
+uncharged, one supply of $2500$ carries $250{,}000$ across a hundred of them. Returning
+less than was taken is the same error reversed: a release proportional across the arcs
+incident to the debtor strands the upstream half of every multi-hop path, so settling an
+obligation destroys capacity nothing was behind. Exactness also disposes of the question
+of release \emph{order}, since there is nothing left to choose.
+\end{remark}
+
+\begin{remark}[Why this needs a total order]
+\label{rem:order}
+The \emph{total} drawn against a region is order-invariant, but the \emph{allocation} is
+not: capacity is first-come-first-served, so which creditor lends depends on the
+sequence in which acceptances apply. A conserved budget over a shared graph requires a
+serialization point --- the argument that forces a total order for double-spend
+prevention, arriving by a different route.
+\end{remark}
+
+\subsection{Decay}
+
+Stakes decay per epoch by the governed ratio $\kConstStakeDecayNum/\kConstDecayDen$, so
+standing reflects present backing rather than history. An edge \textbf{never decays
+below its live reservation}: the debt did not shrink because the evidence aged, so the
+collateral behind it may not either. Free capacity absorbs decay first and is floored at
+zero, and an edge wholly committed to an outstanding obligation does not decay at all
+until that obligation clears.
+
+In the unit a member plans in: at the genesis value an unrenewed edge halves in about
+thirty epochs, keeps $12\%$ after a quarter, $1.5\%$ after half a year and $0.02\%$ after
+a year; integer decay drops at least one minor unit an epoch below $43$, so an edge of
+$500$ is gone in $346$. The floor protects only what is still owed, so decay is paid by
+the member who has repaid and not by the member who is drawn. A community trading on a
+seasonal rhythm --- a harvest a year --- is erased between seasons at this ratio, and
+sizes the governed constant before it sizes anything else (\S\ref{sec:seedsizing}): at the
+top of its range a year keeps $69\%$.
+
+\begin{remark}[A community that stops trading loses its credit]
+\label{rem:winddown}
+A community whose members cease to renew their backing watches its capacity fall to zero
+--- at the genesis ratio, to two ten-thousandths in a year. A community that has stopped
+trading has no credit, and a system reporting otherwise would be reporting a relationship
+nobody currently has. What must not happen is that the \emph{ability} to renew dies out,
+which is why $\uw$ is open to any member rather than fixed at genesis.
+\end{remark}
+
+\subsection{Insured and uninsured credit}
+
+Capacity bounds what the community \emph{underwrites}, not what a member may choose to
+risk. Within the debtor's capacity an obligation is \textbf{insured}: it reserves flow,
+and the recourse machinery of \S\ref{sec:recourse} stands behind it. Beyond it a creditor
+may still lend, and the obligation is \textbf{uninsured}: it reserves nothing, triggers no
+community recourse on default, and the creditor bears it alone.
+
+This dissolves the bootstrap. Were capacity a permission, a community whose accounts all
+begin at zero would deadlock, since the first trade could never happen; instead first
+trades are uninsured, they settle, they create stakes, and capacity is their residue.
+Uninsured credit still stakes under Definition~\ref{def:stake}, so an uninsured loan from
+an account that may confer nothing confers nothing.
+
+Capacity then grows \emph{insured across creditors and uninsured within one}. The cut sums
+every honoured relationship, and a loan from any creditor is insured against the whole of
+it, so each settlement that writes a new creditor's edge raises what the next loan may be
+insured for. Measured: one uninsured loan of $50$, then eight loans inside capacity from
+three creditors in rotation, take a member through $100$, $200$, $350$, $650$, $1{,}200$,
+$2{,}000$ and $2{,}650$ to $3{,}000$ --- the seed's whole reach through those three ---
+with $7{,}200$ lent insured on $50$ lent uninsured. Within a single relationship the stake
+is a peak, so a limit at one creditor rises only by a loan above it, and reservation being
+whole, that loan is uninsured in full: the marginal risk sits with the party holding the
+information about the debtor, and the community insures what has been demonstrated.
+
+\begin{remark}[The friction this leaves]
+\label{rem:friction}
+An unconditional starter allowance would make onboarding frictionless, and is exactly
+the hole that makes identities worth minting: $N$ free keys would carry $N$ allowances.
+Refusing it moves a real cost onto the newcomer --- somebody must take a first, uninsured
+risk on them, and no mechanism here supplies that willingness. That is how a trading
+relationship has always begun, a shopkeeper letting a new neighbour run a tab, and this
+design's part is to make the risk small, bounded and legible: the amount is the
+creditor's own choice; the exposure is exactly that amount and never more
+(Cor.~\ref{cor:linear}); the client states at the point of decision that the obligation
+is uninsured (\S\ref{sec:medium}); and the bond that same counterparty pays is what seats
+the account (\S\ref{sec:implementation}). The risk is what writes the stake, and a
+mechanism that removed it would remove what capacity is made of.
+\end{remark}
+
+\subsection{What an account is}
+
+An account is a set of keys and the bookkeeping that hangs off them. It carries no tier,
+no attestation, no sponsor and no score, and in particular no \emph{admission} status:
+there is no rung to be on and none to be promoted from. The status it does carry is the
+governance sanction and the member's own departure (\S\ref{sec:model}), and neither is
+consulted by Definition~\ref{def:capacity} --- the graph answers the same for a suspended
+account as for an active one, and what suspension revokes is origination, not standing.
+
+It is seated by its first \emph{bonded trade} --- an acceptance or a sale naming its key
+as a party, signed by that key --- and requires no approval, because creation grants
+nothing: an account with no incident stakes has capacity zero by
+Definition~\ref{def:capacity} and confers nothing by Definition~\ref{def:stake}. Seating
+by trade rather than by a creation transition is a cost argument, not a permission one
+(\S\ref{sec:implementation}): a row that only ever appears beside a write somebody with
+standing paid for is bounded by that standing, while an unbillable creation is bounded by
+nothing and cannot be given a quota that is not also a censorship lever. The counterparty
+who carries that first bond is the one already carrying the first uninsured risk
+(\S\ref{sec:medium}); nobody else is asked, and nobody may refuse on their behalf. The
+row is written \emph{last}, after every check that could refuse the trade, so a refused
+transaction leaves nothing behind.
+
+The row is a stock, and its price is one: the seat holds a bond unit of the counterparty's
+reach on a layer credit never reads, for as long as the row exists
+(Property~\ref{prop:seat}). A bond is reserved and returned, so it prices how fast rows
+appear and not how many; no transition returns a seat, because no transition retires a
+row. What does retire one is the epoch sweep, a year after the seating, when the row holds
+nothing, owes nothing and is named by nothing --- no stake in either direction, no
+obligation in any status, no bond, default, supply, vote, pending rotation, panel,
+proposal or guardian roll, and no live row it sponsored --- and then the seat and the key
+come back. Each of those is something only the member, a counterparty or a ceremony can
+put there, so the rule is not a lever anybody can pull against another, and a row that is
+empty is not a stock. The last condition is the sweep's own: a seat names its sponsor for
+the life of the row it bought, so a sponsor whose own trade has gone quiet stays until the
+rows it seated are gone, and goes at the boundary after the last of them.
+
+What an account accumulates is not a property of itself but of the community around it.
+Standing is held in the stakes others place on it; no account owns its own capacity, and
+none can raise it alone.
