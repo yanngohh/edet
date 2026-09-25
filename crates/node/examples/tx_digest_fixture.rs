@@ -1,4 +1,4 @@
-//! Emit signing-digest vectors for `ui/src/lib/__tests__/tx-digest.test.ts` to
+//! Emit signing-digest vectors for `ui/wallet/src/lib/__tests__/tx-digest.test.ts` to
 //! pin the client's own encoder against.
 //!
 //! `cargo run -p edet-node --example tx_digest_fixture`

@@ -199,7 +199,8 @@ pub async fn pending_sign(node: &Arc<Node>, req: PendingSignReq) -> serde_json::
         if !core.pending_limiter.allow(&bucket) {
             return serde_json::json!({ "ok": false, "error": "rate limited" });
         }
-        core.pending.sign(&core.replica.state, req.clone(), now)
+        core.pending
+            .sign(&super::pending::Ed25519, &core.replica.state, req.clone(), now)
     };
     match outcome {
         SignOutcome::Rejected(reason) => serde_json::json!({ "ok": false, "error": reason }),
@@ -209,8 +210,8 @@ pub async fn pending_sign(node: &Arc<Node>, req: PendingSignReq) -> serde_json::
             }
             serde_json::json!({ "ok": true, "completed": false })
         }
-        SignOutcome::Complete(stx) => {
-            let stx = *stx;
+        SignOutcome::Complete(done) => {
+            let stx: crate::block::SignedTx = (*done).into();
             broadcast_wire(node, Wire::PendingSign { req }).await;
             // The assembled envelope's hash, for the same reason `/tx` returns
             // one: the co-signer who completed it is the one who learns whether
@@ -230,7 +231,8 @@ pub async fn pending_decline(node: &Arc<Node>, req: PendingDeclineReq) -> serde_
     let changed = {
         let mut guard = node.lock();
         let core = &mut *guard;
-        core.pending.decline(&core.replica.state, digest, &req.signer, &req.signature)
+        core.pending
+            .decline(&super::pending::Ed25519, &core.replica.state, digest, &req.signer, &req.signature)
     };
     if changed {
         broadcast_wire(node, Wire::PendingDecline { req }).await;

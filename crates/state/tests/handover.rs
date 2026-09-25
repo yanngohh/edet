@@ -215,7 +215,7 @@ fn a_handover_launders_the_record_and_not_the_cut() {
     // about.** The handover released the first debtor's reservation, so their
     // own capacity comes back where a default would have kept it consumed —
     // and capacity is what the client's advisory score reads
-    // (`ui/src/lib/risk.ts`: confidence and headroom are both functions of
+    // (`ui/wallet/src/lib/risk.ts`: confidence and headroom are both functions of
     // it). `open_default` is not scored, so the laundering that buys anything
     // buys it here.
     assert_eq!(ctl.st.capacity_of_minor(d), 0, "a default keeps the defaulter's flow committed");

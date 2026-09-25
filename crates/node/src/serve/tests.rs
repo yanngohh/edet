@@ -1584,7 +1584,7 @@ async fn a_proof_is_refused_to_anyone_who_may_not_read_the_record() {
 }
 
 /// The wire encoding is hex; `InclusionProof`'s serde shape is byte arrays.
-/// The client verifies from the hex directly (`ui/src/lib/proof.ts`); this
+/// The client verifies from the hex directly (`ui/wallet/src/lib/proof.ts`); this
 /// test only needs to get back to the Rust type to reuse `root::verify`.
 fn rehydrate_proof(wire: &serde_json::Value) -> serde_json::Value {
     fn unhex(s: &str) -> Vec<u8> {
@@ -2016,7 +2016,7 @@ fn purchase_from(buyer_key: [u8; 32], seller: Party, amount: f64) -> Tx {
 /// node**, on the seller's invitation, and the seller completes it from
 /// there like any other request.
 ///
-/// This is the pool path `ui/src/lib/offer.ts` tries before falling back to
+/// This is the pool path `ui/wallet/src/lib/offer.ts` tries before falling back to
 /// a code shown by hand: the invitation is what lets a key — which cannot be
 /// charged for occupancy — open an entry charged to the member it names.
 #[tokio::test]

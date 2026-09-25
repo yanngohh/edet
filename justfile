@@ -1,4 +1,6 @@
 # edet dev tasks. `just` to list; `just dev` for the local cluster + UI.
+set dotenv-load := true
+set dotenv-filename := ".env"
 
 _default:
     @just --list
@@ -240,6 +242,77 @@ swarm-replay SEED TICK POP='everything' TICKS='365':
 swarm-q2 N='50' POP='everything' TICKS='365':
     cargo run --release -p edet-swarm -- q2 --seeds {{N}} --population {{POP}} --ticks {{TICKS}}
 
+# --- civitas: a community of model-driven members --------------------------
+
+# **Run BY HAND, never by `ci`.** A gate that calls a model is a gate whose
+# verdict is a sample, so none of these recipes is in `ci`, and nothing they
+# print is a measurement: what the ledger did is arithmetic over one run's
+# state, and what the people did is one generator's output.
+#
+# A run is a directory beside the tree (a tape can be very large, and
+# `/civitas-runs/` is ignored for whoever keeps one there). CONFIG starts from
+# `cargo run -p edet-civitas -- config`; a run needs `model.model` set and
+# ANTHROPIC_API_KEY. Its control is the same CONFIG and world seed with
+# `--control` in `civitas-control`.
+#
+# **Two fields pay for themselves.** `model.extra_body` is merged into every
+# request: `{"service_tier": "flex"}` on an OpenAI-dialect endpoint is the same
+# reply for HALF the money and a longer wait, with every call still
+# synchronous so the prompt cache holds — fifty people over two hundred days
+# falls from $137 to $68 a side. `{"think": false}` stops a local model that
+# reasons before it answers from spending the reply budget on reasoning
+# nothing here reads. Anything a backend writes itself is refused when the
+# configuration loads. And `turn_budget` is the whole run's days: halve it and
+# each person acts every other day over the same span, for about a quarter of
+# the money, because the cost is quadratic in the days one person lives.
+civitas-run CONFIG DIR:
+    cargo run --release -p edet-civitas -- run --config {{CONFIG}} --dir {{DIR}}
+
+civitas-control CONFIG DIR:
+    cargo run --release -p edet-civitas -- run --config {{CONFIG}} --dir {{DIR}} --control
+
+# Continue a run from its tape, in as many sittings as it takes; DAYS bounds
+# this sitting. A resume under a different model is refused unless recorded.
+civitas-resume DIR DAYS='100':
+    cargo run --release -p edet-civitas -- resume {{DIR}} --days {{DAYS}}
+
+# The apparatus with the scripted backend, which calls no model and spends
+# nothing: the loop, the tape, resume and the player, exercised. Its tape says it
+# is not a run, and so does everything that reads it.
+civitas-scripted CONFIG DIR:
+    cargo run -p edet-civitas -- run --config {{CONFIG}} --dir {{DIR}} --scripted
+
+# Read a tape: replay it with no model call (every recorded outcome must come
+# out the same), index it for the player, and write the violation report and
+# the compile queue beside it.
+civitas-read DIR:
+    cargo run --release -p edet-civitas -- replay {{DIR}}
+    cargo run --release -p edet-civitas -- index {{DIR}}
+    cargo run --release -p edet-civitas -- report {{DIR}} > {{DIR}}/violations.md
+    cargo run --release -p edet-civitas -- queue {{DIR}} > {{DIR}}/queue.md
+
+# The player, on its own dependencies, which nothing audits: open the run
+# directory `civitas-read` indexed.
+civitas-player:
+    cd ui/player && npm install && npm run dev
+
+# **The player reads what `index` writes, and nothing else pins the two.** A
+# field the player reads that `index` stopped writing reads `undefined` and
+# draws a dash, with nothing to say a figure is missing — the failure
+# `view-shape-check` exists for between the wallet and the node. Run it after
+# touching either side; it is not in `ci`.
+civitas-shape-check:
+    python3 scripts/civitas-shape.py --check
+
+# **What a run costs is what a person carries, and this is the only thing that
+# measures it.** Prints the standing prompt by block and tier, and — given a
+# run directory — what a day adds to a life, from that tape. A day's growth is
+# what a long run's bill follows, since every later day re-sends it. Sizes are
+# approximated at four characters a token: a figure to compare against another
+# figure, never a bill.
+civitas-prompt CONFIG='' DIR='':
+    cargo run --release -p edet-civitas -- prompt {{ if CONFIG != '' { '--config ' + CONFIG } else { '' } }} {{ if DIR != '' { '--dir ' + DIR } else { '' } }}
+
 # The cost tables, measured — every quantity the paper's cost figures are about.
 #
 # The paper's §Implementation quotes a millisecond figure per
@@ -366,7 +439,7 @@ e2e: ui-install
       if [ -n "$e" ] && [ "$e" -ge "$want" ]; then break; fi
       sleep 0.25
     done
-    node ui/scripts/e2e-first-contact.mjs http://127.0.0.1:7598
+    node ui/wallet/scripts/e2e-first-contact.mjs http://127.0.0.1:7598
 
 # Can the desktop/mobile client's dependency graph still be resolved?
 #
@@ -413,7 +486,7 @@ tauri-deps:
 # and a machine missing a checker is not a clean tree.
 #
 # One override carries its reason here too, because it is the only thing in
-# `ui/package.json` that pins a dependency nothing in this repo imports.
+# `ui/wallet/package.json` that pins a dependency nothing in this repo imports.
 # `overrides: { "deepmerge-ts": "^8.0.0" }` closes GHSA-ggr8-5vv4-36mx, which
 # arrives through `shepherd.js` (the product tour, a runtime dependency) and
 # which no version bump can close: shepherd 14.5.1 and the latest 15.2.3 both
@@ -424,7 +497,7 @@ tauri-deps:
 # production bundle is byte-identical before and after (measured). Second, what
 # actually bounds the exposure is reachability: shepherd deep-merges only
 # `floatingUIOptions` and the tour options, and every Shepherd option in
-# `ui/src/edet/tour.ts` is an in-repo literal with `floatingUIOptions` never
+# `ui/wallet/src/edet/tour.ts` is an in-repo literal with `floatingUIOptions` never
 # set. Which is the general caution — this gate reads the dependency TREE, so a
 # library that VENDORS its dependencies carries their code straight past it.
 #
@@ -504,7 +577,7 @@ tauri-deps:
 audit:
     #!/usr/bin/env bash
     set -uo pipefail
-    python3 scripts/npm-audit.py --prefix ui --fail-at high
+    python3 scripts/npm-audit.py --prefix ui/wallet --fail-at high
     npm_status=$?
     if [ "$npm_status" -ne 0 ]; then
         exit "$npm_status"
@@ -616,7 +689,7 @@ proof-fixture:
 # Gate: fails if the client's pinned proofs no longer match what `root.rs`
 # emits.
 #
-# Without it, a change to `Section::ALL` leaves `ui/src/lib/proof.ts` folding
+# Without it, a change to `Section::ALL` leaves `ui/wallet/src/lib/proof.ts` folding
 # every `section_path` at the wrong shape — so the client refuses every genuine
 # proof the node serves, while `proof.test.ts` stays green because the fixture
 # it pins was generated before the change and its own stale prover verifies it
@@ -657,7 +730,7 @@ tx-digest-fixture:
 # one. Cheap and static apart from a `cargo run`, so it belongs at the front of
 # `ci` with the other cross-pins.
 #
-# Measured, mutating `ui/src/lib/txdigest.ts` against this fixture: a wrong
+# Measured, mutating `ui/wallet/src/lib/txdigest.ts` against this fixture: a wrong
 # variant tag, a big-endian `u64` and a dropped chain-id length prefix each turn
 # it red. A fourth mutation — dropping the sort that makes an arbitration panel
 # a SET — does NOT, because `serde_json` emits the fixture's `BTreeSet` already
@@ -671,7 +744,7 @@ tx-digest-check:
 view-shape:
     python3 scripts/view-shape.py
 
-# Gate: fails when `ui/src/lib/api.ts` declares a view field
+# Gate: fails when `ui/wallet/src/lib/api.ts` declares a view field
 # `crates/node/src/serve/views.rs` does not serve.
 #
 # The third gate of the same family, and the one whose absence cost most. A
@@ -691,16 +764,16 @@ view-shape-check:
 # --- ui --------------------------------------------------------------------
 
 ui-install:
-    cd ui && npm install
+    cd ui/wallet && npm install
 
 ui-check: ui-install
-    cd ui && npm run check
+    cd ui/wallet && npm run check
 
 ui-build: ui-install
-    cd ui && npm run build
+    cd ui/wallet && npm run build
 
 ui-test: ui-install
-    cd ui && npm test
+    cd ui/wallet && npm test
 
 # --- tauri desktop/mobile client -------------------------------------------
 # These wrap `nix develop .#tauri` so the webkit/gtk toolchain is present.
@@ -771,7 +844,7 @@ tauri-check:
 #
 # `cargo tauri android build` defaults to all four ABIs and the other three
 # are dead weight on a device you are holding. The frontend needs no separate
-# step: `beforeBuildCommand` in `tauri.conf.json` runs `npm --prefix ui run
+# step: `beforeBuildCommand` in `tauri.conf.json` runs `npm --prefix ui/wallet run
 # build` first.
 #
 # Debug rather than release, because `gen/android` has no release signing
@@ -797,7 +870,7 @@ android-install:
         echo "no APK at $APK — run \`just android-apk\` first" >&2
         exit 1
     fi
-    STALE=$(find crates ui/src ui/package.json src-tauri/src src-tauri/Cargo.toml Cargo.lock \
+    STALE=$(find crates ui/wallet/src ui/wallet/package.json src-tauri/src src-tauri/Cargo.toml Cargo.lock \
         src-tauri/capabilities \
         src-tauri/gen/android/edet-keystore/src src-tauri/gen/android/edet-keystore/build.gradle.kts \
         src-tauri/gen/android/edet-background/src src-tauri/gen/android/edet-background/build.gradle.kts \
@@ -848,7 +921,7 @@ android-install:
 #   5. restore from the phrase; sign and commit again.
 #
 # **Background mode is measured here and nowhere else.** `just ci` gates the
-# arming rule, the cadence and the notification (`ui/src/lib/background.ts`,
+# arming rule, the cadence and the notification (`ui/wallet/src/lib/background.ts`,
 # `background.test.ts`); whether the WebView keeps running once Android pauses
 # it is a claim about a handset. The series, all of it against the node this
 # recipe starts, with a purchase opened from
@@ -1090,7 +1163,7 @@ dev N='2':
     #!/usr/bin/env bash
     set -euo pipefail
     cargo build -p edet-node --features malachite
-    ( cd ui && npm install --silent )
+    ( cd ui/wallet && npm install --silent )
     BIN=target/debug/edet-node
     HOME_DIR=$(mktemp -d /tmp/edet-malachite-dev.XXXXXX)
     "$BIN" malachite testnet --home "$HOME_DIR" --nodes {{N}}
@@ -1106,7 +1179,7 @@ dev N='2':
       pids+=($!)
     done
     for i in $(seq 0 $(({{N}}-1))); do
-      ( cd ui && EDET_NODE="http://127.0.0.1:$((7301+i))" EDET_CHAIN="edet-dev" \
+      ( cd ui/wallet && EDET_NODE="http://127.0.0.1:$((7301+i))" EDET_CHAIN="edet-dev" \
         npx vite --port $((5173+i)) --strictPort > "/tmp/edet-malachite-ui-$i.log" 2>&1 ) &
       pids+=($!)
     done

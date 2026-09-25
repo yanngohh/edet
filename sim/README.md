@@ -10,7 +10,7 @@ python3 run.py --fixtures            # the security probes + fixture freshness
 
 ## What's here
 
-- **`edet_ref.py`** — the v0.7.0 capacity model, computed with
+- **`edet_ref.py`** — the v0.7.1 capacity model, computed with
   `scipy.sparse.csgraph.maximum_flow`. The point is that this is **not the Rust
   kernel written twice**: capacity is a maximum flow, and scipy's is an
   implementation by people who had never heard of this project, so agreement
@@ -56,7 +56,7 @@ python3 run.py --fixtures            # the security probes + fixture freshness
 ## What is not here any more
 
 An agent-based model, a trust fixed point, a reliability quantile and
-the spectral radius of the contagion operator. None of them exists in v0.7.0 —
+the spectral radius of the contagion operator. None of them exists in v0.7.1 —
 standing is a cut, and a cut has no fixed point to converge to and no operator
 to take the radius of. Simulating them would have been simulating a design that
 was replaced.

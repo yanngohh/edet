@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 r"""Keep the client's inclusion-proof fixture identical to what the node emits.
 
-`ui/src/lib/proof.ts` reimplements `crates/state/src/root.rs` in TypeScript,
+`ui/wallet/src/lib/proof.ts` reimplements `crates/state/src/root.rs` in TypeScript,
 and its vitest pins a block of `RUST_*` constants that are supposed to be real
 proofs from the normative implementation. Nothing read both, so the two drifted
 in lockstep and the test stayed green through it:
@@ -38,7 +38,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-TEST_FILE = REPO_ROOT / "ui/src/lib/__tests__/proof.test.ts"
+TEST_FILE = REPO_ROOT / "ui/wallet/src/lib/__tests__/proof.test.ts"
 
 # The block is delimited rather than located by regex over its contents: the
 # fixture is opaque hex whose SHAPE changes with the format, so anything that
@@ -100,7 +100,7 @@ def main(argv: list[str]) -> int:
     print(
         "\nproof-fixture: the client's pinned proofs are stale -- run "
         "`just proof-fixture`, check that `SECTIONS`/`SECTION_TAG` in "
-        "ui/src/lib/proof.ts still mirror `Section::ALL`, and commit the result.",
+        "ui/wallet/src/lib/proof.ts still mirror `Section::ALL`, and commit the result.",
         file=sys.stderr,
     )
     return 1

@@ -118,12 +118,12 @@ def context_for(kind):
     model = section(readme, "The model")
     sybil = section(readme, "Why it is Sybil-proof")
     if kind == "copy":
-        locales = json.loads(read("ui/src/locales/en.json"))
+        locales = json.loads(read("ui/wallet/src/locales/en.json"))
         shown = {k: locales[k] for k in ("onboarding", "tour", "acceptance") if k in locales}
         # The module header and nothing else: what the app's own price on a
         # counterparty IS, which is the one place the client does more than
         # render what the ledger says.
-        pricing = read("ui/src/lib/pricing.ts")
+        pricing = read("ui/wallet/src/lib/pricing.ts")
         header = pricing.split("*/", 1)[0] + "*/"
         return "\n\n".join(
             [

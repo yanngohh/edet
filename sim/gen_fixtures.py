@@ -147,7 +147,7 @@ def build():
             )
         )
 
-    return {"version": "0.7.0", "units": "minor", "cases": cases}
+    return {"version": "0.7.1", "units": "minor", "cases": cases}
 
 
 if __name__ == "__main__":

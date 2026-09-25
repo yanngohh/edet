@@ -50,7 +50,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # The version is `src-tauri/tauri.conf.json`'s and nothing else's — it is
       # what `versionName` in the APK comes from. On a tag push the tag must
@@ -90,18 +90,18 @@ jobs:
           fi
           echo "all four present"
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
 
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
 
-      # `beforeBuildCommand` in `tauri.conf.json` runs `npm --prefix ui run
+      # `beforeBuildCommand` in `tauri.conf.json` runs `npm --prefix ui/wallet run
       # build`, so the frontend toolchain is part of an Android build.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version: "24"
 
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
@@ -117,7 +117,7 @@ jobs:
         run: cargo install tauri-cli --version '^2' --locked
 
       - name: Frontend dependencies
-        run: npm ci --prefix ui
+        run: npm ci --prefix ui/wallet
 
       # The keystore lands outside the checkout, so no step can commit it and
       # `git status` stays clean for anything that reads it.
@@ -191,7 +191,7 @@ jobs:
           done
           echo "both plugin classes survive minification"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: edet-${{ steps.version.outputs.version }}-release
           path: |
@@ -203,7 +203,7 @@ jobs:
       # which is what makes `workflow_dispatch` safe to use for a dry run.
       - name: GitHub Release
         if: github.ref_type == 'tag'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: edet ${{ steps.version.outputs.version }}
           tag_name: ${{ github.ref_name }}

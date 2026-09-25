@@ -1,0 +1,31 @@
+[package]
+name = "edet-civitas"
+description = "A community of model-driven members over the real transition function: a tape, a player, a violation report and a compile queue"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# Run BY HAND. Nothing here enters a gate that runs it: a gate that calls a
+# model is a gate whose verdict is a sample. What `just ci` tests of it is the
+# part that calls nothing — how a life is compacted, what a refusal's words ask
+# for, what the token governor admits — and it asserts nothing about what a
+# run does.
+
+[dependencies]
+edet-kernel = { path = "../kernel" }
+edet-state = { path = "../state" }
+# `Driver` is what applies and audits, `compose` is the one door from an
+# intent to an envelope, `Rng` is the seeded stream.
+edet-swarm = { path = "../swarm" }
+# What a member may see, and the pool an offer waits in: the node's own code.
+edet-view = { path = "../view" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+# The model API. Blocking, because a turn is sequential by design: turns inside
+# a tick never interleave, so nothing here waits on two calls at once.
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+
+[[bin]]
+name = "edet-civitas"
+path = "src/main.rs"

@@ -1,4 +1,4 @@
-//! The v0.7.0 model, driven through the transition function.
+//! The v0.7.1 model, driven through the transition function.
 //!
 //! `crates/kernel` proves the arithmetic. What is proved here is that the
 //! state layer DRIVES it correctly: that acceptance reserves, that settlement

@@ -2,7 +2,7 @@
 //!
 //! A signing client, and nothing more. It holds the member's seeds, signs
 //! with them, and reads and submits over the HTTP surface of an `edet-node`
-//! chosen by the member (`ui/src/lib/networks.ts`). It runs no consensus and
+//! chosen by the member (`ui/wallet/src/lib/networks.ts`). It runs no consensus and
 //! stores no ledger.
 //!
 //! **It embeds no node, and that is the decision worth knowing about.** A
@@ -32,7 +32,7 @@ mod android_keystore;
 mod background;
 
 // --- OS keychain: custody of the identity-vault device key -----------------
-// The UI's vault (ui/src/common/vault.ts) encrypts the Ed25519 seed ring with
+// The UI's vault (ui/wallet/src/common/vault.ts) encrypts the Ed25519 seed ring with
 // a 32-byte device key. On desktop and iOS that key lives here — the platform
 // keychain — which is what makes the vault genuine at-rest protection.
 // Keyring calls block, so they run on the blocking pool.
@@ -42,7 +42,7 @@ mod background;
 // vault on the second launch. Both commands therefore refuse on Android;
 // real Android custody is the `keystore_*` pair below instead (backed by the
 // `edet-keystore` Tauri mobile plugin, `src-tauri/gen/android/edet-keystore`),
-// with the UI (`ui/src/common/vault.ts`) falling back to the app-sandboxed
+// with the UI (`ui/wallet/src/common/vault.ts`) falling back to the app-sandboxed
 // WebView storage only if that plugin errors.
 
 #[cfg(not(target_os = "android"))]
@@ -51,7 +51,7 @@ const KEYCHAIN_SERVICE: &str = "org.edet.client";
 const KEYCHAIN_ENTRY: &str = "vault-device-key";
 
 /// A device key is 32 bytes, and the wallet sends it as 64 LOWERCASE hex
-/// characters — `bytesToHex` (`ui/src/lib/crypto.ts`) emits nothing else, and
+/// characters — `bytesToHex` (`ui/wallet/src/lib/crypto.ts`) emits nothing else, and
 /// both custody backends answer in the same spelling. `is_ascii_hexdigit`
 /// would admit an uppercase key here that `DeviceKeyStore.set` refuses on
 /// arrival, so the contract is stated ONCE and both commands ask it: two
@@ -104,7 +104,7 @@ async fn keychain_set_device_key(value: String) -> Result<(), String> {
 
 // --- Android Keystore: hardware-backed custody of the device key ----------
 // Same shape as `keychain_get_device_key` / `keychain_set_device_key` above
-// (a hex string in, the same hex string out) so `ui/src/common/vault.ts`
+// (a hex string in, the same hex string out) so `ui/wallet/src/common/vault.ts`
 // needs only a new branch, not a new call convention — see the doc comment
 // on `android_keystore` and the paper's §Implementation.
 // Defined unconditionally (like the keychain commands) so
@@ -151,7 +151,7 @@ async fn keystore_set_device_key(app: tauri::AppHandle, value: String) -> Result
 }
 
 // --- background mode: the rule going on deciding while the app is behind ----
-// The acceptance rule signs in the WebView (`ui/src/lib/autosign.ts`), so
+// The acceptance rule signs in the WebView (`ui/wallet/src/lib/autosign.ts`), so
 // every one of these commands is about keeping that page alive — a tray on
 // the desktop, a foreground service and a re-resumed WebView on Android. None
 // of them can sign, and none of them survives the process: see

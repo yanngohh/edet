@@ -238,7 +238,7 @@ impl Strategy for Honest {
 
     fn consents(&mut self, view: &AgentView, ask: &Ask, rng: &mut Rng) -> bool {
         // **The wallet's rule, over the figures a view serves** — the same
-        // call `ui/src/lib/pricing.ts` makes, not a second implementation of
+        // call `ui/wallet/src/lib/pricing.ts` makes, not a second implementation of
         // it. A cold start is HELD for a human, because a fresh key and a
         // fully drawn ceiling are indistinguishable to the score.
         let carry = |view: &AgentView, id: MemberId, rng: &mut Rng| -> bool {

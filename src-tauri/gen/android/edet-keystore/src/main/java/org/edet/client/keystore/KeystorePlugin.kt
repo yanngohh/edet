@@ -9,7 +9,7 @@
 // wrapping and the real file on a real device without an Activity or an IPC
 // bridge. This file is the adapter — the same shape as the desktop
 // `keychain_get_device_key` / `keychain_set_device_key` commands
-// (src-tauri/src/lib.rs), so `ui/src/common/vault.ts` needs one branch and not
+// (src-tauri/src/lib.rs), so `ui/wallet/src/common/vault.ts` needs one branch and not
 // a new call convention: a hex-encoded 32-byte device key in, the same hex
 // string back out, `null` when this device holds none.
 

@@ -1,0 +1,16 @@
+[package]
+name = "edet-view"
+description = "What a viewer may see, and the pending-signature pool: one implementation, called by the node and the simulation"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+edet-kernel = { path = "../kernel" }
+edet-state = { path = "../state" }
+serde = { workspace = true }
+# A view is JSON: the node serves it and a simulated member reads it, and the
+# two must be the same bytes, so the shape is built here and nowhere else.
+serde_json = { workspace = true }
+# An address is a hash of a key, and a decline signs a hash of a digest.
+sha2 = { workspace = true }

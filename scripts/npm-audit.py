@@ -105,7 +105,7 @@ def render(rows: list) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--prefix", default="ui")
+    ap.add_argument("--prefix", default="ui/wallet")
     ap.add_argument("--fail-at", default="high", choices=SEVERITIES)
     ap.add_argument("--attempts", type=int, default=3)
     args = ap.parse_args()

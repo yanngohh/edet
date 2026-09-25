@@ -42,7 +42,7 @@ import javax.crypto.spec.GCMParameterSpec
  *  restore from their recovery phrase, and telling them their keystore is
  *  broken instead would send them looking for a fault that is not there.
  *
- *  The message prefix is load-bearing: `ui/src/common/vault.ts` reads it to
+ *  The message prefix is load-bearing: `ui/wallet/src/common/vault.ts` reads it to
  *  tell this case apart from every other keystore failure, which fall back to
  *  browser storage. */
 class UnwrapFailed(cause: Throwable?) : Exception("unwrap-failed: ${cause?.message ?: "the wrapped device key could not be opened"}", cause)

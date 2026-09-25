@@ -1243,7 +1243,7 @@ fn account_creation_is_not_a_transition_any_more() {
 /// **Who must sign each transition, stated once and forced by the compiler.**
 ///
 /// The client composes a pending entry from a *claimed* signer set
-/// (`tx` in `ui/src/lib/api.ts`, `plan.signers`), and the node takes that set on
+/// (`tx` in `ui/wallet/src/lib/api.ts`, `plan.signers`), and the node takes that set on
 /// trust: it verifies the signatures it is given and assembles at `min_sigs`,
 /// but it never derives the set from the transaction. So a client that asks for
 /// too FEW signers builds an entry that fills, submits, and is refused at apply

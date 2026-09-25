@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the edet v0.7.0 security probes and check the fixtures are current.
+"""Run the edet v0.7.1 security probes and check the fixtures are current.
 
   python3 sim/run.py              # the probes
   python3 sim/run.py --fixtures   # and that fixtures/kernel.json is not stale

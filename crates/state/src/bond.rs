@@ -515,6 +515,19 @@ pub(crate) fn self_act_subject(tx: &Tx) -> Option<MemberId> {
 /// per transaction — a bond is charged per transaction and says nothing about
 /// payload size — and the seat price is what bounds this payload: two rows
 /// cost two seats of the sponsor's reach.
+/// **Whether the free allowance can cover this transition at all**, which is
+/// not the same question as whether the member has any allowance left.
+///
+/// A trade naming a key with no row seats one, and a seating due is priced as
+/// a seat: `due_with_cache` consults the slot and the allowance only where
+/// `rows == 0`. So a member holding every free action of the epoch is still
+/// charged — and refused, if their reach will not carry it — for the one trade
+/// that opens somebody else's account. A wallet reading `free_remaining` alone
+/// promises them the write the ledger is about to refuse.
+pub fn allowance_applies(state: &crate::state::State, tx: &Tx) -> bool {
+    fresh_keys(state, tx) == 0
+}
+
 fn fresh_keys(state: &crate::state::State, tx: &Tx) -> u32 {
     let fresh = |p: &crate::types::Party| match p {
         crate::types::Party::Member(_) => 0,

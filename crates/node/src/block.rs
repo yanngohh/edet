@@ -236,7 +236,7 @@ pub fn counter_nonce(n: u64) -> [u8; 16] {
 /// `chain_id = "a"` followed by a different payload that happens to start
 /// with `"b"` — the consensus encoding is not self-delimiting against a
 /// raw byte concatenation, so the length has to be carried explicitly.
-/// **The wallet computes this itself** (`ui/src/lib/txdigest.ts`), and the two
+/// **The wallet computes this itself** (`ui/wallet/src/lib/txdigest.ts`), and the two
 /// implementations are cross-pinned by generated vectors (`just
 /// tx-digest-check`, from `examples/tx_digest_fixture.rs`).
 ///
@@ -244,7 +244,7 @@ pub fn counter_nonce(n: u64) -> [u8; 16] {
 /// on the node's word: the app embeds no node, it reads one the member CHOOSES,
 /// and a node reached through the client's `custom` entry can answer with the
 /// digest of a different envelope and collect a valid signature over it. The
-/// route exists for the e2e harnesses in `ui/scripts/`, which hold no member's
+/// route exists for the e2e harnesses in `ui/wallet/scripts/`, which hold no member's
 /// seed; no wallet may sign what it returns.
 ///
 /// Verification (`SignedTx::verify`) recomputes it from the submitted

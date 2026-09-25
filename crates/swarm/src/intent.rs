@@ -46,7 +46,18 @@ pub const MAX_INTENTS_PER_TICK: usize = 32_768;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AgentRef {
     Member(MemberId),
-    Fresh { owner: usize, n: u32 },
+    Fresh {
+        owner: usize,
+        n: u32,
+    },
+    /// **A key named outright**: somebody present in the world who holds no
+    /// row yet and is not the actor's mint — a neighbour a civitas member
+    /// names by address. Composed exactly as a mint is: the key goes on the
+    /// envelope, and whoever holds it must sign before the row is seated.
+    /// Resolves like `Fresh` once the ledger has seated it. No strategy emits
+    /// one — the swarm's agents mint their own keys and name members — so
+    /// nothing a corpus pinned changes.
+    Key(Key),
 }
 
 /// The role a counterparty is asked to sign in.
@@ -260,6 +271,10 @@ pub fn party(st: &State, r: &AgentRef) -> Party {
                 None => Party::Key(k),
             }
         }
+        AgentRef::Key(k) => match st.member_of_key(k) {
+            Some(id) => Party::Member(id),
+            None => Party::Key(*k),
+        },
     }
 }
 
@@ -271,6 +286,7 @@ fn signing_key(st: &State, r: &AgentRef) -> Option<(Key, Option<MemberId>)> {
             let k = fresh_key(*owner, *n);
             Some((k, st.member_of_key(&k)))
         }
+        AgentRef::Key(k) => Some((*k, st.member_of_key(k))),
     }
 }
 

@@ -1,13 +1,13 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "edet",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "identifier": "org.edet.client",
   "build": {
-    "frontendDist": "../ui/dist",
+    "frontendDist": "../ui/wallet/dist",
     "devUrl": "http://localhost:5173",
-    "beforeDevCommand": "npm --prefix ui run dev",
-    "beforeBuildCommand": "npm --prefix ui run build"
+    "beforeDevCommand": "npm --prefix ui/wallet run dev",
+    "beforeBuildCommand": "npm --prefix ui/wallet run build"
   },
   "app": {
     "windows": [

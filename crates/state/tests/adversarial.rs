@@ -631,8 +631,8 @@ fn an_unbacked_key_cannot_propose_even_when_somebody_else_pays() {
 
 // ------------------------------------------------------- P-4: the reader --
 
-/// Cross-pin with `ui/src/lib/proof.ts` and its vitest
-/// (`ui/src/lib/__tests__/proof.test.ts`, the `RUST_*` constants).
+/// Cross-pin with `ui/wallet/src/lib/proof.ts` and its vitest
+/// (`ui/wallet/src/lib/__tests__/proof.test.ts`, the `RUST_*` constants).
 ///
 /// The client verifies inclusion proofs by reimplementing `root.rs`'s hashing
 /// byte for byte, and a reimplementation checked only against itself proves
@@ -667,7 +667,7 @@ fn a_member_proof_matches_the_vector_the_client_verifier_pins() {
     assert_eq!(
         root::Section::ALL.len(),
         7,
-        "the top tree's leaf count is part of the format: `SECTIONS` in ui/src/lib/proof.ts must match"
+        "the top tree's leaf count is part of the format: `SECTIONS` in ui/wallet/src/lib/proof.ts must match"
     );
     assert_eq!(
         hexs(&root::state_root(&st).expect("root")),

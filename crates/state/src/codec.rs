@@ -25,7 +25,7 @@
 //! in the direction that matters least visibly: an old node and a new one
 //! agree that a block is well-formed and disagree about what it says. The
 //! transaction digest is the sharpest case — the wallet reimplements this
-//! encoding in TypeScript (`ui/src/lib/txdigest.ts`) so that it never signs a
+//! encoding in TypeScript (`ui/wallet/src/lib/txdigest.ts`) so that it never signs a
 //! digest a node handed it, and the two are cross-pinned by generated vectors
 //! (`just tx-digest-check`). A codec change that reached the tree through one
 //! call site and not the others would leave that gate green while the wallet

@@ -1,7 +1,7 @@
 //! Emit the FIELD NAMES every read view actually serves, as JSON.
 //!
 //! `scripts/view-shape.py` diffs this against the interfaces in
-//! `ui/src/lib/api.ts`. Nothing in the tree read both until the paper pass, and
+//! `ui/wallet/src/lib/api.ts`. Nothing in the tree read both until the paper pass, and
 //! the drift has now cost three times:
 //!
 //!   * `/proposals` served `active_members` and the wallet rendered

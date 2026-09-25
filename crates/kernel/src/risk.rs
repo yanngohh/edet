@@ -1,7 +1,7 @@
 //! The advisory risk score. Consensus enforces the cut bound; this score only
 //! drives client accept / hold / reject presentation.
 //!
-//! It is mirrored term for term by `ui/src/lib/risk.ts`, and the two must not
+//! It is mirrored term for term by `ui/wallet/src/lib/risk.ts`, and the two must not
 //! drift: the wallet's acceptance policy reads it to decide what to sign
 //! without asking, so a client scoring differently from the kernel would be
 //! automating a decision the protocol never described.

@@ -8,6 +8,10 @@ license.workspace = true
 [dependencies]
 edet-state = { path = "../state" }
 edet-kernel = { path = "../kernel" }
+# What a viewer may see and the pending-signature pool, shared with the
+# simulation (`crates/civitas`) so neither is implemented twice. Behind
+# `serve`, the only part of the node that reads either.
+edet-view = { path = "../view", optional = true }
 serde = { workspace = true }
 sha2 = { workspace = true }
 # Transaction signatures: clients sign the tx digest, the node verifies at
@@ -155,7 +159,7 @@ malachite = [
 ]
 
 # The client HTTP API + shared node handle (see the block comment above).
-serve = ["dep:tokio", "dep:axum", "dep:tower-http", "dep:reqwest", "dep:serde_json", "dep:async-trait", "dep:getrandom"]
+serve = ["dep:edet-view", "dep:tokio", "dep:axum", "dep:tower-http", "dep:reqwest", "dep:serde_json", "dep:async-trait", "dep:getrandom"]
 
 [dev-dependencies]
 # The conformance scenario (`tests/malachite_swarm.rs`): the swarm's own

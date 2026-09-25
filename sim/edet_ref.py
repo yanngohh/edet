@@ -1,4 +1,4 @@
-"""A reference implementation of the v0.7.0 capacity model.
+"""A reference implementation of the v0.7.1 capacity model.
 
 The point of this file is that it is NOT the Rust kernel written twice.
 Capacity is a maximum flow, and `scipy.sparse.csgraph.maximum_flow` is an

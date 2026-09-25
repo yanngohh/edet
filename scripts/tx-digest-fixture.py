@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 r"""Keep the client's signing-digest fixture identical to what the node emits.
 
-`ui/src/lib/txdigest.ts` reimplements `crates/node/src/block.rs::tx_digest` --
+`ui/wallet/src/lib/txdigest.ts` reimplements `crates/node/src/block.rs::tx_digest` --
 and the bincode encoding of `edet_state::Tx` under it -- in TypeScript, so that
 a wallet computes what it signs instead of asking a node for it. A wallet that
 asked would be handed whatever the node liked: the digest of a different
@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-TEST_FILE = REPO_ROOT / "ui/src/lib/__tests__/tx-digest.test.ts"
+TEST_FILE = REPO_ROOT / "ui/wallet/src/lib/__tests__/tx-digest.test.ts"
 
 BEGIN = "// --------------------------------- fixtures from the Rust implementation ----\n"
 END = "// ---------------------------------------------------------------- the pin ----\n"
@@ -89,7 +89,7 @@ def main(argv: list[str]) -> int:
     print(
         "\ntx-digest-fixture: the client's pinned digests are stale -- run "
         "`just tx-digest-fixture`, check that the variant tags in "
-        "ui/src/lib/txdigest.ts still mirror `edet_state::tx::Tx`'s declaration "
+        "ui/wallet/src/lib/txdigest.ts still mirror `edet_state::tx::Tx`'s declaration "
         "order, and commit the result.",
         file=sys.stderr,
     )

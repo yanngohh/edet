@@ -2,7 +2,7 @@
 // inside it — alive while the member is elsewhere.
 //
 // **It cannot sign, and it holds no state that could.** The acceptance rule is
-// JavaScript in the WebView (`ui/src/lib/autosign.ts`), signing with the seed
+// JavaScript in the WebView (`ui/wallet/src/lib/autosign.ts`), signing with the seed
 // that lives in that page; this class is a process priority and a permanent
 // notification, nothing more. Two Android facts make it necessary:
 //

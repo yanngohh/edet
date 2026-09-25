@@ -116,7 +116,7 @@
             protobuf
             wrapGAppsHook3
             cargo-tauri
-            nodejs_22
+            nodejs_24
           ];
           packages = [ rust ];
           env.PROTOC = "${pkgs.protobuf}/bin/protoc";
@@ -139,7 +139,7 @@
             protobuf
             wrapGAppsHook3
             cargo-tauri
-            nodejs_22
+            nodejs_24
           ];
           packages = [ rustAndroid androidComposition.androidsdk androidPkgs.jdk21 ];
           env = {

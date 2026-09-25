@@ -124,7 +124,7 @@ under any probe. What broke, every time, was something at an EDGE.
   parameter is recoverable through its door; a validator set is not.
 - **Governance weight is a share of the external seed**, every kind. A cut
   says who the seed reached, not who put it up.
-- **The wallet computes the digest it signs** (`ui/src/lib/txdigest.ts`,
+- **The wallet computes the digest it signs** (`ui/wallet/src/lib/txdigest.ts`,
   `tx-digest-check`). A node-supplied payload is the node choosing what you
   sign, and `/tx/check` is no defence: the same node answers it. The chain id
   comes from the network declaration; for `custom` it is the one the member
@@ -135,7 +135,7 @@ under any probe. What broke, every time, was something at an EDGE.
   handset is a poor validator, and an embedded node founding a private chain
   on published dev keys is a dead end: standing cannot be carried between
   ledgers. The app signs locally and reads a node the member CHOSE
-  (`ui/src/lib/networks.ts`), asked before the key exists; a lying node can
+  (`ui/wallet/src/lib/networks.ts`), asked before the key exists; a lying node can
   withhold and omit, never forge, and `views::head` makes nodes comparable.
 - **A row is seated by the first bonded trade.** Creation cannot be billed,
   and an unbillable transition can only be bounded ledger-wide, a censorship
@@ -329,7 +329,7 @@ under any probe. What broke, every time, was something at an EDGE.
   identical, and the community pays once either way. What moves is the
   per-member reading, because the handover releases the first debtor's
   reservation where a default keeps it committed, and capacity is what
-  `ui/src/lib/risk.ts` scores; no bound is stated over one member, and the
+  `ui/wallet/src/lib/risk.ts` scores; no bound is stated over one member, and the
   client shows the ledger's own figure beside its own. Nothing of the
   CREDITOR's moves: same amount, date, acceptance and insured flag, a successor
   the community cannot carry still needs their signature, and the panel stays
@@ -437,7 +437,7 @@ under any probe. What broke, every time, was something at an EDGE.
 - **Ask whether the mechanism you hand a decision to can run when the decision
   is due**: a wallet policy is not a standing consent. **A member's own
   price is shown BESIDE the ledger's score, never in place of it**
-  (`ui/src/lib/pricing.ts`).
+  (`ui/wallet/src/lib/pricing.ts`).
 - **A call that never RETURNS is not an ERROR, and a `catch` cannot see one.**
   Every "on failure" fallback is unreachable until the call is BOUNDED.
 - **`setup` runs on the main thread and the WebView is ALREADY LOADING**: an
@@ -588,7 +588,7 @@ under any probe. What broke, every time, was something at an EDGE.
 - **An epoch is a protocol constant** (`unix_secs / EPOCH_SECS`); a fresh chain
   climbs 10,000 epochs per block until it catches up. It is ABSOLUTE — epoch N
   begins at `N × EPOCH_SECS` — so the client shows the DAY rather than the
-  number wherever the epoch is absolute (`ui/src/lib/epoch.ts`), taking the
+  number wherever the epoch is absolute (`ui/wallet/src/lib/epoch.ts`), taking the
   length from `/network`'s `epoch_secs` and never from a constant of its own.
   Durations in epochs stay durations: a maturity is typed and read back in the
   same unit, and converting one end of that form and not the other is worse
@@ -667,6 +667,92 @@ under any probe. What broke, every time, was something at an EDGE.
   no treatment. `edet-state` dev-depends on `edet-swarm`, which depends on
   `edet-state`: nothing under `crates/state/src` may name `edet_swarm`.
   Conformance ports 7471 / 28921 / 29571.
+- **A civitas run measures the HARNESS before it measures the ledger**
+  (`crates/civitas`). Pilot-3, 5000 days: 181 defaults, every one a debtor
+  holding more cash than the debt on the day it expired, `pay_debt` used
+  twice, no standing instruction ever set — the day's note named bills,
+  trades, offers and the square and never a contract falling due. Fifteen
+  members of 128 people, the last seated on day 11: a seat is bonded against
+  the SPONSOR's headroom, four exhausted sponsors opened 91 of 126 newcomer
+  offers, and the newcomers signed them daily for `ET-BND-001` and read the
+  refusal as their own. 662 days silent on `429`: a life re-sent whole grew
+  to 78k tokens a call, a token limit counts cached tokens, and a limit
+  saturated for the rest of a run is not weather a retry waits out. So the
+  note names what falls due (`prompt::debts_due`), a newcomer offer the
+  sponsor cannot seat today is refused at the sponsor (`tools::act`), an
+  expired offer is shown as gone, a life past `days_kept_whole` is sent as
+  the person's own memory of it (`session::compact`) — **folded a block of
+  `days_kept_whole` at a time**, since a window that slides one day every
+  day rewrites the prefix and re-sends the days behind it: pilot-6's median
+  person-day sent 5,600 fresh tokens whatever the life's size, and fresh
+  input was $36 of its $58 — calls wait at a
+  token governor (`model::Governor`, `tokens_per_minute`) and a day the
+  endpoint refused is lived again before the tick applies. **A town that has
+  never used a ledger is told so** (`TrustConfig`): the note states the
+  ledger's record so far and how each counterparty has dealt with this
+  person on it, and the town text and the card writer say it is untried.
+  **A run models what a real person meets; it is never tuned for adoption.**
+  Pilot-4 carried a sentence telling everybody that cash with strangers and
+  small first amounts were ordinary here, and measured the instruction: 10
+  members of 52 in 78 days, eight seating attempts, and the honest card had
+  been made more careful than `honest::Params`, which is a different control.
+  Both are gone. What stays is what the wallet actually shows — its
+  home-screen count of the newcomers a member's standing can seat
+  (`prompt::seats_left`, the `offers.seatsLeft` line), which every founder of
+  pilot-4 lacked and read `capacity 0.00` for — and a scheduler that gives a
+  person with no account a day only when something brings them to a wallet:
+  under the older "has had a day, keeps having them" rule 42 such neighbours
+  lived 80% of pilot-4's budget paying cash and posting. **A day is atomic,
+  and a settlement is two-party**: a payment offered on the due day is
+  acknowledged tomorrow at the earliest, which the sweep has already marked
+  expired — pilot-5's 82 of 146 expiries, with 274 of 475 payment offers
+  never signed. The wallet's own answer is its "somebody is waiting on you"
+  notification (`lib/waiting.ts`), so `notify_same_day` gives everybody a
+  request reached during the day a short second session on the same tick,
+  after the standing instructions, before the day closes
+  (`Runner::notification_round`). **The harness may tell a person nothing
+  the wallet does not, and offer nothing a phone cannot do**: the wallet
+  carries the due-date notices, the dealings line, the ledger's record,
+  the sender-side refusal of an unseatable newcomer offer and the two
+  standing instructions the runs showed people needed (`lib/due.ts`,
+  `lib/dealings.ts`, `lib/seats.ts`, `lib/autopay.ts`, `/network`'s contract
+  counts), and auto-signing a payment made to you is offered nowhere,
+  since a wallet cannot confirm cash it never saw. **A snapshot is a day's
+  CLOSE, and a default the sweep marks in the morning and a cure pays off
+  by evening never appears in one**: pilot-6 read as two defaults at the
+  closes and thirty at the sweep, twenty-eight of them cured the same day;
+  pilot-5 read 78 and was 169. The indexer records `expired_today` at
+  each opening, the player's first-default milestone and its "Defaults the
+  sweep marked" track read it, and a claim about defaults is made from it
+  and never from the closes. Trust is the person's to give; a run states
+  the evidence. **A member can seat a neighbour they have** (`Side::Person`,
+  `AgentRef::Key`): `Day::side` answered an address with no row "that person
+  has no account yet" while the note said a trade recorded with them would
+  open one, so every seat of pilots 4 to 6 was a stranger `new` had minted —
+  members' notes named one of pilot-6's 42 account-less townsfolk 219 times
+  and none was seated in seventy days, and its "42 members" were 8 founders
+  and 34 strangers. **Adoption is `run.json`'s `adoption`**: what a member did with
+  a trade line naming somebody with no account, never the member count.
+  **A minted stranger's card is dealt, not written** (`newcomer_cards:
+  deck`): the writer, told the record 37 times, wrote the same careful
+  tradesperson 37 times. **A sale is the smaller of the two bands**
+  (`sale_band: smaller`): under the buyer's alone the household table chose
+  the creditors and the debtors before the ledger acted — a teenager at 35
+  sold at 600 and was creditor on a quarter of the contracts, the
+  manufacturer at 600 was cashless from day 35 with the town's largest
+  backing. **The cap ends a run before a day opens, never inside one**:
+  skipping the capped day's notification round left 36 offers overnight and
+  six expiries at the next sweep. **What a tape cannot see**: a discharge
+  "by value" moves nothing and there is no goods layer, so the manufacturer's
+  nine cures by value, each signed by a founder in two calls, built the
+  largest stakes in town on the word of a household with no cash; the
+  wallet's risk figure is 1.00 for any member whose debt exceeds capacity,
+  which is nearly everybody where five sixths of the credit is uninsured; and
+  a model at `reasoning_effort: none` turned 1,817 trade lines into 1,789
+  acts and signed 93% of what reached it, so a run's volume is the draw's and
+  its consent nobody's. **Read a tape's refusal codes
+  and its `pay_*` counts before reading its economics**, and the player shows
+  every person in the town, not only the rows on the ledger.
 - **The model generates and the kernel judges; no persona figure is a
   measurement** (`scripts/persona.py`, at least two model families of
   independent lineage, an identical narrative across draws is saturation; run

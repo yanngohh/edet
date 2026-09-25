@@ -1,6 +1,6 @@
 [package]
 name = "edet-tauri"
-version = "0.7.0"
+version = "0.7.1"
 edition = "2021"
 description = "edet desktop/mobile client — signs locally, reads and submits over a node's HTTP API"
 license = "GPL-3.0-or-later"

@@ -1,5 +1,5 @@
 //! Emit inclusion-proof fixtures in the node's wire shape, for
-//! `ui/src/lib/__tests__/proof.test.ts` to pin its reimplementation against.
+//! `ui/wallet/src/lib/__tests__/proof.test.ts` to pin its reimplementation against.
 //!
 //! `cargo run -p edet-state --example proof_fixture`
 //!

@@ -36,3 +36,18 @@ __pycache__/
 # Node caches at the root (a vitest run writes one); the client's own
 # node_modules is ignored under ui/.
 node_modules/
+
+# The civitas player's build, and a run's tape. A tape is a run's only
+# existence and can be very large; it is kept beside the tree, where the person
+# who ran it chooses, never in it.
+ui/player/dist/
+/civitas-runs/
+civitas-cfg*.json
+
+
+# Environment values
+.env
+.env*
+
+# A handover for the next session: local notes, never the tree's.
+PROMPT.md

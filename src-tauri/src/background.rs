@@ -1,7 +1,7 @@
 //! Background mode: keeping the WebView — and therefore the acceptance rule —
 //! running while the app is not in front of the member.
 //!
-//! **The rule signs in the WebView.** `ui/src/lib/autosign.ts` polls the
+//! **The rule signs in the WebView.** `ui/wallet/src/lib/autosign.ts` polls the
 //! pending pool over `fetch` and signs with the seed held in that JavaScript
 //! context; no signature crosses IPC. So the whole of this file is about
 //! keeping that page alive, and it holds no logic about what to sign — that
@@ -48,7 +48,7 @@ use tauri::{
 /// menu written in English beside it would be the one part of the client that
 /// did not listen. So the copy travels with the request rather than living in
 /// Android string resources or a Rust constant — six locales, one place
-/// (`ui/src/locales/*.json`).
+/// (`ui/wallet/src/locales/*.json`).
 #[derive(Deserialize)]
 pub struct Labels {
     /// Tray tooltip; the Android service notification's title.

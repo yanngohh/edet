@@ -1,10 +1,10 @@
 [workspace]
 resolver = "2"
-members = ["crates/kernel", "crates/state", "crates/node", "crates/swarm"]
+members = ["crates/kernel", "crates/state", "crates/view", "crates/node", "crates/swarm", "crates/civitas"]
 exclude = ["src-tauri", "ui"]
 
 [workspace.package]
-version = "0.7.0"
+version = "0.7.1"
 edition = "2021"
 license = "GPL-3.0-or-later"
 

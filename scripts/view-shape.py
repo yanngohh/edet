@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 r"""Gate the client's read-view types against what the node actually serves.
 
-`ui/src/lib/api.ts` declares an interface per read view, and nothing read both
+`ui/wallet/src/lib/api.ts` declares an interface per read view, and nothing read both
 sides. The drift is not hypothetical and it is not cosmetic:
 
   * `/proposals` served `active_members`, and the wallet rendered
@@ -43,7 +43,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-API_TS = REPO_ROOT / "ui/src/lib/api.ts"
+API_TS = REPO_ROOT / "ui/wallet/src/lib/api.ts"
 
 # Fields a client legitimately declares that no node serves, with the reason.
 # Keep this list SHORT and each entry justified: it is the escape hatch that
